@@ -6,3 +6,8 @@
 5. Create basic planner
 6. Get / Create SHOP parser
 7. Combine SHOP parser with established codebase
+
+
+# Things to Test
+1. Create example with action 'for all' precondition
+1. Create example with action 'for all' effect
