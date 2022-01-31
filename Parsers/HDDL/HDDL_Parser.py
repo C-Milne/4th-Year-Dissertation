@@ -1,6 +1,7 @@
 import re
 from Parsers.HDDL.action import Action
 from Parsers.HDDL.method import Method
+from Parsers.HDDL.predicate import Predicate
 
 
 class HDDLParser:
@@ -9,6 +10,7 @@ class HDDLParser:
         self.objects = []
         self.actions = []
         self.methods = []
+        self.tasks = []
         self.predicates = {}
         self.types = []
         self.requirements = []
@@ -27,17 +29,19 @@ class HDDLParser:
                 elif lead == ":method":
                     self.__parse_method(group)
                 elif lead == ":task":
-                    pass
+                    self.__parse_task(group)
                 elif lead == "domain":
                     self.domain_name = group[0]
                 elif lead == ":requirements":
-                    pass
-                elif lead == "predicates":
-                    pass
+                    self.requirements = group
+                elif lead == ":predicates":
+                    self.__parse_predicate(group)
                 elif lead == ":types":
-                    pass
+                    self.__parse_type(group)
                 elif lead == ":constraints":
-                    pass
+                    self.__parse_constraints(group)
+                else:
+                    raise AttributeError("Unknown tag; {}".format(lead))
 
     def parse_problem(self, problem_path):
         """TODO - Implement parse_problem"""
@@ -78,10 +82,21 @@ class HDDLParser:
             raise Exception('Malformed expression')
         return sections[0]
 
-    def __parse_predicate(self):
-        """TODO - Implement parse-predicate"""
-        pass
+    def __parse_predicate(self, params):
+        for i in params:
+            self.predicates[i[0]](Predicate(params))
 
     def __parse_method(self, params):
         method = Method(params, self)
         self.methods.append(method)
+
+    def __parse_task(self, params):
+        self.tasks.append(params)
+
+    def __parse_type(self, params):
+        for i in params:
+            self.types.append(i)
+
+    def __parse_constraints(self, params):
+        """TODO - Implement constraints"""
+        raise NotImplementedError("Constraints are not supported yet")
