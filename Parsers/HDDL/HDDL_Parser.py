@@ -1,5 +1,6 @@
 import re
 from Parsers.HDDL.action import Action
+from Parsers.HDDL.method import Method
 
 
 class HDDLParser:
@@ -24,7 +25,7 @@ class HDDLParser:
                 if lead == ":action":
                     self.__parse_action(group)
                 elif lead == ":method":
-                    self.__parse_methods(group)
+                    self.__parse_method(group)
                 elif lead == ":task":
                     pass
                 elif lead == "domain":
@@ -39,9 +40,11 @@ class HDDLParser:
                     pass
 
     def parse_problem(self, problem_path):
+        """TODO - Implement parse_problem"""
         pass
 
     def name_assigned(self, str):
+        """TODO - Implement name_assigned in hddl parser. Must return true if a given param is already assigned to another action / method /etc"""
         print("TODO: Implement name_assigned")
         return False
 
@@ -75,8 +78,10 @@ class HDDLParser:
             raise Exception('Malformed expression')
         return sections[0]
 
-    def __parse_predicates(self):
+    def __parse_predicate(self):
+        """TODO - Implement parse-predicate"""
         pass
 
     def __parse_method(self, params):
-        pass
+        method = Method(params, self)
+        self.methods.append(method)
