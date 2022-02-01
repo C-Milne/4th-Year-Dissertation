@@ -11,6 +11,27 @@ class Method:
         self.ordered_subtasks = None
         self.__parse(params)
 
+    def evaluate_preconditions(self, model, params):
+        """:params  - model : proposed model
+                    - params : list of parameters
+        :returns    - True : if method can be run on the given model with given parameters
+                    - False : Otherwise"""
+        # Check number of params is the amount expected
+        if len(params) != len(self.parameters):
+            return False
+
+        # Map params to self.parameters
+        i = 0
+        param_dict = {}
+        while i < len(self.parameters):
+            param_dict[self.parameters[i]] = params[i]
+            i += 1
+
+        # Evaluate preconditions
+        for precon in self.preconditions:
+            assert type(precon) == Precondition
+            return precon.evaluate(model, param_dict)
+
     def __parse(self, params):
         """ TODO - Implement support for :ordering """
         i = 0
