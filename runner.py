@@ -1,5 +1,6 @@
 import sys
 from Parsers.HDDL.HDDL_Parser import HDDLParser
+from Solver.solver import Solver
 
 
 class Runner:
@@ -8,10 +9,13 @@ class Runner:
         self.parser = None
         self.suffix = None
         self.__parse_domain(domain_path)
-        self.__parse_problem(problem_path)
+
         # Parse problem
+        self.__parse_problem(problem_path)
+
         # Solve
-        pass
+        self.solver = Solver(self.parser)
+        self.solver.solve()
 
     def __parse_domain(self, domain_path):
         # Check for valid suffix
@@ -39,3 +43,7 @@ class Runner:
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         Runner(sys.argv[1], sys.argv[2])
+    else:
+        # Incorrect usage of program
+        raise IOError("Expected 3 arguments, got {}.\nCorrect usage 'python runner.py <domain.suffix> <problem.suffix>'"
+                      .format(len(sys.argv)))

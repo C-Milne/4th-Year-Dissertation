@@ -6,7 +6,8 @@ from Parsers.HDDL.predicate import Predicate
 
 class HDDLParser:
     def __init__(self):
-        self.states = {}
+        self.initial_state = {}
+        self.goal_state = {}
         self.objects = []
         self.actions = []
         self.methods = []
@@ -15,9 +16,14 @@ class HDDLParser:
         self.types = []
         self.requirements = []
         self.foralls = []
+        self.subtasks_to_execute = []
         self.domain_name = None
+        self.domain_path = None
+        self.problem_name = None
+        self.problem_path = None
 
     def parse_domain(self, domain_path):
+        self.domain_path = domain_path
         tokens = self.__scan_tokens(domain_path)
         if type(tokens) is list and tokens.pop(0) == 'define':
             while tokens:
@@ -45,21 +51,53 @@ class HDDLParser:
 
     def parse_problem(self, problem_path):
         """TODO - Implement parse_problem"""
+        self.problem_path = problem_path
         tokens = self.__scan_tokens(problem_path)
         if type(tokens) is list and tokens.pop(0) == 'define':
             while tokens:
-                pass
+                group = tokens.pop(0)
+                lead = group.pop(0)
+
+                if lead == "problem":
+                    self.__set_problem_name(group)
+                elif lead == ":domain":
+                    self.__check_domain_name(group)
+                elif lead == ":objects":
+                    self.__parse_objects(group)
+                elif lead == ":init":
+                    self.__parse_initial_state(group)
+                elif lead == ":goal":
+                    self.__parse_goal_state(group)
+                elif lead == ":htn":
+                    self.__parse_htn_tag(group)
 
     def name_assigned(self, str):
-        """TODO - Implement name_assigned in hddl parser. Must return true if a given param is already assigned to another action / method /etc"""
+        """TODO - Implement name_assigned in hddl parser.
+        Must return true if a given param is already assigned to another action / method /etc"""
         return False
 
+    def is_goal_empty(self):
+        if self.goal_state == {}:
+            return True
+        return False
+
+    def __check_domain_name(self, name):
+        """Returns True - if param: name is equal to self.domain_name"""
+        if type(name) == list:
+            name = name[0]
+        if name == self.domain_name:
+            return True
+        else:
+            raise NameError("Domain specified in problem file {} ({}). Does not match domain specified in {} ({})"
+                            .format(self.problem_path, name, self.domain_path, self.domain_name))
+
+    """Methods for parsing domains"""
     def __parse_action(self, params):
         action = Action(params, self)
         self.actions.append(action)
 
     def __scan_tokens(self, file_path):
-        with open(file_path,'r') as f:
+        with open(file_path, 'r') as f:
             # Remove single line comments
             str = re.sub(r';.*$', '', f.read(), flags=re.MULTILINE).lower()
         # Tokenize
@@ -86,7 +124,7 @@ class HDDLParser:
 
     def __parse_predicate(self, params):
         for i in params:
-            self.predicates[i[0]](Predicate(params))
+            self.predicates[i[0]] = Predicate(params)
 
     def __parse_method(self, params):
         method = Method(params, self)
@@ -102,3 +140,42 @@ class HDDLParser:
     def __parse_constraints(self, params):
         """TODO - Implement constraints"""
         raise NotImplementedError("Constraints are not supported yet")
+
+    """Methods for parsing problems"""
+    def __set_problem_name(self, name):
+        self.problem_name = name
+
+    def __parse_objects(self, group):
+        """TODO - Implement object Types?"""
+        for ob in group:
+            self.objects.append(ob)
+
+    def __parse_initial_state(self, params):
+        """TODO - check params are valid predicates"""
+        for i in params:
+            if type(i) != list:
+                raise TypeError("{} is not a valid predicate for initial state".format(i))
+            if i[0] in self.initial_state.keys():
+                self.initial_state[i[0]].append(i[1])
+            else:
+                self.initial_state[i[0]] = [i[1]]
+
+    def __parse_goal_state(self, params):
+        """TODO - Implement this"""
+        raise NotImplementedError("Parsing Goal state not yet implemented")
+
+    def __parse_htn_tag(self, params):
+        """TODO - Implement this. Also do tests on this"""
+        while params:
+            lead = params.pop(0)
+
+            if lead == ":subtasks" or lead == ":ordered-subtasks" or lead == ":tasks" or lead == ":ordered-tasks":
+                self.__parse_subtasks_to_execute(params.pop(0))
+            elif lead == ":parameters":
+                raise NotImplementedError("Not implemented yet")
+            else:
+                raise TypeError("Unknown keyword {}".format(lead))
+
+    def __parse_subtasks_to_execute(self, params):
+        """TODO - Do some tests on this"""
+        self.subtasks_to_execute.append(params)
