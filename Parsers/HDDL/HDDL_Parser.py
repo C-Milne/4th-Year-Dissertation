@@ -81,6 +81,16 @@ class HDDLParser:
             return True
         return False
 
+    def get_action(self, action_name):
+        """Return an actions object
+        :params     - action_name : name of object to be returned
+        :returns    - action object : if can be found
+                    - False : otherwise"""
+        for action in self.actions:
+            if action.name == action_name:
+                return action
+        return False
+
     def __check_domain_name(self, name):
         """Returns True - if param: name is equal to self.domain_name"""
         if type(name) == list:

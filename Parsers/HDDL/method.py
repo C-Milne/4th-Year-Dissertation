@@ -11,26 +11,39 @@ class Method:
         self.ordered_subtasks = None
         self.__parse(params)
 
-    def evaluate_preconditions(self, model, params):
+    def evaluate_preconditions(self, model, param_dict):
         """:params  - model : proposed model
                     - params : list of parameters
         :returns    - True : if method can be run on the given model with given parameters
                     - False : Otherwise"""
-        # Check number of params is the amount expected
-        if len(params) != len(self.parameters):
-            return False
-
-        # Map params to self.parameters
-        i = 0
-        param_dict = {}
-        while i < len(self.parameters):
-            param_dict[self.parameters[i]] = params[i]
-            i += 1
-
         # Evaluate preconditions
         for precon in self.preconditions:
             assert type(precon) == Precondition
             return precon.evaluate(model, param_dict)
+
+    def execute(self, model, param_dict, task=None):
+        """TODO - Implement, 'or'; What if all ordered subtasks do NOT go through?"""
+        """Execute this method on the given model
+        :param  - model : to have actions carried out on
+                - task : is the task to be carried out on the model
+                        : Is None is all tasks are to be carried out
+        :warning - This is a recursive function"""
+        if task is None:
+            if self.ordered_subtasks is not None:
+                task = self.ordered_subtasks
+            else:
+                raise NotImplementedError("Support for partial ordered subtasks is not ready yet")
+
+        # Do something
+        if task[0] == "and":
+            tasks_status = [self.execute(model, param_dict, x) for x in task[1:]]
+        elif task[0] == "or":
+            pass
+        else:
+            # Carry out action
+            action = self.parser.get_action(task[0])
+            action.execute(model, [param_dict[x] for x in task[1:]])
+
 
     def __parse(self, params):
         """ TODO - Implement support for :ordering """

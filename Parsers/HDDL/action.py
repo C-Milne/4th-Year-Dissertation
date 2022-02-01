@@ -2,11 +2,42 @@ class Action:
     def __init__(self, params, parser):
         self.parser = parser
         self.name = None
-        self.free_variables = []
+        self.parameters = []
         self.preconditions_predicates = {}
         self.preconditions_forall = []
         self.effect = []
         self.__parse_action(params)
+
+    def execute(self, model, params):
+        """TODO - Implement ; what if there is multiple effects?"""
+        """Execute the changes of this action on the model"""
+        i = 0
+        while i < len(self.effect):
+            if self.effect[i] == "not":
+                val_to_change = self.__get_val_to_change(params, self.effect[i + 1][1])
+                self.__execute_remove(self.effect[i + 1][0], val_to_change, model)
+                i += 1
+            else:
+                # Collection
+                val_to_change = self.__get_val_to_change(params, self.effect[1])
+                self.__execute_add(self.effect[0], val_to_change, model)
+                i += 1
+            i += 1
+        model.add_action([self.name, val_to_change])
+
+    def __execute_remove(self, predicate_identifier, predicate_definition, model):
+        if predicate_definition in model.current_state[predicate_identifier]:
+            model.current_state[predicate_identifier].remove(predicate_definition)
+
+    def __execute_add(self, predicate_identifier, predicate_definition, model):
+        if predicate_identifier not in model.current_state.keys():
+            model.current_state[predicate_identifier] = []
+
+        if predicate_definition not in model.current_state[predicate_identifier]:
+            model.current_state[predicate_identifier].append(predicate_definition)
+
+    def __get_val_to_change(self, params, definition_identifier):
+        return params[self.parameters.index(definition_identifier)]
 
     def __parse_action(self, params):
         i = 0
@@ -34,7 +65,7 @@ class Action:
 
     def __parse_parameters(self, params):
         for i in params:
-            self.__add_free_variable(i)
+            self.__add_parameter(i)
 
     def __parse_precondition(self, params):
         # Check for params is a list
@@ -52,13 +83,13 @@ class Action:
     def __parse_effect(self, params):
         if not type(params) is list:
             raise TypeError("Effect {} is not valid".format(params))
-            self.__add_effect(params)
+        self.__add_effect(params)
 
-    def __add_free_variable(self, v):
+    def __add_parameter(self, v):
         """TODO - Check variable name is not already in use"""
-        if v in self.free_variables:
+        if v in self.parameters:
             raise NameError("Name {} is already defined in action {}".format(v, self.name))
-        self.free_variables.append(v)
+        self.parameters.append(v)
 
     def __add_precondition_forall(self):
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
@@ -68,4 +99,4 @@ class Action:
         self.preconditions_predicates[key] = val
 
     def __add_effect(self, val):
-        self.effect.append(val)
+        self.effect = val

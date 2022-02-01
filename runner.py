@@ -16,6 +16,7 @@ class Runner:
         # Solve
         self.solver = Solver(self.parser)
         self.solver.solve()
+        self.solver.output()
 
     def __parse_domain(self, domain_path):
         # Check for valid suffix
