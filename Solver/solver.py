@@ -49,8 +49,7 @@ class Solver:
         return param_dict
 
     def output(self):
-        """TODO - implement"""
-        print("Actions Taken:")
+        print("\nActions Taken:")
         print(self.initial_model.actions_taken)
 
         print("Final State:")
