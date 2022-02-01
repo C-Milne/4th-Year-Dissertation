@@ -6,23 +6,33 @@ class Runner:
     def __init__(self, domain_path, problem_path):
         # Parse domain
         self.parser = None
+        self.suffix = None
         self.__parse_domain(domain_path)
+        self.__parse_problem(problem_path)
         # Parse problem
         # Solve
         pass
 
     def __parse_domain(self, domain_path):
         # Check for valid suffix
-        suffix = self.__get_suffix(domain_path)
-        if suffix == "hddl":
+        self.suffix = self.__get_suffix(domain_path)
+        if self.suffix == "hddl":
             self.parser = HDDLParser()
-        elif suffix == "jshop":
+        elif self.suffix == "jshop":
             pass
         else:
-            raise TypeError("Unknown domain type ({})".format(suffix))
+            raise TypeError("Unknown descriptor type ({})".format(self.suffix))
         self.parser.parse_domain(domain_path)
 
-    def __get_suffix(self, path):
+    def __parse_problem(self, problem_path):
+        suffix = self.__get_suffix(problem_path)
+        if suffix == self.suffix:
+            self.parser.parse_problem(problem_path)
+        else:
+            raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
+
+    @staticmethod
+    def __get_suffix(path):
         return path[path.rindex(".") + 1:]
 
 

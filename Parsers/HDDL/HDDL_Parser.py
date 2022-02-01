@@ -45,11 +45,13 @@ class HDDLParser:
 
     def parse_problem(self, problem_path):
         """TODO - Implement parse_problem"""
-        pass
+        tokens = self.__scan_tokens(problem_path)
+        if type(tokens) is list and tokens.pop(0) == 'define':
+            while tokens:
+                pass
 
     def name_assigned(self, str):
         """TODO - Implement name_assigned in hddl parser. Must return true if a given param is already assigned to another action / method /etc"""
-        print("TODO: Implement name_assigned")
         return False
 
     def __parse_action(self, params):
