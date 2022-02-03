@@ -95,7 +95,7 @@ class Action:
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
 
     def __add_precondition_predicate(self, key, val):
-        """TODO - Check parameters"""
+        """TODO - Check parameters ; Use precondition class instead"""
         self.preconditions_predicates[key] = val
 
     def __add_effect(self, val):

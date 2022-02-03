@@ -16,6 +16,8 @@ class HDDLTests(unittest.TestCase):
     # Test setting actions / methods with same name
     # Test setting actions / method names after they have already been set
 
+    # Test any other error raising events
+
     # Test :htn :subtasks
 
 

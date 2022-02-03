@@ -81,7 +81,7 @@ class Method:
             self.parameters.append(param)
 
     def __parse_task(self, params):
-        """TODO - Should we check if task is a valid action?"""
+        """TODO - Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
         if self.task is not None:
             raise NameError("Task has already been set for this method")
 

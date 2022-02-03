@@ -107,6 +107,8 @@ class HDDLParser:
         self.actions.append(action)
 
     def __scan_tokens(self, file_path):
+        """ Taken with permission from:
+        https://github.com/pucrs-automated-planning/heuristic-planning/blob/master/pddl/pddl_parser.py"""
         with open(file_path, 'r') as f:
             # Remove single line comments
             str = re.sub(r';.*$', '', f.read(), flags=re.MULTILINE).lower()
