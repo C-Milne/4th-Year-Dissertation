@@ -10,8 +10,8 @@ class HDDLParser:
         self.initial_state = {}
         self.goal_state = {}
         self.objects = []
-        self.actions = []
-        self.methods = []
+        self.actions = {}
+        self.methods = {}
         self.tasks = {}
         self.predicates = {}
         self.types = []
@@ -72,8 +72,11 @@ class HDDLParser:
                     self.__parse_htn_tag(group)
 
     def name_assigned(self, str):
-        """TODO - Implement name_assigned in hddl parser.
-        Must return true if a given param is already assigned to another action / method /etc"""
+        """:param   - str : string being checked
+            :returns    - True : if str is already in use
+                        - False : otherwise"""
+        if str in self.methods.keys() or str in self.tasks.keys() or str in self.actions.keys():
+            return True
         return False
 
     def is_goal_empty(self):
@@ -86,9 +89,10 @@ class HDDLParser:
         :params     - action_name : name of object to be returned
         :returns    - action object : if can be found
                     - False : otherwise"""
-        for action in self.actions:
-            if action.name == action_name:
-                return action
+        try:
+            return self.actions[action_name]
+        except:
+            pass
         return False
 
     def get_task(self, name, *args):
@@ -114,7 +118,7 @@ class HDDLParser:
     """Methods for parsing domains"""
     def __parse_action(self, params):
         action = Action(params, self)
-        self.actions.append(action)
+        self.actions[action.name] = action
 
     def __scan_tokens(self, file_path):
         """ Taken with permission from:
@@ -150,7 +154,7 @@ class HDDLParser:
 
     def __parse_method(self, params):
         method = Method(params, self)
-        self.methods.append(method)
+        self.methods[method.name] = method
 
     def __parse_task(self, params):
         if type(params[0]) == str:

@@ -28,7 +28,7 @@
     )
   )
 
-  (:method swap_ob_2
+  (:method swap_ob_1
     :parameters (?x ?y)
     :task (swap ?x ?y)
     :precondition (and

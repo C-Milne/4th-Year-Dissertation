@@ -49,14 +49,7 @@ class Method:
         i = 0
         while i < len(params):
             if i == 0:
-                if type(params[i]) is str and len(params) % 2 == 1 and params[i][0] != ":":
-                    if not self.parser.name_assigned(params[i]):
-                        self.name = params[i]
-                    else:
-                        raise NameError("Name '{}' is already assigned".format(params[i]))
-                else:
-                    raise SyntaxError("Error with Method name. Must be a string not beginning with ':'."
-                                    "\nPlease check your domain file.")
+                self.__parse_name(params)
             else:
                 if params[i] == ":parameters":
                     i += 1
@@ -75,6 +68,17 @@ class Method:
                     raise TypeError("Unknown token {}".format(params[i]))
 
             i += 1
+
+    def __parse_name(self, params):
+        i = 0
+        if type(params[i]) is str and len(params) % 2 == 1 and params[i][0] != ":":
+            if not self.parser.name_assigned(params[i]):
+                self.name = params[i]
+            else:
+                raise NameError("Name '{}' is already assigned".format(params[i]))
+        else:
+            raise SyntaxError("Error with Method name. Must be a string not beginning with ':'."
+                              "\nPlease check your domain file.")
 
     def __parse_parameters(self, params):
         """TODO - Check parameter name is not already in use"""
@@ -95,7 +99,10 @@ class Method:
         else:
             self.task = self.parser.get_task(params[0])
 
-        self.task.add_method(self)
+        if self.task is None:
+            raise KeyError("Task '{}' is not defined. Please check your domain file.".format(params[0]))
+        else:
+            self.task.add_method(self)
 
     def __parse_precondition(self, params):
         self.preconditions.append(Precondition(params))

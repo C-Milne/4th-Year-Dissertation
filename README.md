@@ -2,13 +2,10 @@
 1. Implement types
 2. Change implementation of executing method on model
    1. Create a new class to handle the execution
-3. Task class
-   1. Link to method objects
-   2. Store tasks in a dictionary in parser
-4. Test with debugger for some example problems
-5. Create basic planner
-6. Get / Create SHOP parser
-7. Combine SHOP parser with established codebase
+3. Test with debugger for some example problems
+4. Create basic planner
+5. Get / Create SHOP parser
+6. Combine SHOP parser with established codebase
 
 
 # Things to Test

@@ -80,10 +80,10 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual(2, len(runner.solver.initial_model.actions_taken))
 
     def test_method_same_name(self):
-        # Test setting actions / methods with same name
+        # Test setting methods with same name
         with self.assertRaises(Exception) as error:
             Runner(self.test_tools_path + "basic_domain_test_1.hddl", self.basic_pb1_path)
-        self.assertEqual("Test", str(error.exception))
+        self.assertEqual("Name 'swap_ob_1' is already assigned", str(error.exception))
 
     def test_modify_method_task(self):
         # Test setting method task after it has already been set
@@ -92,6 +92,7 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual("Task has already been set for method 'have_first'. Please check your domain file.",
                          str(error.exception).replace("\"", ""))
 
+    def test_set_unknown_task_method(self):
         # Test again with task that is not defined at all
         with self.assertRaises(KeyError) as error:
             Runner(self.test_tools_path + "basic_domain_test_3.hddl", self.basic_pb1_path)
@@ -242,6 +243,10 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual(True, result)
 
     # Test actions
+
+    # Test actions with the same name
+
+    # Test method with action name
 
     # Test parameters - 2 ?a's - lists instead of string. - Maybe make a parameter class??
         # Method parameters
