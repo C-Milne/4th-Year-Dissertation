@@ -7,7 +7,8 @@ class Precondition:
         :params     - model : model of current state
                     - param_dict : map of parameters
         :returns    - True if precondition is satisfied
-                    - False if precondition is not satisfied"""
+                    - False if precondition is not satisfied
+        Warning - This is a recursive method"""
         if cons is None:
             cons = self.conditions
 

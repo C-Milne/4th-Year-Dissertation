@@ -1,4 +1,5 @@
 import sys
+import os
 from Parsers.HDDL.HDDL_Parser import HDDLParser
 from Solver.solver import Solver
 
@@ -8,9 +9,13 @@ class Runner:
         # Parse domain
         self.parser = None
         self.suffix = None
+
+        # Check domain file exists
+        self.__check_file_exists(domain_path, "Domain")
         self.__parse_domain(domain_path)
 
         # Parse problem
+        self.__check_file_exists(problem_path, "Problem")
         self.__parse_problem(problem_path)
 
         # Solve
@@ -35,6 +40,13 @@ class Runner:
             self.parser.parse_problem(problem_path)
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
+
+    def __check_file_exists(self, file_path, file_purpose=None):
+        if not os.path.exists(file_path):
+            if file_purpose is None:
+                raise FileNotFoundError("File {} could not be found".format(file_path))
+            else:
+                raise FileNotFoundError("{} file entered could not be found. ({})".format(file_purpose, file_path))
 
     @staticmethod
     def __get_suffix(path):
