@@ -1,8 +1,8 @@
 import unittest
 import os
 from runner import Runner
-
-SHOW_ERROR_MESSAGES = True
+from Parsers.HDDL.precondition import Precondition
+from Solver.model import Model
 
 
 class HDDLTests(unittest.TestCase):
@@ -106,10 +106,145 @@ class HDDLTests(unittest.TestCase):
                          "\nPlease check your domain file.",
                          str(error.exception).replace("\"", ""))
 
-    # Test preconditions
-        # And
-        # Not
-        # Or
+    def test_precondition_and(self):
+        # Test the 'and' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['and', ['have','?x'], ['have','?y'], ['have', '?z']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x":"irn-bru", "?y": "car"}
+
+        # Testing for True
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        # Testing for False
+        state_dict = {'have': ['irn-bru', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+    def test_precondition_or(self):
+        # Test the 'or' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['or', ['have', '?x'], ['have', '?y'], ['have', '?z']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        # Testing for True
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        # Testing for True
+        state_dict = {'have': ['irn-bru', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        state_dict = {'have': ['irn-bru']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        state_dict = {'have': []}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+    def test_precondition_not(self):
+        # Test the 'not' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['not', ['have', '?x']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        # Testing for False
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+        # Testing for True
+        state_dict = {'have': ['ham', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+    # Test precondition with ['and'] - Parsing problem ; do same with not and or
+    def test_precondition_parsing(self):
+        # Testing parsing with blank predicates
+        # Test and
+        precon_list = ['and']
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test or
+        precon_list = ['or']
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test not
+        precon_list = ['not']
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test all 3 at once
+        precon_list = ['and', ['or'], ['not'], ['and']]
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+    def test_precondition_complex(self):
+        # Devise a complex precondition and test it
+        precon_list = ['and',
+                       ['not',
+                            ['and',['have','?y'],['have','?a']]
+                        ],
+                       ['and',
+                            ['have', '?x'], ['or', ['have', '?b'], ['have', '?c']]
+                        ],
+                       ['or',
+                            ['hate','?z'], ['hate', '?d']
+                        ]
+                       ]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car'], 'hate': []}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car", "?a": "bike", "?b": "popcorn", "?c": "crisps", "?d": "dark"}
+
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+        state_dict = {'have': ['ham', 'irn-bru', 'car', 'popcorn'], 'hate': ['dark']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+    # Test actions
+
+    # Test parameters - 2 ?a's
 
     # Test any other error raising events
 

@@ -1,6 +1,7 @@
 class Precondition:
     def __init__(self, params):
-        self.conditions = params
+        self.conditions = []
+        self.__parse(params)
 
     def evaluate(self, model, param_dict, cons=None):
         """Evaluates if precondition is satisfied by the current start
@@ -38,3 +39,7 @@ class Precondition:
                             return True
                         return False
                 return False
+
+    def __parse(self, params):
+        """TODO - Check params is valid"""
+        self.conditions = params
