@@ -1,10 +1,12 @@
+from Parsers.HDDL.precondition import Precondition
+
+
 class Action:
     def __init__(self, params, parser):
         self.parser = parser
         self.name = None
         self.parameters = []
-        self.preconditions_predicates = {}
-        self.preconditions_forall = []
+        self.preconditions = None
         self.effect = []
         self.__parse_action(params)
 
@@ -40,6 +42,7 @@ class Action:
         return params[self.parameters.index(definition_identifier)]
 
     def __parse_action(self, params):
+        """TODO - Checks for name ; Same as method"""
         i = 0
         while i < len(params):
             if i == 0:
@@ -69,16 +72,10 @@ class Action:
 
     def __parse_precondition(self, params):
         # Check for params is a list
-        if not type(params) is list:
-            raise TypeError("Precondition {} is not valid".format(params))
-        i = 0
-
-        if params[i] == 'forall':
-            self.__add_precondition_forall()
+        if self.preconditions is None:
+            self.preconditions = Precondition(params)
         else:
-            # This means the precondition is a predicate (variable)
-            self.__add_precondition_predicate(params[i], params[i + 1])
-            i += 2
+            raise KeyError("Preconditions are already defined for Action {}".format(self.name))
 
     def __parse_effect(self, params):
         if not type(params) is list:
@@ -93,10 +90,6 @@ class Action:
 
     def __add_precondition_forall(self):
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
-
-    def __add_precondition_predicate(self, key, val):
-        """TODO - Check parameters ; Use precondition class instead"""
-        self.preconditions_predicates[key] = val
 
     def __add_effect(self, val):
         self.effect = val

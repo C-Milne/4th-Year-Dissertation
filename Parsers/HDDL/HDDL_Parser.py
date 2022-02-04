@@ -2,6 +2,7 @@ import re
 from Parsers.HDDL.action import Action
 from Parsers.HDDL.method import Method
 from Parsers.HDDL.predicate import Predicate
+from Parsers.HDDL.task import Task
 
 
 class HDDLParser:
@@ -11,7 +12,7 @@ class HDDLParser:
         self.objects = []
         self.actions = []
         self.methods = []
-        self.tasks = []
+        self.tasks = {}
         self.predicates = {}
         self.types = []
         self.requirements = []
@@ -50,7 +51,6 @@ class HDDLParser:
                     raise AttributeError("Unknown tag; {}".format(lead))
 
     def parse_problem(self, problem_path):
-        """TODO - Implement parse_problem"""
         self.problem_path = problem_path
         tokens = self.__scan_tokens(problem_path)
         if type(tokens) is list and tokens.pop(0) == 'define':
@@ -90,6 +90,16 @@ class HDDLParser:
             if action.name == action_name:
                 return action
         return False
+
+    def get_task(self, name, *args):
+        if name in self.tasks.keys():
+            # Compare args
+            task = self.tasks[name]
+            if task.parameters == args[0]:
+                return task
+            else:
+                raise SyntaxError("Parameters Given for Task {} ({}), Do Not Match Parameters on Record ({})"
+                                  .format(name, args[0], task.parameters))
 
     def __check_domain_name(self, name):
         """Returns True - if param: name is equal to self.domain_name"""
@@ -143,7 +153,10 @@ class HDDLParser:
         self.methods.append(method)
 
     def __parse_task(self, params):
-        self.tasks.append(params)
+        if type(params[0]) == str:
+            self.tasks[params[0]] = Task(params)
+        else:
+            raise SyntaxError("Incorrect Definition of Task. A task needs a name.")
 
     def __parse_type(self, params):
         for i in params:

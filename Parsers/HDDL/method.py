@@ -77,6 +77,7 @@ class Method:
             i += 1
 
     def __parse_parameters(self, params):
+        """TODO - Check parameter name is not already in use"""
         for param in params:
             self.parameters.append(param)
 
@@ -89,10 +90,12 @@ class Method:
                 raise KeyError("Task has already been set for method '{}'. Please check your domain file."
                                .format(self.name))
 
-        if type(params) is not list:
-            raise TypeError("Invalid type for task")
+        if len(params) > 1:
+            self.task = self.parser.get_task(params[0], params[1:])
+        else:
+            self.task = self.parser.get_task(params[0])
 
-        self.task = params
+        self.task.add_method(self)
 
     def __parse_precondition(self, params):
         self.preconditions.append(Precondition(params))

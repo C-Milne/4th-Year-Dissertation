@@ -19,20 +19,21 @@ class Solver:
             task_counter += 1
 
     def __execute_task(self, model, task):
+        """TODO - make this use new task class"""
         """Execute a task on a given model
         :params - model: model which the changes need to happen on
                 - task: task to be carried out"""
         # Find methods in which the given task is present
-        for method in self.parser.methods:
-            if method.task[0] == task[0]:
-                # Check if preconditions hold
-                param_dict = self.__generate_param_dict(method, task[1:])
+        for method in self.parser.tasks[task[0]].methods:
+            # Check if preconditions hold
+            param_dict = self.__generate_param_dict(method, task[1:])
 
-                if not method.evaluate_preconditions(model, param_dict):
-                    continue
-                self.__execute_method(model, method, param_dict)
+            if not method.evaluate_preconditions(model, param_dict):
+                continue
+            self.__execute_method(model, method, param_dict)
 
     def __execute_method(self, model, method, param_dict):
+        """TODO - Dont use this - Either do the execution here or create a new class"""
         """At this point the method preconditions have already been checked"""
         method.execute(model, param_dict)
 

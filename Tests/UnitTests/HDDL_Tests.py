@@ -176,7 +176,6 @@ class HDDLTests(unittest.TestCase):
         result = precons.evaluate(model, param_dict)
         self.assertEqual(True, result)
 
-    # Test precondition with ['and'] - Parsing problem ; do same with not and or
     def test_precondition_parsing(self):
         # Testing parsing with blank predicates
         # Test and
@@ -244,7 +243,10 @@ class HDDLTests(unittest.TestCase):
 
     # Test actions
 
-    # Test parameters - 2 ?a's
+    # Test parameters - 2 ?a's - lists instead of string. - Maybe make a parameter class??
+        # Method parameters
+        # Action parameters
+        # Task parameters
 
     # Test any other error raising events
 
