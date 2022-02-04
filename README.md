@@ -12,8 +12,7 @@
 
 
 # Things to Test
-1. Create example with action 'for all' precondition
-2. Create example with action 'for all' effect
-3. methods / actions with the same name
-4. methods with the ":ordering" tag
-5. Test predicate types
+1. Create example with action 'for all' effect
+2. methods / actions with the same name
+3. methods with the ":ordering" tag
+4. Test predicate types

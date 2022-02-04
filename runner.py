@@ -50,7 +50,10 @@ class Runner:
 
     @staticmethod
     def __get_suffix(path):
-        return path[path.rindex(".") + 1:]
+        try:
+            return path[path.rindex(".") + 1:]
+        except ValueError:
+            raise IOError("File type not identified. ({})".format(path))
 
 
 if __name__ == "__main__":

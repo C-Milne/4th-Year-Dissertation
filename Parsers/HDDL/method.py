@@ -44,19 +44,19 @@ class Method:
             action = self.parser.get_action(task[0])
             action.execute(model, [param_dict[x] for x in task[1:]])
 
-
     def __parse(self, params):
         """ TODO - Implement support for :ordering """
         i = 0
         while i < len(params):
             if i == 0:
-                if type(params[i]) is str:
+                if type(params[i]) is str and len(params) % 2 == 1 and params[i][0] != ":":
                     if not self.parser.name_assigned(params[i]):
                         self.name = params[i]
                     else:
                         raise NameError("Name '{}' is already assigned".format(params[i]))
                 else:
-                    raise TypeError("Method name must be a string.")
+                    raise SyntaxError("Error with Method name. Must be a string not beginning with ':'."
+                                    "\nPlease check your domain file.")
             else:
                 if params[i] == ":parameters":
                     i += 1
@@ -83,7 +83,11 @@ class Method:
     def __parse_task(self, params):
         """TODO - Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
         if self.task is not None:
-            raise NameError("Task has already been set for this method")
+            if self.name is None:
+                raise KeyError("Task has already been set for this method")
+            else:
+                raise KeyError("Task has already been set for method '{}'. Please check your domain file."
+                               .format(self.name))
 
         if type(params) is not list:
             raise TypeError("Invalid type for task")
