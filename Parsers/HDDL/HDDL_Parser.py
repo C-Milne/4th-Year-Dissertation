@@ -3,6 +3,7 @@ from Parsers.HDDL.action import Action
 from Parsers.HDDL.method import Method
 from Parsers.HDDL.predicate import Predicate
 from Parsers.HDDL.task import Task
+from Parsers.HDDL.Type import Type
 
 
 class HDDLParser:
@@ -14,7 +15,7 @@ class HDDLParser:
         self.methods = {}
         self.tasks = {}
         self.predicates = {}
-        self.types = []
+        self.types = {}
         self.requirements = []
         self.foralls = []
         self.subtasks_to_execute = []
@@ -92,18 +93,32 @@ class HDDLParser:
         try:
             return self.actions[action_name]
         except:
+            # Could not find action
             pass
         return False
 
     def get_task(self, name, *args):
         if name in self.tasks.keys():
-            # Compare args
+            # Compare parameters given with parameters of task
             task = self.tasks[name]
-            if task.parameters == args[0]:
-                return task
+            if len(args) > 0:
+                if task.compare_params_soft(args):
+                    return task
+                else:
+                    raise SyntaxError("Parameters Given for Task {} ({}), Do Not Match Parameters on Record ({})"
+                                      .format(name, args[0], task.get_parameter_names()))
             else:
-                raise SyntaxError("Parameters Given for Task {} ({}), Do Not Match Parameters on Record ({})"
-                                  .format(name, args[0], task.parameters))
+                # No parameters given
+                if len(task.parameters) == 0:
+                    return task
+                else:
+                    raise SyntaxError("Could not find Task {} with no Parameters.".format(name))
+
+    def get_type(self, name):
+        if name in self.types:
+            return self.types[name]
+        else:
+            return False
 
     def __check_domain_name(self, name):
         """Returns True - if param: name is equal to self.domain_name"""
@@ -158,13 +173,21 @@ class HDDLParser:
 
     def __parse_task(self, params):
         if type(params[0]) == str:
-            self.tasks[params[0]] = Task(params)
+            self.tasks[params[0]] = Task(params, self)
         else:
             raise SyntaxError("Incorrect Definition of Task. A task needs a name.")
 
     def __parse_type(self, params):
-        for i in params:
-            self.types.append(i)
+        """TODO - Implement Type hierarchy"""
+        i = 0
+        l = len(params)
+        while i < l:
+            if i + 1 < l:
+                if params[i + 1] == "-":
+                    raise NotImplementedError("This is not implemented yet")
+
+            self.types[params[i]] = Type(params[i])
+            i += 1
 
     def __parse_constraints(self, params):
         """TODO - Implement constraints"""
@@ -187,7 +210,16 @@ class HDDLParser:
             if i[0] in self.initial_state.keys():
                 self.initial_state[i[0]].append(i[1])
             else:
-                self.initial_state[i[0]] = [i[1]]
+                if len(i) > 1:
+                    self.initial_state[i[0]] = [i[1]]
+                    del i[1]
+                    while len(i) > 2:
+                        self.initial_state[i[0]].append(i[1])
+                        del i[1]
+                elif len(i) == 1:
+                    self.initial_state[i[0]] = True
+                else:
+                    raise NotImplementedError("This case is not implemented")
 
     def __parse_goal_state(self, params):
         """TODO - Implement this"""

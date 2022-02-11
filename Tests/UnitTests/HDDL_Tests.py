@@ -257,6 +257,8 @@ class HDDLTests(unittest.TestCase):
 
     # Test :htn :subtasks
 
+    # Test tasks with multiple types - blocksworld pb1
+
     # Test putting wrong type into things
 
     # Test loading some big domains and count number of actions etc

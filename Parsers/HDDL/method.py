@@ -1,4 +1,5 @@
 from Parsers.HDDL.precondition import Precondition
+from Parsers.HDDL.parameter import Parameter
 
 
 class Method:
@@ -44,6 +45,11 @@ class Method:
             action = self.parser.get_action(task[0])
             action.execute(model, [param_dict[x] for x in task[1:]])
 
+    def get_name(self):
+        if self.name is None:
+            return 'Unknown'
+        return self.name
+
     def __parse(self, params):
         """ TODO - Implement support for :ordering """
         i = 0
@@ -81,9 +87,7 @@ class Method:
                               "\nPlease check your domain file.")
 
     def __parse_parameters(self, params):
-        """TODO - Check parameter name is not already in use"""
-        for param in params:
-            self.parameters.append(param)
+        self.parameters += Parameter.parse_parameter_list(params, self.parser)
 
     def __parse_task(self, params):
         """TODO - Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
@@ -95,7 +99,12 @@ class Method:
                                .format(self.name))
 
         if len(params) > 1:
-            self.task = self.parser.get_task(params[0], params[1:])
+            # Get the parameters required
+            task_params = []
+            for p in params[1:]:
+                task_params.append(self.__get_parameter(p))
+
+            self.task = self.parser.get_task(params[0], task_params)
         else:
             self.task = self.parser.get_task(params[0])
 
@@ -111,3 +120,9 @@ class Method:
         if self.ordered_subtasks is not None:
             raise AttributeError("Ordered subtasks are already set for this method")
         self.ordered_subtasks = params
+
+    def __get_parameter(self, name):
+        for p in self.parameters:
+            if p.name == name:
+                return p
+        raise RuntimeError("Parameter '{}' Not Found In Method '{}'".format(name, self.get_name()))

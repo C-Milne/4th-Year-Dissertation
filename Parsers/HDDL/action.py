@@ -1,4 +1,5 @@
 from Parsers.HDDL.precondition import Precondition
+from Parsers.HDDL.parameter import Parameter
 
 
 class Action:
@@ -83,10 +84,7 @@ class Action:
         self.__add_effect(params)
 
     def __add_parameter(self, v):
-        """TODO - Check variable name is not already in use"""
-        if v in self.parameters:
-            raise NameError("Name {} is already defined in action {}".format(v, self.name))
-        self.parameters.append(v)
+        self.parameters = Parameter.parse_parameter_list(v, self.parser)
 
     def __add_precondition_forall(self):
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
