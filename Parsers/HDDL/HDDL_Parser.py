@@ -222,11 +222,10 @@ class HDDLParser:
                     raise NotImplementedError("This case is not implemented")
 
     def __parse_goal_state(self, params):
-        """TODO - Implement this"""
-        raise NotImplementedError("Parsing Goal state not yet implemented")
+        self.goal_state = params
 
     def __parse_htn_tag(self, params):
-        """TODO - Implement this. Also do tests on this"""
+        """TODO - Do tests on this"""
         while params:
             lead = params.pop(0)
 
@@ -239,4 +238,4 @@ class HDDLParser:
 
     def __parse_subtasks_to_execute(self, params):
         """TODO - Do some tests on this"""
-        self.subtasks_to_execute.append(params)
+        self.subtasks_to_execute = params

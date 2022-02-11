@@ -7,13 +7,12 @@ class Solver:
         self.initial_model = Model(self.parser)
 
     def solve(self):
-        """TODO - implement this"""
-        if self.parser.is_goal_empty():
-            self.__solve_subtasks()
-
-    def __solve_subtasks(self):
         task_counter = 0
         for subT in self.parser.subtasks_to_execute:
+            if subT == "and" or subT == "or":
+                continue
+            
+
             print("SubTask:", task_counter, "-", subT[0], "(" + str(subT[1:]) + ")")
             self.__execute_task(self.initial_model, subT)
             task_counter += 1
