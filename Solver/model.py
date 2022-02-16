@@ -38,12 +38,53 @@ class Model:
                 requirements[p.name] = {"type": p.param_type, "predicates": []}
 
             for p in precon.conditions:
-                if p == "and" or p == "or":
+                if p == "and" or p == "or" or p == "not":
                     continue
                 for v in p[1:]:
+                    while type(v) == list:
+                        v = v[1]
                     requirements[v]["predicates"].append(p[0])
 
             # Can the model satisfy these parameters in current state?
-
+            result = self.__find_satisfying_params(requirements)
+            if not result:
+                continue
+            else:
+                print(result)
 
             print(params)
+
+    def __find_satisfying_params(self, requirements):
+        # Can the model satisfy these parameters in current state?
+        param_dict = {}
+        for required_param_name in requirements:
+            required_param = requirements[required_param_name]
+            # Get objects that satisfy type
+            for i in self.current_state.objects:
+                i = self.current_state.objects[i]
+                if self.__check_object_satifies_parameter(i, required_param):
+                    if required_param_name not in param_dict.keys():
+                        param_dict[required_param_name] = [i]
+                    else:
+                        param_dict[required_param_name].append(i)
+
+        if param_dict == {}:
+            return False
+        return param_dict
+
+    def __check_object_satifies_parameter(self, ob, required_param):
+        if required_param['type'] == ob.type:
+            # Check if object satisfies predicates
+            for pred in required_param['predicates']:
+                pred_indexes = self.current_state.get_indexes(pred)
+                if pred_indexes is None:
+                    return False
+                found = False
+                for index in pred_indexes:
+                    if ob.name in self.current_state.elements[index]:
+                        found = True
+                if not found:
+                    return False
+        else:
+            return False
+        return True

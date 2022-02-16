@@ -6,12 +6,13 @@ from Internal_Representation.Type import Type
 
 
 class Domain:
-    def __init__(self):
+    def __init__(self, problem):
         self.actions = {}
         self.methods = {}
         self.tasks = {}
         self.types = {}
         self.predicates = {}
+        self.problem = problem
 
     def add_action(self, action):
         assert type(action) == Action
@@ -83,3 +84,7 @@ class Domain:
         if str in self.methods.keys() or str in self.tasks.keys() or str in self.actions.keys():
             return True
         return False
+
+    def add_problem(self, problem):
+        self.problem = problem
+

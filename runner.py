@@ -11,8 +11,9 @@ class Runner:
         # Necessary variables
         self.parser = None
         self.suffix = None
-        self.domain = Domain()
-        self.problem = Problem()
+        self.domain = Domain(None)
+        self.problem = Problem(self.domain)
+        self.domain.add_problem(self.problem)
 
         # Parse Domain
         self.__check_file_exists(domain_path, "Domain")
