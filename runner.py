@@ -1,16 +1,20 @@
 import sys
 import os
-from Parsers.HDDL.HDDL_Parser import HDDLParser
+from Parsers.HDDL_Parser import HDDLParser
 from Solver.solver import Solver
+from Internal_Representation.domain import Domain
+from Internal_Representation.problem import Problem
 
 
 class Runner:
     def __init__(self, domain_path, problem_path):
-        # Parse domain
+        # Necessary variables
         self.parser = None
         self.suffix = None
+        self.domain = Domain()
+        self.problem = Problem()
 
-        # Check domain file exists
+        # Parse Domain
         self.__check_file_exists(domain_path, "Domain")
         self.__parse_domain(domain_path)
 
@@ -19,7 +23,7 @@ class Runner:
         self.__parse_problem(problem_path)
 
         # Solve
-        self.solver = Solver(self.parser)
+        self.solver = Solver(self.domain, self.problem)
         self.solver.solve()
         self.solver.output()
 
@@ -27,7 +31,7 @@ class Runner:
         # Check for valid suffix
         self.suffix = self.__get_suffix(domain_path)
         if self.suffix == "hddl":
-            self.parser = HDDLParser()
+            self.parser = HDDLParser(self.domain, self.problem)
         elif self.suffix == "jshop":
             pass
         else:

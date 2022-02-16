@@ -1,8 +1,8 @@
-from Parsers.HDDL.Type import Type
+from Internal_Representation.Type import Type
 
 
 class Parameter:
-    def __init__(self, name, parser, param_type=None):
+    def __init__(self, name, domain, param_type=None):
         self.name = name
         if param_type is None:
             self.param_type = None
@@ -11,7 +11,7 @@ class Parameter:
             self.param_type = Type
         elif type(param_type) == str:
             # Get Type object
-            type_found = parser.get_type(param_type)
+            type_found = domain.get_type(param_type)
             if type_found == False:
                 raise SyntaxError("Type {} Not Found".format(param_type))
             self.param_type = type_found
@@ -19,7 +19,7 @@ class Parameter:
             raise SyntaxError("Type {} is not recognised as a parameter type".format(type(param_type)))
 
     @staticmethod
-    def parse_parameter_list(params, parser):
+    def parse_parameter_list(params, domain):
         """TODO : test this - check parameter name not already in use"""
         """Parses list of parameters and returns a list of parameters"""
         """TODO - test"""
@@ -34,7 +34,7 @@ class Parameter:
                     param_type = params[i + 2]
                     i += 2
             if type(p) == str:
-                param_list.append(Parameter(p, parser, param_type))
+                param_list.append(Parameter(p, domain, param_type))
             else:
                 raise TypeError("Task Parameters Must be a String")
             i += 1

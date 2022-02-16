@@ -1,7 +1,6 @@
 import unittest
-import os
 from runner import Runner
-from Parsers.HDDL.precondition import Precondition
+from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 
 

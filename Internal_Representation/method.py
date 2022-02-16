@@ -1,14 +1,14 @@
-from Parsers.HDDL.precondition import Precondition
-from Parsers.HDDL.parameter import Parameter
+from Internal_Representation.precondition import Precondition
+from Internal_Representation.parameter import Parameter
 
 
 class Method:
-    def __init__(self, params, parser):
-        self.parser = parser
+    def __init__(self, params, domain):
+        self.domain = domain
         self.name = None
         self.task = None
         self.parameters = []
-        self.preconditions = []
+        self.preconditions = None
         self.ordered_subtasks = None
         self.__parse(params)
 
@@ -18,9 +18,16 @@ class Method:
         :returns    - True : if method can be run on the given model with given parameters
                     - False : Otherwise"""
         # Evaluate preconditions
-        for precon in self.preconditions:
-            assert type(precon) == Precondition
-            return precon.evaluate(model, param_dict)
+        if self.preconditions is None:
+            return True
+        assert type(self.preconditions) == Precondition
+        return self.preconditions.evaluate(model, param_dict)
+
+    def get_parameters(self):
+        return self.parameters
+
+    def get_precondition(self):
+        return self.preconditions
 
     def execute(self, model, param_dict, task=None):
         """TODO - Implement, 'or'; What if all ordered subtasks do NOT go through?"""
@@ -78,7 +85,7 @@ class Method:
     def __parse_name(self, params):
         i = 0
         if type(params[i]) is str and len(params) % 2 == 1 and params[i][0] != ":":
-            if not self.parser.name_assigned(params[i]):
+            if not self.domain.name_assigned(params[i]):
                 self.name = params[i]
             else:
                 raise NameError("Name '{}' is already assigned".format(params[i]))
@@ -87,7 +94,7 @@ class Method:
                               "\nPlease check your domain file.")
 
     def __parse_parameters(self, params):
-        self.parameters += Parameter.parse_parameter_list(params, self.parser)
+        self.parameters += Parameter.parse_parameter_list(params, self.domain)
 
     def __parse_task(self, params):
         """TODO - Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
@@ -104,9 +111,9 @@ class Method:
             for p in params[1:]:
                 task_params.append(self.__get_parameter(p))
 
-            self.task = self.parser.get_task(params[0], task_params)
+            self.task = self.domain.get_task(params[0], task_params)
         else:
-            self.task = self.parser.get_task(params[0])
+            self.task = self.domain.get_task(params[0])
 
         if self.task is None:
             raise KeyError("Task '{}' is not defined. Please check your domain file.".format(params[0]))
@@ -114,7 +121,7 @@ class Method:
             self.task.add_method(self)
 
     def __parse_precondition(self, params):
-        self.preconditions.append(Precondition(params))
+        self.preconditions = Precondition(params)
 
     def __parse_subtasks(self, params):
         if self.ordered_subtasks is not None:

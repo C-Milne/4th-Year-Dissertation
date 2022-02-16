@@ -1,10 +1,10 @@
-from Parsers.HDDL.precondition import Precondition
-from Parsers.HDDL.parameter import Parameter
+from Internal_Representation.precondition import Precondition
+from Internal_Representation.parameter import Parameter
 
 
 class Action:
-    def __init__(self, params, parser):
-        self.parser = parser
+    def __init__(self, params, domain):
+        self.domain = domain
         self.name = None
         self.parameters = []
         self.preconditions = None
@@ -48,7 +48,7 @@ class Action:
         while i < len(params):
             if i == 0:
                 if type(params[i]) is str:
-                    if not self.parser.name_assigned(params[i]):
+                    if not self.domain.name_assigned(params[i]):
                         self.name = params[i]
                     else:
                         raise NameError("Name '{}' is already assigned".format(params[i]))
@@ -84,7 +84,7 @@ class Action:
         self.__add_effect(params)
 
     def __add_parameter(self, v):
-        self.parameters = Parameter.parse_parameter_list(v, self.parser)
+        self.parameters = Parameter.parse_parameter_list(v, self.domain)
 
     def __add_precondition_forall(self):
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
