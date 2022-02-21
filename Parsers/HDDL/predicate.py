@@ -5,7 +5,7 @@ class Predicate:
         self.__parse(params)
 
     def __parse(self, params):
-        """TODO - functionality for types"""
+        """TODO - functionality for types ; make parameters Parameter objects"""
         i = 0
         while i < len(params):
             if i == 0:

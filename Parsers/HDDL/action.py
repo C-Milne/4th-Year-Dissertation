@@ -68,10 +68,12 @@ class Action:
             i += 1
 
     def __parse_parameters(self, params):
+        """TODO : Move this to parser"""
         for i in params:
             self.__add_parameter(i)
 
     def __parse_precondition(self, params):
+        """TODO : Move this to parser"""
         # Check for params is a list
         if self.preconditions is None:
             self.preconditions = Precondition(params)
@@ -81,13 +83,10 @@ class Action:
     def __parse_effect(self, params):
         if not type(params) is list:
             raise TypeError("Effect {} is not valid".format(params))
-        self.__add_effect(params)
+        self.effect = params
 
     def __add_parameter(self, v):
         self.parameters = Parameter.parse_parameter_list(v, self.parser)
 
     def __add_precondition_forall(self):
         raise EnvironmentError("Action 'for all' preconditions are not yet implemented.")
-
-    def __add_effect(self, val):
-        self.effect = val

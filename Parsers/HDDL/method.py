@@ -90,7 +90,7 @@ class Method:
         self.parameters += Parameter.parse_parameter_list(params, self.parser)
 
     def __parse_task(self, params):
-        """TODO - Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
+        """TODO - Move this to parser ; Should we check if task is a valid action? ; Create a task class? - could link the method class to the task class"""
         if self.task is not None:
             if self.name is None:
                 raise KeyError("Task has already been set for this method")
@@ -114,9 +114,11 @@ class Method:
             self.task.add_method(self)
 
     def __parse_precondition(self, params):
+        """TODO : Move to parser"""
         self.preconditions.append(Precondition(params))
 
     def __parse_subtasks(self, params):
+        """TODO : Is this an action? - if so make reference to action objects"""
         if self.ordered_subtasks is not None:
             raise AttributeError("Ordered subtasks are already set for this method")
         self.ordered_subtasks = params
