@@ -1,3 +1,5 @@
+import sys
+
 from Internal_Representation.problem import Problem
 """The idea here is that this class will contain all information regarding the current state of the environment"""
 
@@ -28,31 +30,16 @@ class Model:
         self.actions_taken.append(action)
 
     def count_available_unused_modifiers(self):
+        """TODO : The gathering requirements operation could be done once for each method / action at parsing state
+        Test this"""
         # Count which methods are available to the model in the current state
         for i in self.available_modifiers:
-            # Get method parameters and preconditions
-            params = i.get_parameters()
-            precon = i.get_precondition()
-            requirements = {}
-            for p in params:
-                requirements[p.name] = {"type": p.param_type, "predicates": []}
-
-            for p in precon.conditions:
-                if p == "and" or p == "or" or p == "not":
-                    continue
-                for v in p[1:]:
-                    while type(v) == list:
-                        v = v[1]
-                    requirements[v]["predicates"].append(p[0])
-
             # Can the model satisfy these parameters in current state?
-            result = self.__find_satisfying_params(requirements)
+            result = self.__find_satisfying_params(i.requirements)
             if not result:
                 continue
             else:
                 print(result)
-
-            print(params)
 
     def __find_satisfying_params(self, requirements):
         # Can the model satisfy these parameters in current state?

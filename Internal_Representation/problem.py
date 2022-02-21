@@ -1,5 +1,6 @@
 from Internal_Representation.Object import Object
 from Internal_Representation.state import State
+from Internal_Representation.Type import Type
 
 
 class Problem:
@@ -25,3 +26,16 @@ class Problem:
 
     def get_object(self, o):
         return self.objects[o]
+
+    def get_objects_of_type(self, param_type):
+        if type(param_type) == str:
+            param_type = self.domain.get_type(param_type)
+        if type(param_type) != Type:
+            raise TypeError("Unexpected type {}".format(type(param_type)))
+
+        returnObs = []
+        for o in self.objects:
+            if self.objects[o].type == param_type:
+                returnObs.append(self.objects[o])
+
+        return returnObs
