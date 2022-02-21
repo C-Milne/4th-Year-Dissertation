@@ -1,8 +1,11 @@
 import unittest
-import os
 from runner import Runner
-from Parsers.HDDL.precondition import Precondition
+from Internal_Representation.precondition import Precondition
 from Solver.model import Model
+from Parsers.HDDL_Parser import HDDLParser
+from Internal_Representation.method import Method
+from Internal_Representation.domain import Domain
+from Internal_Representation.problem import Problem
 
 
 class HDDLTests(unittest.TestCase):
@@ -12,6 +15,7 @@ class HDDLTests(unittest.TestCase):
         self.basic_pb1_path = "../Examples/Basic/pb1.hddl"
         self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
+        self.blocksworld_path = "../Examples/Blocksworld/"
 
     def test_load_uknown_domain(self):
         # Test loading unknown domain file
@@ -241,6 +245,49 @@ class HDDLTests(unittest.TestCase):
         model = Model(state_dict)
         result = precons.evaluate(model, param_dict)
         self.assertEqual(True, result)
+
+    def test_method_requirements(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_2.hddl")
+
+        # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
+        self.assertEqual(1, 2)
+
+    def test_forall_preconditons(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
+        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1.hddl")
+        method = domain.methods['setdone']
+        model = Model(problem, None, [])
+        result = method.evaluate_preconditions(model, {})
+        self.assertEqual(False, result)
+
+        # Test for True
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
+        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1_1.hddl")
+        method = domain.methods['setdone']
+        model = Model(problem, None, [])
+        result = method.evaluate_preconditions(model, {})
+        self.assertEqual(True, result)
+
+    def test_complex_method_requirements(self):
+        # Test a huge method requirements with and, or, not, and forall
+        self.assertEqual(1, 2)
 
     # Test actions
 

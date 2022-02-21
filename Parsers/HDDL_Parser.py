@@ -1,24 +1,21 @@
 import re
-from Parsers.HDDL.action import Action
-from Parsers.HDDL.method import Method
-from Parsers.HDDL.predicate import Predicate
-from Parsers.HDDL.task import Task
-from Parsers.HDDL.Type import Type
+from Internal_Representation.action import Action
+from Internal_Representation.method import Method
+from Internal_Representation.predicate import Predicate
+from Internal_Representation.task import Task
+from Internal_Representation.Type import Type
+from Internal_Representation.Object import Object
 
 
 class HDDLParser:
-    def __init__(self):
-        self.initial_state = {}
+    def __init__(self, domain, problem):
+        self.domain = domain
+        self.problem = problem
+
         self.goal_state = {}
-        self.objects = []
-        self.actions = {}
-        self.methods = {}
-        self.tasks = {}
-        self.predicates = {}
-        self.types = {}
+
         self.requirements = []
-        self.foralls = []
-        self.subtasks_to_execute = []
+
         self.domain_name = None
         self.domain_path = None
         self.problem_name = None
@@ -72,53 +69,10 @@ class HDDLParser:
                 elif lead == ":htn":
                     self.__parse_htn_tag(group)
 
-    def name_assigned(self, str):
-        """:param   - str : string being checked
-            :returns    - True : if str is already in use
-                        - False : otherwise"""
-        if str in self.methods.keys() or str in self.tasks.keys() or str in self.actions.keys():
-            return True
-        return False
-
     def is_goal_empty(self):
         if self.goal_state == {}:
             return True
         return False
-
-    def get_action(self, action_name):
-        """Return an actions object
-        :params     - action_name : name of object to be returned
-        :returns    - action object : if can be found
-                    - False : otherwise"""
-        try:
-            return self.actions[action_name]
-        except:
-            # Could not find action
-            pass
-        return False
-
-    def get_task(self, name, *args):
-        if name in self.tasks.keys():
-            # Compare parameters given with parameters of task
-            task = self.tasks[name]
-            if len(args) > 0:
-                if task.compare_params_soft(args):
-                    return task
-                else:
-                    raise SyntaxError("Parameters Given for Task {} ({}), Do Not Match Parameters on Record ({})"
-                                      .format(name, args[0], task.get_parameter_names()))
-            else:
-                # No parameters given
-                if len(task.parameters) == 0:
-                    return task
-                else:
-                    raise SyntaxError("Could not find Task {} with no Parameters.".format(name))
-
-    def get_type(self, name):
-        if name in self.types:
-            return self.types[name]
-        else:
-            return False
 
     def __check_domain_name(self, name):
         """Returns True - if param: name is equal to self.domain_name"""
@@ -132,10 +86,11 @@ class HDDLParser:
 
     """Methods for parsing domains"""
     def __parse_action(self, params):
-        action = Action(params, self)
-        self.actions[action.name] = action
+        action = Action(params, self.domain)
+        self.domain.add_action(action)
 
-    def __scan_tokens(self, file_path):
+    @staticmethod
+    def __scan_tokens(file_path):
         """ Taken with permission from:
         https://github.com/pucrs-automated-planning/heuristic-planning/blob/master/pddl/pddl_parser.py"""
         with open(file_path, 'r') as f:
@@ -165,15 +120,15 @@ class HDDLParser:
 
     def __parse_predicate(self, params):
         for i in params:
-            self.predicates[i[0]] = Predicate(params)
+            self.domain.add_predicate(Predicate(params))
 
     def __parse_method(self, params):
-        method = Method(params, self)
-        self.methods[method.name] = method
+        method = Method(params, self.domain)
+        self.domain.add_method(method)
 
     def __parse_task(self, params):
         if type(params[0]) == str:
-            self.tasks[params[0]] = Task(params, self)
+            self.domain.add_task(Task(params, self.domain))
         else:
             raise SyntaxError("Incorrect Definition of Task. A task needs a name.")
 
@@ -186,7 +141,7 @@ class HDDLParser:
                 if params[i + 1] == "-":
                     raise NotImplementedError("This is not implemented yet")
 
-            self.types[params[i]] = Type(params[i])
+            self.domain.add_type(Type(params[i]))
             i += 1
 
     def __parse_constraints(self, params):
@@ -198,28 +153,29 @@ class HDDLParser:
         self.problem_name = name
 
     def __parse_objects(self, group):
-        """TODO - Implement object Types?"""
-        for ob in group:
-            self.objects.append(ob)
+        new_obs = []
+        i = 0
+        while i < len(group):
+            if group[i] != "-":
+                new_obs.append(Object(group[i]))
+                i += 1
+            else:
+                obs_type = group[i + 1]
+                obs_type = self.domain.get_type(obs_type)
+                for j in new_obs:
+                    j.set_type(obs_type)
+                self.problem.add_object(new_obs)
+                new_obs = []
+                i += 2
+        self.problem.add_object(new_obs)
 
     def __parse_initial_state(self, params):
         """TODO - check params are valid predicates"""
         for i in params:
             if type(i) != list:
                 raise TypeError("{} is not a valid predicate for initial state".format(i))
-            if i[0] in self.initial_state.keys():
-                self.initial_state[i[0]].append(i[1])
-            else:
-                if len(i) > 1:
-                    self.initial_state[i[0]] = [i[1]]
-                    del i[1]
-                    while len(i) > 2:
-                        self.initial_state[i[0]].append(i[1])
-                        del i[1]
-                elif len(i) == 1:
-                    self.initial_state[i[0]] = True
-                else:
-                    raise NotImplementedError("This case is not implemented")
+            self.problem.add_to_initial_state(i)
+        print(self)
 
     def __parse_goal_state(self, params):
         self.goal_state = params
@@ -238,4 +194,4 @@ class HDDLParser:
 
     def __parse_subtasks_to_execute(self, params):
         """TODO - Do some tests on this"""
-        self.subtasks_to_execute = params
+        self.problem.add_subtasks_execute(params)

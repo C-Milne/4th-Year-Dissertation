@@ -9,7 +9,7 @@ class Predicate:
         i = 0
         while i < len(params):
             if i == 0:
-                self.name = params[i]
+                self.name = str(params[i])
 
             self.parameters.append(params[i])
             i += 1

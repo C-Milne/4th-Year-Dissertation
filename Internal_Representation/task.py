@@ -1,13 +1,13 @@
-from Parsers.HDDL.parameter import Parameter
+from Internal_Representation.parameter import Parameter
 
 
 class Task:
-    def __init__(self, params, parser):
+    def __init__(self, params, domain):
         self.name = None
         self.parameters = []
         self.parameter_names = []
         self.methods = []
-        self.parser = parser
+        self.domain = domain
         self.__parse(params)
 
     def __parse(self, params):
@@ -26,7 +26,7 @@ class Task:
             i += 1
 
     def __parse_parameters(self, params):
-        self.parameters += Parameter.parse_parameter_list(params, self.parser)
+        self.parameters += Parameter.parse_parameter_list(params, self.domain)
 
     def add_method(self, method):
         self.methods.append(method)
