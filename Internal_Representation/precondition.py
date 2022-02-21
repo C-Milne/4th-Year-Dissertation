@@ -50,6 +50,7 @@ class Precondition:
                 indexes = model.current_state.get_indexes(cons[0])
                 if indexes is None:
                     return False
+
                 for j in indexes:
                     if param_dict[cons[1]].name in model.current_state.elements[j]:
                         return True

@@ -142,9 +142,10 @@ class Method:
     def __prepare_requirements(self):
         for p in self.parameters:
             self.requirements[p.name] = {"type": p.param_type, "predicates": {}}
-        self.__prepare_prelayer = []
-        self.__prepare_requirements_precons()
-        del self.__prepare_prelayer
+        if self.preconditions is not None:
+            self.__prepare_prelayer = []
+            self.__prepare_requirements_precons()
+            del self.__prepare_prelayer
 
     def __prepare_requirements_precons(self, predicates=None):
         i = 0

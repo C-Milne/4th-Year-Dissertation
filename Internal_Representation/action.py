@@ -77,7 +77,7 @@ class Action:
         """TODO : Move this to parser"""
         # Check for params is a list
         if self.preconditions is None:
-            self.preconditions = Precondition(params)
+            self.preconditions = Precondition(params, self.domain)
         else:
             raise KeyError("Preconditions are already defined for Action {}".format(self.name))
 
