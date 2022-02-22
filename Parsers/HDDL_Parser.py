@@ -175,7 +175,6 @@ class HDDLParser:
             if type(i) != list:
                 raise TypeError("{} is not a valid predicate for initial state".format(i))
             self.problem.add_to_initial_state(i)
-        print(self)
 
     def __parse_goal_state(self, params):
         self.goal_state = params
