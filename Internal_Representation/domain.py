@@ -67,8 +67,6 @@ class Domain:
         """TODO : implement for type Task"""
         if type(task) == str:
             task = self.get_task(task)
-        else:
-            raise NotImplementedError("This functionality is not implemented yet")
         return task.methods
 
     def get_type(self, name):
@@ -77,7 +75,23 @@ class Domain:
         else:
             return False
 
+    def get_method(self, method_name):
+        if not method_name in self.methods.keys():
+            return None
+        return self.methods[method_name]
+
+    def get_modifier(self, name):
+        if name in self.methods.keys():
+            return self.methods[name]
+        elif name in self.tasks.keys():
+            return self.tasks[name]
+        elif name in self.actions.keys():
+            return self.actions[name]
+        else:
+            return None
+
     def name_assigned(self, str):
+        """TODO : Test this with all components"""
         """:param   - str : string being checked
             :returns    - True : if str is already in use
                         - False : otherwise"""

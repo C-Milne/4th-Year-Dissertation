@@ -27,32 +27,11 @@ class Method:
     def get_parameters(self):
         return self.parameters
 
+    def get_number_parameters(self):
+        return len(self.parameters)
+
     def get_precondition(self):
         return self.preconditions
-
-    def execute(self, model, param_dict, task=None):
-        """TODO - Implement, 'or'; What if all ordered subtasks do NOT go through?
-        - Move this to new class"""
-        """Execute this method on the given model
-        :param  - model : to have actions carried out on
-                - task : is the task to be carried out on the model
-                        : Is None is all tasks are to be carried out
-        :warning - This is a recursive function"""
-        if task is None:
-            if self.ordered_subtasks is not None:
-                task = self.ordered_subtasks
-            else:
-                raise NotImplementedError("Support for partial ordered subtasks is not ready yet")
-
-        # Do something
-        if task[0] == "and":
-            tasks_status = [self.execute(model, param_dict, x) for x in task[1:]]
-        elif task[0] == "or":
-            pass
-        else:
-            # Carry out action
-            action = self.parser.get_action(task[0])
-            action.execute(model, [param_dict[x] for x in task[1:]])
 
     def get_name(self):
         if self.name is None:

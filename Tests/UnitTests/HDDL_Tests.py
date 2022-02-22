@@ -257,7 +257,7 @@ class HDDLTests(unittest.TestCase):
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
         self.assertEqual(1, 2)
 
-    def test_forall_preconditons(self):
+    def test_forall_preconditions(self):
         domain = Domain(None)
         problem = Problem(domain)
         domain.add_problem(problem)
@@ -302,6 +302,19 @@ class HDDLTests(unittest.TestCase):
         model = Model(problem, None, [domain.methods["unstack-block"]])
         self.assertEqual(1, len(model.ready_modifiers))
         self.assertEqual({'unstack-block':[{'?b': problem.objects['b3']}]}, model.ready_modifiers)
+
+    def test_model_requirement_satisfier_2(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_4.hddl")
+        parser.parse_problem(self.blocksworld_path + "pb1.hddl")
+
+        model = Model(problem, None, [domain.methods["pickup-ready-block"]])
+        self.assertEqual(0, len(model.ready_modifiers))
 
     # Test actions
 

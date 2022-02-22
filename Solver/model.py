@@ -1,6 +1,8 @@
 import sys
 import copy
 from Internal_Representation.problem import Problem
+from Internal_Representation.method import Method
+from Internal_Representation.action import Action
 """The idea here is that this class will contain all information regarding the current state of the environment"""
 
 
@@ -19,6 +21,7 @@ class Model:
         self.num_actions_taken = 0
         self.available_unused_modifiers = 0
         self.ready_modifiers = {}
+        self.__ranking = None
         self.count_available_unused_modifiers()
 
     def __populate_current_state_parser(self, parser):
@@ -30,6 +33,41 @@ class Model:
     def add_action(self, action):
         self.actions_taken.append(action)
 
+    def add_ready_modifier(self, modifier_name, param_dict, index):
+        if type(modifier_name) == list:
+            modifier_name = modifier_name[0]
+
+        if type(modifier_name) == Method or type(modifier_name) == Action:
+            modifier = modifier_name
+        else:
+            modifier = self.solver.domain.get_modifier(modifier_name)
+
+        # Add to available modifiers
+        if not modifier in self.available_modifiers:
+            self.available_modifiers.append(modifier)
+
+        # Add to ready modifiers
+        dict = {}
+        current_keys = list(self.ready_modifiers.keys())
+
+        # Maintain any modifiers already in place
+        for i in range(index):
+            dict = self.__merge_dictionaries(dict, {current_keys[i]: self.ready_modifiers[current_keys[i]]})
+
+        # Add new modifier
+        if type(modifier_name) != str:
+            modifier_name = modifier_name.name
+        dict = self.__merge_dictionaries(dict, {modifier_name: param_dict})
+
+        # Add remaining modifiers
+        for i in range(index, len(current_keys)):
+            dict = self.__merge_dictionaries(dict, {current_keys[i]: self.ready_modifiers[current_keys[i]]})
+        self.ready_modifiers = dict
+
+    def pop_ready_modifier(self):
+        key = list(self.ready_modifiers.keys())[0]
+        del self.ready_modifiers[key]
+
     def count_available_unused_modifiers(self):
         """TODO : Test this"""
         # Count which methods are available to the model in the current state
@@ -40,7 +78,6 @@ class Model:
                 continue
             else:
                 self.__check_proposed_parameters(result, i)
-                print(result)
 
     def __find_satisfying_params(self, modifier):
         """TODO - What about methods with no parameters"""
@@ -49,7 +86,6 @@ class Model:
         for required_param_name in modifier.requirements:
             if required_param_name.startswith('forall-'):
                 result = modifier.evaluate_preconditions(self, {})
-                print(result)
             else:
                 required_param = modifier.requirements[required_param_name]
                 # Get objects that satisfy type
@@ -115,7 +151,12 @@ class Model:
             k = list(param_dict_list.keys())[0]
             for i in param_dict_list[k]:
                 pass_dict = self.__merge_dictionaries(set_param_dict, {k: i})
-                result = modifier.evaluate_preconditions(self, pass_dict)
+
+                if len(pass_dict.keys()) == modifier.get_number_parameters():
+                    result = modifier.evaluate_preconditions(self, pass_dict)
+                else:
+                    result = False
+
                 if result:
                     if modifier.name in self.ready_modifiers:
                         self.ready_modifiers[modifier.name].append(pass_dict)
@@ -127,6 +168,13 @@ class Model:
             del pass_dict[k]
             for i in param_dict_list[k]:
                 self.__check_proposed_parameters(pass_dict, modifier, self.__merge_dictionaries(set_param_dict, {k: i}))
+
+    def set_ranking(self, v):
+        assert type(v) == float or type(v) == int
+        self.__ranking = v
+
+    def get_ranking(self):
+        return self.__ranking
 
     def __merge_dictionaries(self, a, b):
         c = a.copy()
