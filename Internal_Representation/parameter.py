@@ -12,7 +12,7 @@ class Parameter:
         elif type(param_type) == str:
             # Get Type object
             type_found = domain.get_type(param_type)
-            if type_found == False:
+            if type_found is False:
                 raise SyntaxError("Type {} Not Found".format(param_type))
             self.param_type = type_found
         else:

@@ -106,22 +106,24 @@ class Solver:
 
             # Do something
             if task[0] == "and":
-                index = 0
-                model.pop_ready_modifier()
-                for subT in task[1:]:
-                    # Add subtasks to search node available modifiers
-                    # Add subtasks to search node ready modifiers
-                    model.add_ready_modifier(subT, [param_dict], index)
-                    index += 1
-
-                # Add model to search queue
-                self.search_models.add(model)
+                task = task[1:]
             elif task[0] == "or":
                 raise NotImplementedError("This is not implemented")
-            else:
-                raise NotImplementedError("This is not implemented")
+
+            index = 0
+            model.pop_ready_modifier()
+            for subT in task[1:]:
+                # Add subtasks to search node available modifiers
+                # Add subtasks to search node ready modifiers
+                model.add_ready_modifier(subT, [param_dict], index)
+                index += 1
+
+            # Add model to search queue
+            self.search_models.add(model)
+
         elif type(modifier) == Action:
-            raise NotImplementedError("This is not implemented")
+            self.__execute_action(model, modifier, param_dict)
+            print(model)
         elif type(modifier) == Task:
             # Create a new search model with each possible method / action in the space of the task in ready_modifiers
             methods = self.domain.get_task_methods(modifier)
@@ -134,6 +136,49 @@ class Solver:
                 i += 1
         else:
             raise RuntimeError("Something went wrong")
+
+    def __execute_action(self, model, action, params):
+        """TODO - Implement ; what if there is multiple effects?"""
+        """Execute the changes of this action on the model"""
+        i = 0
+        while i < len(action.effect):
+            if action.effect[i] == "and":
+                i += 1
+                continue
+            elif action.effect[i] == "or":
+                raise NotImplementedError("Support for OR subtasks has not been developed")
+
+            if action.effect[i][0] == "not":
+                identifier = action.effect[i][1][0]
+                params = action.effect[i][1][1:]
+                self.__execute_action_remove(identifier, params, model)
+                i += 1
+            else:
+                # Collection
+                identifier = action.effect[i][0]
+                params = action.effect[i][1:]
+                self.__execute_action_add(identifier, params, model)
+                i += 1
+            i += 1
+        model.add_action([action.name, params])
+
+    def __execute_action_remove(self, predicate_identifier, predicate_definitions, model):
+        if len(predicate_definitions) == 0:
+            # Change predicate value
+            if predicate_identifier in model.get_current_state_predicates():
+                # Remove
+                index = model.get_predicate_index(predicate_identifier)
+                print("here")
+        else:
+            if predicate_definitions in model.current_state[predicate_identifier]:
+                model.current_state[predicate_identifier].remove(predicate_definitions)
+
+    def __execute_action_add(self, predicate_identifier, predicate_definitions, model):
+        if predicate_identifier not in model.current_state.keys():
+            model.current_state[predicate_identifier] = []
+
+        if predicate_definitions not in model.current_state[predicate_identifier]:
+            model.current_state[predicate_identifier].append(predicate_definitions)
 
     def __generate_param_dict(self, method, params):
         # Check number of params is the amount expected

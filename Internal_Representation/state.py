@@ -31,3 +31,6 @@ class State:
             return self._index[pred_name]
         else:
             return None
+
+    def get_predicates(self):
+        return self._index.keys()

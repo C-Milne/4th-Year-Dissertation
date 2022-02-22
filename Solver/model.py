@@ -176,6 +176,12 @@ class Model:
     def get_ranking(self):
         return self.__ranking
 
+    def get_current_state_predicates(self):
+        return self.current_state.get_predicates()
+
+    def get_predicate_index(self, name):
+        return self.current_state.get_indexes(name)
+
     def __merge_dictionaries(self, a, b):
         c = a.copy()
         c.update(b)

@@ -24,8 +24,8 @@ class Problem:
     def add_subtasks_execute(self, param):
         self.subtasks_to_execute = param
 
-    def get_object(self, o):
-        return self.objects[o]
+    def get_object(self, name):
+        return self.objects[name]
 
     def get_objects_of_type(self, param_type):
         if type(param_type) == str:
