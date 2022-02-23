@@ -9,7 +9,8 @@ class Method:
         self.task = None
         self.parameters = []
         self.preconditions = None
-        self.ordered_subtasks = None
+        self.subtasks = {}
+        self.ordered_subtasks = []
         self.requirements = {}
         self.__parse(params)
 
@@ -58,6 +59,9 @@ class Method:
                         params[i] == ":tasks":
                     i += 1
                     self.__parse_subtasks(params[i])
+                elif params[i] == ":ordering":
+                    i += 1
+                    self.__order_subtasks(params[i])
                 else:
                     raise TypeError("Unknown token {}".format(params[i]))
 
@@ -108,9 +112,39 @@ class Method:
 
     def __parse_subtasks(self, params):
         """TODO : Is this an action? - if so make reference to action objects"""
-        if self.ordered_subtasks is not None:
+        if len(self.ordered_subtasks) > 1:
             raise AttributeError("Ordered subtasks are already set for this method")
-        self.ordered_subtasks = params
+        for i in params:
+            if i == "and":
+                continue
+            if type(i) == list and len(i) > 1 and type(i[1]) == list:
+                label = i[0]
+                task = i[1]
+                self.subtasks[label] = task
+            else:
+                self.ordered_subtasks.append(i)
+
+    def __order_subtasks(self, params):
+        for i in params:
+            if i == "and":
+                continue
+            assert type(i) == list
+            operator = i[0]     # < or >
+            taskA = self.subtasks[i[1]]
+            taskB = self.subtasks[i[2]]
+            if operator == ">":
+                taskA, taskB = taskB, taskA
+
+            # TaskA comes before taskB
+            if not taskA in self.ordered_subtasks and not taskB in self.ordered_subtasks:
+                self.ordered_subtasks.append(taskA)
+                self.ordered_subtasks.append(taskB)
+            elif not taskA in self.ordered_subtasks:
+                # Get index of taskB
+                taskB_index = self.ordered_subtasks.index(taskB)
+                self.ordered_subtasks.insert(taskB_index, taskA)
+            else:
+                self.ordered_subtasks.append(taskB)
 
     def __get_parameter(self, name):
         for p in self.parameters:

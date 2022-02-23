@@ -1,6 +1,5 @@
 import sys
 import copy
-from Internal_Representation.problem import Problem
 from Internal_Representation.method import Method
 from Internal_Representation.action import Action
 """The idea here is that this class will contain all information regarding the current state of the environment"""
@@ -9,13 +8,13 @@ from Internal_Representation.action import Action
 class Model:
     def __init__(self, intake, solver, modifiers):
         self.current_state = {}
-        if type(intake) == Problem:
+        self.solver = solver
+        if self.solver.check_type_problem(intake):
             self.__populate_current_state_parser(intake)
         elif type(intake) == dict:
             self.__populate_current_state_dict(intake)
         else:
             raise TypeError("Unexpected parameter type {} for intake".format(type(intake)))
-        self.solver = solver
         self.available_modifiers = modifiers
         self.actions_taken = []
         self.num_actions_taken = 0

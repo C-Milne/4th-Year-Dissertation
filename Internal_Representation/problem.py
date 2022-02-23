@@ -1,6 +1,9 @@
 from Internal_Representation.Object import Object
 from Internal_Representation.state import State
 from Internal_Representation.Type import Type
+from Internal_Representation.precondition import Precondition
+from Solver.model import Model
+from Internal_Representation.subtasks import Subtasks
 
 
 class Problem:
@@ -9,6 +12,7 @@ class Problem:
         self.initial_state = State(self)
         self.subtasks_to_execute = []
         self.domain = domain
+        self.goal_conditions = None
 
     def add_object(self, ob):
         if type(ob) == list:
@@ -25,7 +29,10 @@ class Problem:
             self.initial_state.add_element(v[0], v[1:])
 
     def add_subtasks_execute(self, param):
-        self.subtasks_to_execute = param
+        self.subtasks_to_execute = Subtasks(param, self.domain)
+
+    def order_subtasks(self, orderings):
+        self.subtasks_to_execute.order_subtasks(orderings)
 
     def get_object(self, name):
         return self.objects[name]
@@ -42,3 +49,12 @@ class Problem:
                 returnObs.append(self.objects[o])
 
         return returnObs
+
+    def add_goal_conditions(self, cons):
+        assert type(cons) == Precondition
+        self.goal_conditions = cons
+
+    def evaluate_goal(self, model: Model):
+        if self.goal_conditions is None:
+            return None
+        return self.goal_conditions.evaluate(model, self.objects)

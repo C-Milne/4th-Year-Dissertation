@@ -75,6 +75,8 @@ class State:
             self.objects[o] = self.problem.get_object(o)
 
     def get_indexes(self, pred_name):
+        if type(pred_name) != str:
+            print("issue")
         if pred_name in self._index.keys():
             return self._index[pred_name]
         else:

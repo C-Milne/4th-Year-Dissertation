@@ -19,16 +19,13 @@ class Solver:
 
     def solve(self):
         task_counter = 0
-        for subT in self.problem.subtasks_to_execute:
+        for subT in self.problem.subtasks_to_execute.get_tasks():
             if subT == "and" or subT == "or":
                 continue
 
-            print("SubTask:", task_counter, "-", subT[0], "(" + str(subT[1:]) + ")")
-            # Set up search environment
-            if len(subT) == 1:
-                self._unexpanded_tasks = subT
-            else:
-                self._unexpanded_tasks = subT[1]
+            print("SubTask:", task_counter, "-", subT.get_name(), "(" + str(subT.parameters) + ")")
+            # expand subT
+            self._unexpanded_tasks = [subT.task, subT.parameters]
 
             search_result = self.__search()
             if search_result is None:
@@ -41,10 +38,15 @@ class Solver:
         if len(self._unexpanded_tasks) > 0:
             # Expand one at a time
             for new_task in self._unexpanded_tasks:
+                already_set_parameters = None
+                if len(new_task) > 1:
+                    already_set_parameters = new_task[1:]
+                    new_task = new_task[0]
                 expansion = self.domain.get_task_methods(new_task)
                 for new_modifier in expansion:
                     if new_modifier not in self._available_modifiers:
-                        self._available_modifiers.append(new_modifier)
+                        self._available_modifiers.append([new_modifier, already_set_parameters])
+
             self._unexpanded_tasks = []
 
         while True:
@@ -72,11 +74,14 @@ class Solver:
         # Apply modifier to node
         if modifier is not None:
             self.__execute(node, modifier, param_dict)
+            # Check if node is now in goal state
+            if self.problem.evaluate_goal(node):
+                print("FOUND GOAL")
         else:
             return
 
     def __execute_task(self, model, task):
-        """TODO - make this use new task class"""
+        """TODO - make this use new task class ; Is this method still used?"""
         """Execute a task on a given model
         :params - model: model which the changes need to happen on
                 - task: task to be carried out"""
@@ -195,6 +200,11 @@ class Solver:
             param_dict[method.parameters[i]] = params[i]
             i += 1
         return param_dict
+
+    def check_type_problem(self, ob):
+        if ob == self.problem:
+            return True
+        return False
 
     def output(self):
         print("\nActions Taken:")

@@ -5,14 +5,13 @@ from Internal_Representation.predicate import Predicate
 from Internal_Representation.task import Task
 from Internal_Representation.Type import Type
 from Internal_Representation.Object import Object
+from Internal_Representation.precondition import Precondition
 
 
 class HDDLParser:
     def __init__(self, domain, problem):
         self.domain = domain
         self.problem = problem
-
-        self.goal_state = {}
 
         self.requirements = []
 
@@ -133,15 +132,22 @@ class HDDLParser:
             raise SyntaxError("Incorrect Definition of Task. A task needs a name.")
 
     def __parse_type(self, params):
-        """TODO - Implement Type hierarchy"""
         i = 0
         l = len(params)
         while i < l:
             if i + 1 < l:
                 if params[i + 1] == "-":
-                    raise NotImplementedError("This is not implemented yet")
-
-            self.domain.add_type(Type(params[i]))
+                    super_type_name = params[i + 1]
+                    # Check if super type is a registered type
+                    super_type = self.domain.get_type(super_type_name)
+                    if super_type is False:
+                        self.domain.add_type(Type(super_type_name))
+                        super_type = self.domain.get_type(super_type_name)
+                    self.domain.add_type(Type(params[i], super_type))
+                else:
+                    self.domain.add_type(Type(params[i]))
+            else:
+                self.domain.add_type(Type(params[i]))
             i += 1
 
     def __parse_constraints(self, params):
@@ -177,7 +183,9 @@ class HDDLParser:
             self.problem.add_to_initial_state(i)
 
     def __parse_goal_state(self, params):
-        self.goal_state = params
+        if len(params) == 1 and type(params[0]) == list:
+            params = params[0]
+        self.problem.add_goal_conditions(Precondition(params, self.domain)) # Goal state is just a list of conditions to be satisfied
 
     def __parse_htn_tag(self, params):
         """TODO - Do tests on this"""
@@ -187,7 +195,10 @@ class HDDLParser:
             if lead == ":subtasks" or lead == ":ordered-subtasks" or lead == ":tasks" or lead == ":ordered-tasks":
                 self.__parse_subtasks_to_execute(params.pop(0))
             elif lead == ":parameters":
-                raise NotImplementedError("Not implemented yet")
+                if len(params.pop(0)) > 0:
+                    raise NotImplementedError("Not implemented yet")
+            elif lead == ":ordering":
+                self.problem.order_subtasks(params.pop(0))
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
 
