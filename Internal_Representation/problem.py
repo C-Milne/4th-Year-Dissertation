@@ -19,7 +19,10 @@ class Problem:
             self.objects[ob.name] = ob
 
     def add_to_initial_state(self, v):
-        self.initial_state.add_element(v)
+        if len(v) == 1:
+            self.initial_state.add_element(v[0])
+        else:
+            self.initial_state.add_element(v[0], v[1:])
 
     def add_subtasks_execute(self, param):
         self.subtasks_to_execute = param

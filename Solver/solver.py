@@ -67,7 +67,6 @@ class Solver:
         for params in node.ready_modifiers[mod]:
             modifier = self.domain.get_modifier(mod)
             self.__node_expansion(copy.deepcopy(node), modifier, params)
-        print("here")
 
     def __node_expansion(self, node, modifier, param_dict):
         # Apply modifier to node
@@ -123,7 +122,6 @@ class Solver:
 
         elif type(modifier) == Action:
             self.__execute_action(model, modifier, param_dict)
-            print(model)
         elif type(modifier) == Task:
             # Create a new search model with each possible method / action in the space of the task in ready_modifiers
             methods = self.domain.get_task_methods(modifier)
@@ -141,44 +139,50 @@ class Solver:
         """TODO - Implement ; what if there is multiple effects?"""
         """Execute the changes of this action on the model"""
         i = 0
+        effect_conjunction = False
         while i < len(action.effect):
             if action.effect[i] == "and":
                 i += 1
+                effect_conjunction = True
                 continue
             elif action.effect[i] == "or":
                 raise NotImplementedError("Support for OR subtasks has not been developed")
 
             if action.effect[i][0] == "not":
                 identifier = action.effect[i][1][0]
-                params = action.effect[i][1][1:]
-                self.__execute_action_remove(identifier, params, model)
-                i += 1
+                required_params = action.effect[i][1][1:]
+                params_in_use = []
+                for p in required_params:
+                    params_in_use.append(params[p].name)
+                self.__execute_action_remove(identifier, params_in_use, model)
             else:
                 # Collection
-                identifier = action.effect[i][0]
-                params = action.effect[i][1:]
-                self.__execute_action_add(identifier, params, model)
-                i += 1
+                if effect_conjunction:
+                    identifier = action.effect[i][0]
+                    required_params = action.effect[i][1:]
+                else:
+                    identifier = action.effect[0]
+                    required_params = action.effect[1:]
+                    i = len(action.effect)  # Stop the iteration of the loop
+                params_in_use = []
+                for p in required_params:
+                    params_in_use.append(params[p].name)
+                self.__execute_action_add(identifier, params_in_use, model)
             i += 1
         model.add_action([action.name, params])
 
     def __execute_action_remove(self, predicate_identifier, predicate_definitions, model):
         if len(predicate_definitions) == 0:
             # Change predicate value
-            if predicate_identifier in model.get_current_state_predicates():
-                # Remove
-                index = model.get_predicate_index(predicate_identifier)
-                print("here")
+            model.current_state.remove_element(predicate_identifier)
         else:
-            if predicate_definitions in model.current_state[predicate_identifier]:
-                model.current_state[predicate_identifier].remove(predicate_definitions)
+            model.current_state.remove_element(predicate_identifier, predicate_definitions)
 
     def __execute_action_add(self, predicate_identifier, predicate_definitions, model):
-        if predicate_identifier not in model.current_state.keys():
-            model.current_state[predicate_identifier] = []
-
-        if predicate_definitions not in model.current_state[predicate_identifier]:
-            model.current_state[predicate_identifier].append(predicate_definitions)
+        if len(predicate_definitions) == 0:
+            model.current_state.add_element(predicate_identifier)
+        else:
+            model.current_state.add_element(predicate_identifier, predicate_definitions)
 
     def __generate_param_dict(self, method, params):
         # Check number of params is the amount expected
