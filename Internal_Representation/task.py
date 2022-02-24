@@ -73,3 +73,9 @@ class Task:
         self.parameter_names = []
         for p in self.parameters:
             self.parameter_names.append(p.name)
+
+    def get_number_parameters(self):
+        return len(self.parameters)
+
+    def evaluate_preconditions(self, *args):
+        return True

@@ -5,6 +5,7 @@ from Solver.search_queue import SearchQueue
 from Internal_Representation.method import Method
 from Internal_Representation.action import Action
 from Internal_Representation.task import Task
+from Internal_Representation.parameter import Parameter
 
 
 class Solver:
@@ -14,9 +15,6 @@ class Solver:
 
         self.search_models = SearchQueue()
 
-        self._available_modifiers = []
-        self._unexpanded_tasks = []
-
     def solve(self):
         task_counter = 0
         for subT in self.problem.subtasks_to_execute.get_tasks():
@@ -24,8 +22,19 @@ class Solver:
                 continue
 
             print("SubTask:", task_counter, "-", subT.get_name(), "(" + str(subT.parameters) + ")")
+
             # expand subT
-            self._unexpanded_tasks = [subT.task, subT.parameters]
+            self.search_models.clear()
+
+            # If subT has the name of an object as a parameter, get the object
+            new_params = []
+            for p in subT.parameters:
+                if type(p) == str:
+                    new_params.append(self.problem.get_object(p))
+                else:
+                    new_params.append(p)
+
+            self.search_models.add(Model(self.problem, self, subT.task, self.__generate_param_dict(subT.task, new_params)))
 
             search_result = self.__search()
             if search_result is None:
@@ -34,41 +43,26 @@ class Solver:
             task_counter += 1
 
     def __search(self):
-        # Expand unexpanded_tasks
-        if len(self._unexpanded_tasks) > 0:
-            # Expand one at a time
-            for new_task in self._unexpanded_tasks:
-                already_set_parameters = None
-                if len(new_task) > 1:
-                    already_set_parameters = new_task[1:]
-                    new_task = new_task[0]
-                expansion = self.domain.get_task_methods(new_task)
-                for new_modifier in expansion:
-                    if new_modifier not in self._available_modifiers:
-                        self._available_modifiers.append([new_modifier, already_set_parameters])
-
-            self._unexpanded_tasks = []
-
         while True:
             # Search in some direction
-                # Choose model in self.search_models and give it a search direction
-            if len(self.search_models) == 0:
-                self.search_models.add(Model(self.problem, self, self._available_modifiers))
+            # Choose model in self.search_models and give it a search direction
             Node_to_search = self.search_models.pop()
 
             if Node_to_search is not None:
-                self.__search_node(Node_to_search)
+                if len(Node_to_search.ready_modifiers) == 0:
+                    return None
+
+                mod = list(Node_to_search.ready_modifiers.keys())[0]
+                params_list = Node_to_search.ready_modifiers[mod]
+                if type(params_list) == list:
+                    for params in params_list:
+                        modifier = Node_to_search.ready_modifiers_refs[mod]
+                        self.__node_expansion(copy.deepcopy(Node_to_search), modifier, params)
+                elif type(params_list) == dict:
+                    modifier = Node_to_search.ready_modifiers_refs[mod]
+                    self.__node_expansion(copy.deepcopy(Node_to_search), modifier, params_list)
             else:
                 return None
-
-    def __search_node(self, node):
-        if len(node.ready_modifiers) == 0:
-            return None
-
-        mod = list(node.ready_modifiers.keys())[0]
-        for params in node.ready_modifiers[mod]:
-            modifier = self.domain.get_modifier(mod)
-            self.__node_expansion(copy.deepcopy(node), modifier, params)
 
     def __node_expansion(self, node, modifier, param_dict):
         # Apply modifier to node
@@ -79,6 +73,99 @@ class Solver:
                 print("FOUND GOAL")
         else:
             return
+
+    def __find_satisfying_params(self, model, modifier, set_params:dict={}):
+        """TODO - What about methods with no parameters"""
+        # Can the model satisfy these parameters in current state?
+        if type(set_params) == list:
+            set_params = set_params[0]
+        assert type(set_params) == dict
+
+        param_dict = set_params
+
+        if type(modifier) == Task:
+            if len(param_dict) == len(modifier.parameters):
+                keys = list(param_dict.keys())
+                for i in range(len(keys)):
+                    if not self.__check_object_satisfies_parameter(model, param_dict[keys[i]], modifier.parameters[i]):
+                        return False
+                return param_dict
+            else:
+                raise NotImplementedError("This is not implemented")
+        else:
+            for required_param_name in modifier.requirements:
+                if required_param_name.startswith('forall-'):
+                    result = modifier.evaluate_preconditions(model, {})
+                elif required_param_name in param_dict:
+                    continue
+                else:
+                    required_param = modifier.requirements[required_param_name]
+                    # Get objects that satisfy type
+                    for i in model.current_state.objects:
+                        i = model.current_state.objects[i]
+                        if self.__check_object_satisfies_parameter(model, i, required_param):
+                            if required_param_name not in param_dict.keys():
+                                param_dict[required_param_name] = [i]
+                            else:
+                                param_dict[required_param_name].append(i)
+
+            if param_dict == {}:
+                return False
+            return param_dict
+
+    def __check_object_satisfies_parameter(self, model, ob, required_param):
+        if type(required_param) == Parameter:
+            required_param_type = required_param.param_type
+            required_param_predicates = None
+        else:
+            required_param_type = required_param["type"]
+            required_param_predicates = required_param['predicates']
+
+        if required_param_type is not None and required_param_type.name != ob.type.name:
+            return False
+
+        if required_param_predicates is None:
+            return True
+
+        # Check if object satisfies predicates
+        for pred in required_param_predicates:
+            if pred == "and" or pred == "not" or pred == "or":
+                required_param = required_param_predicates[pred]
+                result = []
+                for x in required_param.keys():
+                    r = self.__check_object_satisfies_parameter(model, ob, {'type': None, 'predicates': {x: required_param[x]}})
+                    if type(r) == list:
+                        result += r
+                    else:
+                        result.append(r)
+                if pred == "and":
+                    for i in result:
+                        if i is False:
+                            return False
+                    return True
+                elif pred == "not":
+                    i = 0
+                    while i < len(result):
+                        result[i] = not result[i]
+                        i += 1
+                    return result
+                else:
+                    # pred == or
+                    for i in result:
+                        if i is True:
+                            return True
+                    return False
+            else:
+                indexes = model.current_state.get_indexes(pred)
+                if indexes is None:
+                    return False
+                for index in indexes:
+                    try:
+                        if model.current_state.objects[model.current_state.elements[index][required_param['predicates'][pred]]] == ob:
+                            return True
+                    except IndexError:
+                        continue
+                return False
 
     def __execute_task(self, model, task):
         """TODO - make this use new task class ; Is this method still used?"""
@@ -117,9 +204,18 @@ class Solver:
             index = 0
             model.pop_ready_modifier()
             for subT in task[1:]:
-                # Add subtasks to search node available modifiers
                 # Add subtasks to search node ready modifiers
-                model.add_ready_modifier(subT, [param_dict], index)
+                modifier = self.domain.get_modifier(subT[0])
+                pass_param_dict = {}
+
+                for p in subT[1:]:
+                    if p in param_dict.keys():
+                        pass_param_dict[p] = param_dict[p]
+
+                # Check all the parameters are present
+                if len(pass_param_dict) != len(modifier.parameters):
+                    print("here")
+                model.add_ready_modifier(modifier, pass_param_dict, index)
                 index += 1
 
             # Add model to search queue
@@ -132,10 +228,10 @@ class Solver:
             methods = self.domain.get_task_methods(modifier)
             i = 0
             while i < len(methods):
-                newModel = copy.deepcopy(model)
-                newModel.pop_ready_modifier()
-                newModel.add_ready_modifier(methods[i], [param_dict], 0)
-                self.search_models.add(newModel)
+                # Get options for parameters
+                param_options = self.__find_satisfying_params(model, methods[i], param_dict)
+
+                self.__generate_new_search_models(model, methods[i], param_options)
                 i += 1
         else:
             raise RuntimeError("Something went wrong")
@@ -189,6 +285,32 @@ class Solver:
         else:
             model.current_state.add_element(predicate_identifier, predicate_definitions)
 
+    def __generate_new_search_models(self, existing_model:Model, modifier, param_options:dict, set_params={}):
+        assert type(existing_model) == Model
+        assert type(modifier) == Method or type(modifier) == Action
+        assert type(param_options) == dict
+
+        keys = list(param_options.keys())
+        set_params_keys = list(set_params.keys())
+        for k in keys:
+            if k in set_params_keys:
+                continue
+            elif type(param_options[k]) != list:
+                set_params[k] = param_options[k]
+            elif type(param_options[k]) == list and len(param_options[k]) == 1:
+                set_params[k] = param_options[k][0]
+            else:
+                for option in param_options[k]:
+                    pass_dict = param_options
+                    pass_dict[k] = option
+                    self.__generate_new_search_models(existing_model, modifier, pass_dict, set_params)
+
+        if len(set_params) == len(param_options):
+            newModel = copy.deepcopy(existing_model)
+            newModel.pop_ready_modifier()
+            newModel.add_ready_modifier(modifier, set_params, 0)
+            self.search_models.add(newModel)
+
     def __generate_param_dict(self, method, params):
         # Check number of params is the amount expected
         if len(params) != len(method.parameters):
@@ -197,7 +319,10 @@ class Solver:
         i = 0
         param_dict = {}
         while i < len(method.parameters):
-            param_dict[method.parameters[i]] = params[i]
+            param_name = method.parameters[i]
+            if type(param_name) == Parameter:
+                param_name = param_name.name
+            param_dict[param_name] = params[i]
             i += 1
         return param_dict
 

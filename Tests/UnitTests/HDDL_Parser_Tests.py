@@ -16,6 +16,7 @@ class HDDLTests(unittest.TestCase):
         self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
+        self.rover_path = "../Examples/IPC_Tests/Rover/"
 
     def test_load_uknown_domain(self):
         # Test loading unknown domain file
@@ -289,7 +290,29 @@ class HDDLTests(unittest.TestCase):
         # Test a huge method requirements with and, or, not, and forall
         self.assertEqual(1, 2)
 
+    def test_parameter_parsing(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "rover_domain_test.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
+
+        # Get take-image action
+        action = domain.get_action("take_image")
+        self.assertEqual(5, len(action.parameters))
+        self.assertEqual("?r", action.parameters[0].name)
+        self.assertEqual("rover", action.parameters[0].param_type.name)
+        self.assertEqual("?p", action.parameters[1].name)
+        self.assertEqual("waypoint", action.parameters[1].param_type.name)
+        self.assertEqual("?o", action.parameters[2].name)
+        self.assertEqual("objective", action.parameters[2].param_type.name)
+        self.assertEqual("?i", action.parameters[3].name)
+        self.assertEqual("camera", action.parameters[3].param_type.name)
+        self.assertEqual("?m", action.parameters[4].name)
+        self.assertEqual("mode", action.parameters[4].param_type.name)
 
     # Test actions
 

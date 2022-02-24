@@ -28,5 +28,8 @@ class SearchQueue:
     def pop(self):
         return self.__Q.pop(0)
 
+    def clear(self):
+        self.__Q = []
+
     def __len__(self):
         return len(self.__Q)
