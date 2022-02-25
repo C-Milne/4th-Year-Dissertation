@@ -45,6 +45,24 @@ class Parser:
     def _post_domain_parsing_grounding(self, *args):
         raise NotImplementedError
 
+    def _set_problem_name(self, *args):
+        raise NotImplementedError
+
+    def _check_domain_name(self, *args):
+        raise NotImplementedError
+
+    def _parse_objects(self, *args):
+        raise NotImplementedError
+
+    def _parse_initial_state(self, *args):
+        raise NotImplementedError
+
+    def _parse_goal_state(self, *args):
+        raise NotImplementedError
+
+    def _parse_htn_tag(self, *args):
+        raise NotImplementedError
+
     def _scan_tokens(self, file_path):
         """ Taken with permission from:
         https://github.com/pucrs-automated-planning/heuristic-planning/blob/master/pddl/pddl_parser.py"""

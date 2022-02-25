@@ -82,6 +82,11 @@ class Domain:
         else:
             return None
 
+    def get_predicate(self, name):
+        if not name in self.predicates.keys():
+            return None
+        return self.predicates[name]
+
     def name_assigned(self, str):
         """TODO : Test this with all components"""
         """:param   - str : string being checked

@@ -509,6 +509,23 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual(1, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2].parameters))
         self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2].parameters[0].name)
 
+    def test_parsing_basic_pb1(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
+
+        # Check initial state
+        # Check objects
+        # Check subtasks - must be subtask object - Perhaps we should reference the object in subtask parameters instead of the object name
+        self.assertEqual(1, 2)
+
+    def test_parsing_rover_pb1(self):
+        self.assertEqual(1, 2)
+
     # Test actions
 
     # Test actions with the same name

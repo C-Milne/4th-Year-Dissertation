@@ -8,11 +8,16 @@ from Internal_Representation.subtasks import Subtasks
 
 class Problem:
     def __init__(self, domain):
+        self.name = None
         self.objects = {}
         self.initial_state = State(self)
-        self.subtasks_to_execute = []
+        self.subtasks = None
         self.domain = domain
         self.goal_conditions = None
+
+    def set_name(self, name: str):
+        assert type(name) == str
+        self.name = name
 
     def add_object(self, ob):
         if type(ob) == list:
@@ -28,11 +33,12 @@ class Problem:
         else:
             self.initial_state.add_element(v[0], v[1:])
 
-    def add_subtasks_execute(self, param):
-        self.subtasks_to_execute = Subtasks(param, self.domain)
+    def add_subtasks(self, sub_tasks):
+        assert type(sub_tasks) == Subtasks
+        self.subtasks = sub_tasks
 
     def order_subtasks(self, orderings):
-        self.subtasks_to_execute.order_subtasks(orderings)
+        self.subtasks.order_subtasks(orderings)
 
     def get_object(self, name):
         return self.objects[name]
