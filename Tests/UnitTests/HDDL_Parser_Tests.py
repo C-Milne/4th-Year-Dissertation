@@ -18,7 +18,7 @@ class HDDLTests(unittest.TestCase):
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
 
-    def test_load_uknown_domain(self):
+    def test_load_unknown_domain(self):
         # Test loading unknown domain file
         with self.assertRaises(FileNotFoundError) as error:
             Runner("../Examples/WrongBasic/basic.hddl", self.basic_pb1_path)

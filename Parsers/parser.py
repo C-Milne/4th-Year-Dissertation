@@ -42,6 +42,9 @@ class Parser:
     def _parse_constraint(self, *args):
         raise NotImplementedError
 
+    def _post_domain_parsing_grounding(self, *args):
+        raise NotImplementedError
+
     def _scan_tokens(self, file_path):
         """ Taken with permission from:
         https://github.com/pucrs-automated-planning/heuristic-planning/blob/master/pddl/pddl_parser.py"""

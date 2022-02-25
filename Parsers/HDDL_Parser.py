@@ -9,6 +9,7 @@ from Parsers.parser import Parser
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.effects import Effects
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.modifier import Modifier
 
 
 class HDDLParser(Parser):
@@ -44,6 +45,7 @@ class HDDLParser(Parser):
                     self._parse_constraints(group)
                 else:
                     raise AttributeError("Unknown tag; {}".format(lead))
+        self._post_domain_parsing_grounding()
 
     def parse_problem(self, problem_path):
         self.problem_path = problem_path
@@ -275,6 +277,17 @@ class HDDLParser(Parser):
                         self._requires_grounding.append(subtasks.tasks[len(subtasks) - 1])
                 i += 1
         return subtasks
+
+    def _post_domain_parsing_grounding(self):
+        for item in self._requires_grounding:
+            if type(item) == Subtasks.Subtask:
+                # Make sure item.task is a modifier and not a string
+                if type(item.task) != Modifier and type(item.task) == str:
+                    retrieved = self.domain.get_modifier(item.task)
+                    if not isinstance(retrieved, Modifier):
+                        raise TypeError("No valid modifier found for {}".format(item.task))
+                    item.task = retrieved
+        self._requires_grounding = []
     
     def _scan_tokens(self, file_path):
         return super(HDDLParser, self)._scan_tokens(file_path)

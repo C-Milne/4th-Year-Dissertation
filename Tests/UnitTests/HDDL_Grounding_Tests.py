@@ -6,6 +6,7 @@ from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+from Internal_Representation.modifier import Modifier
 from Solver.solver import Solver
 
 
@@ -17,6 +18,7 @@ class HDDLGroundingTests(unittest.TestCase):
         self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
+        self.rover_path = "../Examples/IPC_Tests/Rover/"
 
     def test_blocksworld_pb1_initial_state(self):
         domain = Domain(None)
@@ -200,7 +202,21 @@ class HDDLGroundingTests(unittest.TestCase):
         # Check that methods corresponding to a task are being stored
         self.assertEqual(1, 2)
 
-    def test_method_grounding(self):
+    def test_method_subtask_grounding(self):
         # Check that method subtasks hold reference to action/task not only string
         # rover domain
-        self.assertEqual(1, 2)
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+
+        method_keys = list(domain.methods.keys())
+        for m in method_keys:
+            subtasks = domain.methods[m].subtasks
+            if subtasks is not None:
+                for t in subtasks.tasks:
+                    print("Method: {}\tSubtask: {}".format(m, t.task))
+                    self.assertIsInstance(t.task, Modifier)
+
