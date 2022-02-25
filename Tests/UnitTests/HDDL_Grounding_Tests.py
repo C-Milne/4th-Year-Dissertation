@@ -199,8 +199,43 @@ class HDDLGroundingTests(unittest.TestCase):
         self.assertEqual(1, 2)
 
     def test_task_method_grounding(self):
-        # Check that methods corresponding to a task are being stored
-        self.assertEqual(1, 2)
+        # Check that methods corresponding to a task are being stored correctly
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+        t = domain.get_task('calibrate_abs')
+        self.assertIn(domain.get_method('m_calibrate_abs_ordering_0'), t.methods)
+
+        t = domain.get_task('empty_store')
+        self.assertIn(domain.get_method('m_empty_store_1_ordering_0'), t.methods)
+        self.assertIn(domain.get_method('m_empty_store_2_ordering_0'), t.methods)
+
+        t = domain.get_task('get_image_data')
+        self.assertIn(domain.get_method('m_get_image_data_ordering_0'), t.methods)
+
+        t = domain.get_task('get_rock_data')
+        self.assertIn(domain.get_method('m_get_rock_data_ordering_0'), t.methods)
+
+        t = domain.get_task('get_soil_data')
+        self.assertIn(domain.get_method('m_get_soil_data_ordering_0'), t.methods)
+
+        t = domain.get_task('navigate_abs')
+        self.assertIn(domain.get_method('m_navigate_abs_1_ordering_0'), t.methods)
+        self.assertIn(domain.get_method('m_navigate_abs_2_ordering_0'), t.methods)
+        self.assertIn(domain.get_method('m_navigate_abs_3_ordering_0'), t.methods)
+        self.assertIn(domain.get_method('m_navigate_abs_4_ordering_0'), t.methods)
+
+        t = domain.get_task('send_image_data')
+        self.assertIn(domain.get_method('m_send_image_data_ordering_0'), t.methods)
+
+        t = domain.get_task('send_rock_data')
+        self.assertIn(domain.get_method('m_send_rock_data_ordering_0'), t.methods)
+
+        t = domain.get_task('send_soil_data')
+        self.assertIn(domain.get_method('m_send_soil_data_ordering_0'), t.methods)
 
     def test_method_subtask_grounding(self):
         # Check that method subtasks hold reference to action/task not only string

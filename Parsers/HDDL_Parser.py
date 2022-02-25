@@ -223,10 +223,11 @@ class HDDLParser(Parser):
                 precon = self._parse_precondition(params[i + 1])
                 i += 1
             elif params[i] == ":task":
+                task_ob = self.domain.get_task(params[i + 1][0])
                 if len(params[i + 1]) == 1:
-                    task = {"task": self.domain.get_task(params[i + 1][0])}
+                    task = {"task": task_ob}
                 else:
-                    task = {"task": self.domain.get_task(params[i + 1][0]), "params": self._parse_parameters(params[i + 1][1:])}
+                    task = {"task": task_ob, "params": self._parse_parameters(params[i + 1][1:])}
                 i += 1
             elif params[i] == ":ordered-subtasks" or params[i] == ":ordered-tasks" or params[i] == ":subtasks" or \
                         params[i] == ":tasks":

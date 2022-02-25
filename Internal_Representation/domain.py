@@ -22,6 +22,8 @@ class Domain:
     def add_method(self, method):
         assert type(method) == Method
         self.methods[method.name] = method
+        if not method.task is None:
+            self._add_method_to_task(method, method.task['task'])
 
     def add_task(self, task):
         assert type(task) == Task
@@ -91,3 +93,8 @@ class Domain:
 
     def add_problem(self, problem):
         self.problem = problem
+
+    def _add_method_to_task(self, method, task):
+        assert type(method) == Method
+        assert type(task) == Task
+        task.add_method(method)
