@@ -1,8 +1,7 @@
 class Precondition:
-    def __init__(self, params, domain):
-        self.conditions = []
-        self.domain = domain
-        self.__parse(params)
+    def __init__(self, cons):
+        assert type(cons) == list
+        self.conditions = cons
 
     def evaluate(self, model, param_dict, cons=None):
         """Evaluates if precondition is satisfied by the current start
@@ -55,7 +54,3 @@ class Precondition:
                     if param_dict[cons[1]].name in model.current_state.elements[j]:
                         return True
                 return False
-
-    def __parse(self, params):
-        """TODO - Check params is valid"""
-        self.conditions = params

@@ -1,8 +1,8 @@
-from Internal_Representation.task import Task
+from Internal_Representation.modifier import Modifier
+from Internal_Representation.parameter import Parameter
 
 
 class Subtasks:
-    """TODO: Use this class in methods"""
     class Subtask:
         def __init__(self, task, parameters=[]):
             self.task = task
@@ -11,25 +11,20 @@ class Subtasks:
         def get_name(self):
             return self.task.name
 
-    def __init__(self, list_of_tasks, domain):
-        assert type(list_of_tasks) == list
+    def __init__(self):
         self.tasks = []
         self.labelled_tasks = {}
-        for i in list_of_tasks:
-            if i == "and":
-                continue
-            if type(i) == list and len(i) > 1 and type(i[1]) == list:
-                label = i[0]
 
-                modifier = domain.get_modifier(i[1][0])
-
-                if len(i[1]) == 1:
-                    subtask = self.Subtask(modifier)
-                else:
-                    subtask = self.Subtask(modifier, i[1][1:])
-                self.labelled_tasks[label] = subtask
-            else:
-                self.tasks.append(i)
+    def add_subtask(self, label, modifier, parameters):
+        assert type(label) == str or label is None
+        assert isinstance(modifier, Modifier) or type(modifier) == str
+        assert type(parameters) == list
+        for p in parameters:
+            assert type(p) == Parameter
+        subtask_to_add = self.Subtask(modifier, parameters)
+        if label is not None:
+            self.labelled_tasks[label] = subtask_to_add
+        self.tasks.append(subtask_to_add)
 
     def order_subtasks(self, orderings):
         ordered_subtasks = []
@@ -57,3 +52,6 @@ class Subtasks:
 
     def get_tasks(self):
         return self.tasks
+
+    def __len__(self):
+        return len(self.tasks)

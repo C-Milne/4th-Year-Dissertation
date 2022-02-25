@@ -1,3 +1,4 @@
+from Internal_Representation.modifier import Modifier
 from Internal_Representation.action import Action
 from Internal_Representation.method import Method
 from Internal_Representation.task import Task
@@ -46,22 +47,11 @@ class Domain:
             pass
         return False
 
-    def get_task(self, name, *args):
+    def get_task(self, name):
         if name in self.tasks.keys():
             # Compare parameters given with parameters of task
-            task = self.tasks[name]
-            if len(args) > 0:
-                if task.compare_params_soft(args):
-                    return task
-                else:
-                    raise SyntaxError("Parameters Given for Task {} ({}), Do Not Match Parameters on Record ({})"
-                                      .format(name, args[0], task.get_parameter_names()))
-            else:
-                # No parameters given
-                if len(task.parameters) == 0:
-                    return task
-                else:
-                    raise SyntaxError("Could not find Task {} with no Parameters.".format(name))
+            return self.tasks[name]
+        return None
 
     def get_task_methods(self, task):
         """TODO : implement for type Task"""
@@ -101,4 +91,3 @@ class Domain:
 
     def add_problem(self, problem):
         self.problem = problem
-

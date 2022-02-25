@@ -44,3 +44,163 @@ class HDDLGroundingTests(unittest.TestCase):
                                                     'on': [3, 4, 5], 'on-table': [2, 7]}
         self.assertEqual(blocksworld_pb1_initial_state, model.current_state.elements)
         self.assertEqual(blocksworld_pb1_initial_state_index, model.current_state._index)
+
+    def test_precondition_complex(self):
+        # Devise a complex precondition and test it
+        precon_list = ['and',
+                       ['not',
+                            ['and',['have','?y'],['have','?a']]
+                        ],
+                       ['and',
+                            ['have', '?x'], ['or', ['have', '?b'], ['have', '?c']]
+                        ],
+                       ['or',
+                            ['hate','?z'], ['hate', '?d']
+                        ]
+                       ]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car'], 'hate': []}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car", "?a": "bike", "?b": "popcorn", "?c": "crisps", "?d": "dark"}
+
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+        state_dict = {'have': ['ham', 'irn-bru', 'car', 'popcorn'], 'hate': ['dark']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+    def test_method_requirements(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_2.hddl")
+
+        # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
+        self.assertEqual(1, 2)
+
+    def test_forall_preconditions(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
+        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1.hddl")
+        method = domain.methods['setdone']
+        model = Model(problem, None, [])
+        result = method.evaluate_preconditions(model, {})
+        self.assertEqual(False, result)
+
+        # Test for True
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
+        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1_1.hddl")
+        method = domain.methods['setdone']
+        model = Model(problem, None, [])
+        result = method.evaluate_preconditions(model, {})
+        self.assertEqual(True, result)
+
+    def test_complex_method_requirements(self):
+        # Test a huge method requirements with and, or, not, and forall
+        self.assertEqual(1, 2)
+
+    def test_precondition_and(self):
+        # Test the 'and' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['and', ['have','?x'], ['have','?y'], ['have', '?z']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x":"irn-bru", "?y": "car"}
+
+        # Testing for True
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        # Testing for False
+        state_dict = {'have': ['irn-bru', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+    def test_precondition_or(self):
+        # Test the 'or' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['or', ['have', '?x'], ['have', '?y'], ['have', '?z']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        # Testing for True
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        # Testing for True
+        state_dict = {'have': ['irn-bru', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        state_dict = {'have': ['irn-bru']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+        state_dict = {'have': []}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+    def test_precondition_not(self):
+        # Test the 'not' functionality for preconditions
+        # Set up precondition object
+        precon_list = ['not', ['have', '?x']]
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        # Testing for False
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(False, result)
+
+        # Testing for True
+        state_dict = {'have': ['ham', 'car']}
+        model = Model(state_dict)
+        result = precons.evaluate(model, param_dict)
+        self.assertEqual(True, result)
+
+    def test_action_requirements(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Rover/domain2.hddl")
+
+        # Check action requirements
+        self.assertEqual(1, 2)
+
+    def test_task_method_grounding(self):
+        # Check that methods corresponding to a task are being stored
+        self.assertEqual(1, 2)
+
+    def test_method_grounding(self):
+        # Check that method subtasks hold reference to action/task not only string
+        # rover domain
+        self.assertEqual(1, 2)

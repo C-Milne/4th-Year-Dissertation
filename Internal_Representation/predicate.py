@@ -1,18 +1,15 @@
+from Internal_Representation.parameter import Parameter
+
+
 class Predicate:
-    def __init__(self, params):
-        self.name = None
-        self.parameters = []
-        self.__parse(params)
-
-    def __parse(self, params):
-        """TODO - functionality for types ; make parameters Parameter objects"""
-        i = 0
-        while i < len(params):
-            if i == 0:
-                self.name = str(params[i])
-
-            self.parameters.append(params[i])
-            i += 1
+    def __init__(self, name, parameters=None):
+        assert type(name) == str
+        self.name = name
+        assert type(parameters) == list or parameters is None
+        if type(parameters) == list:
+            for i in parameters:
+                assert type(i) == Parameter
+        self.parameters = parameters
 
     def __eq__(self, other):
         if self.name == other:

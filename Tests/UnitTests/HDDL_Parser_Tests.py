@@ -112,75 +112,84 @@ class HDDLTests(unittest.TestCase):
                          "\nPlease check your domain file.",
                          str(error.exception).replace("\"", ""))
 
-    def test_precondition_and(self):
-        # Test the 'and' functionality for preconditions
-        # Set up precondition object
-        precon_list = ['and', ['have','?x'], ['have','?y'], ['have', '?z']]
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car']}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x":"irn-bru", "?y": "car"}
+    def test_parsing_types(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        # Testing for True
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Rover/domain1.hddl")
+        self.assertEqual(8, len(domain.types))
 
-        # Testing for False
-        state_dict = {'have': ['irn-bru', 'car']}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(False, result)
+        keys = list(domain.types.keys())
+        self.assertIn('object', keys)
+        self.assertIn('waypoint', keys)
+        self.assertIn('mode', keys)
+        self.assertIn('store', keys)
+        self.assertIn('rover', keys)
+        self.assertIn('camera', keys)
+        self.assertIn('lander', keys)
+        self.assertIn('objective', keys)
 
-    def test_precondition_or(self):
-        # Test the 'or' functionality for preconditions
-        # Set up precondition object
-        precon_list = ['or', ['have', '?x'], ['have', '?y'], ['have', '?z']]
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car']}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+        self.assertEqual(None, domain.types['object'].parent)
+        for k in keys[1:]:
+            self.assertEqual(domain.types['object'], domain.types[k].parent)
 
-        # Testing for True
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
+    def test_parsing_predicates(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        # Testing for True
-        state_dict = {'have': ['irn-bru', 'car']}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Rover/domain1.hddl")
+        self.assertEqual(26, len(domain.predicates))
 
-        state_dict = {'have': ['irn-bru']}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
+        self.assertEqual('at', domain.predicates['at'].name)
+        self.assertEqual('?arg0', domain.predicates['at'].parameters[0].name)
+        self.assertEqual('rover', domain.predicates['at'].parameters[0].type.name)
 
-        state_dict = {'have': []}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(False, result)
+        self.assertEqual('can_traverse', domain.predicates['can_traverse'].name)
+        self.assertEqual('?arg2', domain.predicates['can_traverse'].parameters[2].name)
+        self.assertEqual('waypoint', domain.predicates['can_traverse'].parameters[2].type.name)
 
-    def test_precondition_not(self):
-        # Test the 'not' functionality for preconditions
-        # Set up precondition object
-        precon_list = ['not', ['have', '?x']]
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car']}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+        self.assertEqual('visible_from', domain.predicates['visible_from'].name)
+        self.assertEqual('?arg1', domain.predicates['at'].parameters[1].name)
+        self.assertEqual('waypoint', domain.predicates['at'].parameters[1].type.name)
 
-        # Testing for False
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(False, result)
+    def test_parsing_action(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        # Testing for True
-        state_dict = {'have': ['ham', 'car']}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Rover/domain2.hddl")
+
+        # Check action values
+        self.assertEqual(1, len(domain.actions))
+        self.assertIn('take_image', domain.actions.keys())
+
+        self.assertEqual('take_image', domain.actions['take_image'].name)
+        self.assertEqual(2, len(domain.actions['take_image'].effects.effects))
+        self.assertEqual(True, domain.actions['take_image'].effects.effects[0].negated)
+        self.assertEqual(['?i', '?r'], domain.actions['take_image'].effects.effects[0].parameters)
+        self.assertEqual('calibrated', domain.actions['take_image'].effects.effects[0].predicate)
+        self.assertEqual(False, domain.actions['take_image'].effects.effects[1].negated)
+        self.assertEqual(['?r', '?o', '?m'], domain.actions['take_image'].effects.effects[1].parameters)
+        self.assertEqual('have_image', domain.actions['take_image'].effects.effects[1].predicate)
+
+        self.assertEqual(5, len(domain.actions['take_image'].parameters))
+        self.assertEqual('?r', domain.actions['take_image'].parameters[0].name)
+        self.assertEqual('rover', domain.actions['take_image'].parameters[0].type.name)
+        self.assertEqual('?p', domain.actions['take_image'].parameters[1].name)
+        self.assertEqual('waypoint', domain.actions['take_image'].parameters[1].type.name)
+        self.assertEqual('?o', domain.actions['take_image'].parameters[2].name)
+        self.assertEqual('objective', domain.actions['take_image'].parameters[2].type.name)
+        self.assertEqual('?i', domain.actions['take_image'].parameters[3].name)
+        self.assertEqual('camera', domain.actions['take_image'].parameters[3].type.name)
+        self.assertEqual('?m', domain.actions['take_image'].parameters[4].name)
+        self.assertEqual('mode', domain.actions['take_image'].parameters[4].type.name)
 
     def test_precondition_parsing(self):
         # Testing parsing with blank predicates
@@ -220,76 +229,6 @@ class HDDLTests(unittest.TestCase):
             precons.evaluate(model, param_dict)
         self.assertEqual("Test", str(error.exception))
 
-    def test_precondition_complex(self):
-        # Devise a complex precondition and test it
-        precon_list = ['and',
-                       ['not',
-                            ['and',['have','?y'],['have','?a']]
-                        ],
-                       ['and',
-                            ['have', '?x'], ['or', ['have', '?b'], ['have', '?c']]
-                        ],
-                       ['or',
-                            ['hate','?z'], ['hate', '?d']
-                        ]
-                       ]
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car'], 'hate': []}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car", "?a": "bike", "?b": "popcorn", "?c": "crisps", "?d": "dark"}
-
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(False, result)
-
-        state_dict = {'have': ['ham', 'irn-bru', 'car', 'popcorn'], 'hate': ['dark']}
-        model = Model(state_dict)
-        result = precons.evaluate(model, param_dict)
-        self.assertEqual(True, result)
-
-    def test_method_requirements(self):
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_2.hddl")
-
-        # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
-        self.assertEqual(1, 2)
-
-    def test_forall_preconditions(self):
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        # Test preconditions
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
-        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1.hddl")
-        method = domain.methods['setdone']
-        model = Model(problem, None, [])
-        result = method.evaluate_preconditions(model, {})
-        self.assertEqual(False, result)
-
-        # Test for True
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        # Test preconditions
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_1.hddl")
-        parser.parse_problem(self.test_tools_path + "Blocksworld_test_problem_1_1.hddl")
-        method = domain.methods['setdone']
-        model = Model(problem, None, [])
-        result = method.evaluate_preconditions(model, {})
-        self.assertEqual(True, result)
-
-    def test_complex_method_requirements(self):
-        # Test a huge method requirements with and, or, not, and forall
-        self.assertEqual(1, 2)
-
     def test_parameter_parsing(self):
         domain = Domain(None)
         problem = Problem(domain)
@@ -314,6 +253,73 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual("?m", action.parameters[4].name)
         self.assertEqual("mode", action.parameters[4].param_type.name)
 
+    def test_parsing_tasks(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Rover/domain3.hddl")
+
+        self.assertEqual(9, len(domain.tasks))
+        keys = list(domain.tasks.keys())
+        self.assertIn('calibrate_abs', keys)
+        self.assertIn('empty_store', keys)
+        self.assertIn('get_image_data', keys)
+        self.assertIn('get_rock_data', keys)
+        self.assertIn('get_soil_data', keys)
+        self.assertIn('navigate_abs', keys)
+        self.assertIn('send_image_data', keys)
+        self.assertIn('send_rock_data', keys)
+        self.assertIn('send_soil_data', keys)
+
+        self.assertEqual(2, len(domain.tasks['calibrate_abs'].parameters))
+        self.assertEqual('?rover', domain.tasks['calibrate_abs'].parameters[0].name)
+        self.assertEqual('rover', domain.tasks['calibrate_abs'].parameters[0].type.name)
+        self.assertEqual(3, len(domain.tasks['send_image_data'].parameters))
+        self.assertEqual('?mode', domain.tasks['send_image_data'].parameters[2].name)
+        self.assertEqual('mode', domain.tasks['send_image_data'].parameters[2].type.name)
+
+    def test_parsing_method(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        # Test preconditions
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+
+        # m_empty_store_1_ordering_0 - no subtasks
+        self.assertEqual(13, len(domain.methods))
+        self.assertEqual("m_empty_store_1_ordering_0", domain.methods["m_empty_store_1_ordering_0"].name)
+        self.assertEqual(None, domain.methods["m_empty_store_1_ordering_0"].subtasks)
+        self.assertEqual(domain.get_task("empty_store"), domain.methods["m_empty_store_1_ordering_0"].task['task'])
+        self.assertEqual("?s", domain.methods["m_empty_store_1_ordering_0"].task['params'][0].name)
+        self.assertEqual("?rover", domain.methods["m_empty_store_1_ordering_0"].task['params'][1].name)
+
+        self.assertEqual("m_navigate_abs_4_ordering_0", domain.methods["m_navigate_abs_4_ordering_0"].name)
+        self.assertEqual(4, len(domain.methods["m_navigate_abs_4_ordering_0"].subtasks))
+        self.assertEqual(domain.get_task("navigate_abs"), domain.methods["m_navigate_abs_4_ordering_0"].task['task'])
+        self.assertEqual("?rover", domain.methods["m_navigate_abs_4_ordering_0"].task['params'][0].name)
+        self.assertEqual("?to", domain.methods["m_navigate_abs_4_ordering_0"].task['params'][1].name)
+
+        # Test ordering as well
+        self.assertEqual('navigate', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].task)
+        self.assertEqual("?rover", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[0].name)
+        self.assertEqual("?from", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[1].name)
+        self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[2].name)
+
+        self.assertEqual('visit', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[1].task)
+        self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[1].parameters[0].name)
+
+        self.assertEqual('navigate', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].task)
+        self.assertEqual("?rover", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[0].name)
+        self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[1].name)
+        self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[1].name)
+
+        self.assertEqual('unvisit', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].task)
+        self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].parameters[0].name)
     # Test actions
 
     # Test actions with the same name

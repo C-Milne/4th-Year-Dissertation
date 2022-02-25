@@ -1,14 +1,7 @@
 class Type:
     def __init__(self, name, parent=None):
         """TODO - Implement Type hierarchy"""
+        assert type(name) == str
         self.name = name
-        if parent is None:
-            self.parent = None
-        elif type(parent) == str:
-            # Get Type from string
-            raise NotImplementedError("Not implemented this functionality yet")
-        elif type(parent) == Type:
-            # Parent parameter is passed in as a Type already
-            self.parent = parent
-        else:
-            raise SyntaxError("Unexpected type ({}) in Type definition".format(type(parent)))
+        assert type(parent) == Type or parent is None
+        self.parent = parent

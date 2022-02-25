@@ -1,32 +1,11 @@
 from Internal_Representation.parameter import Parameter
+from Internal_Representation.modifier import Modifier
 
 
-class Task:
-    def __init__(self, params, domain):
-        self.name = None
-        self.parameters = []
-        self.parameter_names = []
+class Task(Modifier):
+    def __init__(self, name, parameters=[]):
+        super().__init__(name, parameters)
         self.methods = []
-        self.domain = domain
-        self.__parse(params)
-
-    def __parse(self, params):
-        i = 0
-        while i < len(params):
-            if i == 0:
-                if type(params[i]) == str:
-                    self.name = params[i]
-                else:
-                    raise SyntaxError("Incorrect Definition of Task. A task needs a name")
-            elif params[i] == ":parameters":
-                i += 1
-                self.__parse_parameters(params[i])
-            else:
-                raise KeyError("Unknown Identifier {} for Task {}".format(params[i], self.name))
-            i += 1
-
-    def __parse_parameters(self, params):
-        self.parameters += Parameter.parse_parameter_list(params, self.domain)
 
     def add_method(self, method):
         self.methods.append(method)
