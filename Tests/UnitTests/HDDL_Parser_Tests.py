@@ -320,6 +320,134 @@ class HDDLTests(unittest.TestCase):
 
         self.assertEqual('unvisit', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].task)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].parameters[0].name)
+
+    def test_parsing_effects(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+
+        self.assertIn('pickup', domain.actions.keys())
+        self.assertEqual(1, len(domain.actions['pickup'].effects.effects))
+        self.assertEqual(False, domain.actions['pickup'].effects.effects[0].negated)
+        self.assertEqual('have', domain.actions['pickup'].effects.effects[0].predicate)
+        self.assertEqual(['?a'], domain.actions['pickup'].effects.effects[0].parameters)
+
+    def test_parsing_effects_2(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+
+        self.assertEqual(2, len(domain.actions['navigate'].effects.effects))
+        self.assertEqual(True, domain.actions['navigate'].effects.effects[0].negated)
+        self.assertEqual('at', domain.actions['navigate'].effects.effects[0].predicate)
+        self.assertEqual(['?x', '?y'], domain.actions['navigate'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['navigate'].effects.effects[1].negated)
+        self.assertEqual('at', domain.actions['navigate'].effects.effects[1].predicate)
+        self.assertEqual(['?x', '?z'], domain.actions['navigate'].effects.effects[1].parameters)
+
+        self.assertEqual(4, len(domain.actions['sample_soil'].effects.effects))
+        self.assertEqual(True, domain.actions['sample_soil'].effects.effects[0].negated)
+        self.assertEqual('empty', domain.actions['sample_soil'].effects.effects[0].predicate)
+        self.assertEqual(['?s'], domain.actions['sample_soil'].effects.effects[0].parameters)
+        self.assertEqual(True, domain.actions['sample_soil'].effects.effects[1].negated)
+        self.assertEqual('at_soil_sample', domain.actions['sample_soil'].effects.effects[1].predicate)
+        self.assertEqual(['?p'], domain.actions['sample_soil'].effects.effects[1].parameters)
+        self.assertEqual(False, domain.actions['sample_soil'].effects.effects[2].negated)
+        self.assertEqual('full', domain.actions['sample_soil'].effects.effects[2].predicate)
+        self.assertEqual(['?s'], domain.actions['sample_soil'].effects.effects[2].parameters)
+        self.assertEqual(False, domain.actions['sample_soil'].effects.effects[3].negated)
+        self.assertEqual('have_soil_analysis', domain.actions['sample_soil'].effects.effects[3].predicate)
+        self.assertEqual(['?x', '?p'], domain.actions['sample_soil'].effects.effects[3].parameters)
+
+        self.assertEqual(4, len(domain.actions['sample_rock'].effects.effects))
+        self.assertEqual(True, domain.actions['sample_rock'].effects.effects[0].negated)
+        self.assertEqual('empty', domain.actions['sample_rock'].effects.effects[0].predicate)
+        self.assertEqual(['?s'], domain.actions['sample_rock'].effects.effects[0].parameters)
+        self.assertEqual(True, domain.actions['sample_rock'].effects.effects[1].negated)
+        self.assertEqual('at_rock_sample', domain.actions['sample_rock'].effects.effects[1].predicate)
+        self.assertEqual(['?p'], domain.actions['sample_rock'].effects.effects[1].parameters)
+        self.assertEqual(False, domain.actions['sample_rock'].effects.effects[2].negated)
+        self.assertEqual('full', domain.actions['sample_rock'].effects.effects[2].predicate)
+        self.assertEqual(['?s'], domain.actions['sample_rock'].effects.effects[2].parameters)
+        self.assertEqual(False, domain.actions['sample_rock'].effects.effects[3].negated)
+        self.assertEqual('have_rock_analysis', domain.actions['sample_rock'].effects.effects[3].predicate)
+        self.assertEqual(['?x', '?p'], domain.actions['sample_rock'].effects.effects[3].parameters)
+
+        self.assertEqual(2, len(domain.actions['drop'].effects.effects))
+        self.assertEqual(True, domain.actions['drop'].effects.effects[0].negated)
+        self.assertEqual('full', domain.actions['drop'].effects.effects[0].predicate)
+        self.assertEqual(['?y'], domain.actions['drop'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['drop'].effects.effects[1].negated)
+        self.assertEqual('empty', domain.actions['drop'].effects.effects[1].predicate)
+        self.assertEqual(['?y'], domain.actions['drop'].effects.effects[1].parameters)
+
+        self.assertEqual(1, len(domain.actions['calibrate'].effects.effects))
+        self.assertEqual(False, domain.actions['calibrate'].effects.effects[0].negated)
+        self.assertEqual('calibrated', domain.actions['calibrate'].effects.effects[0].predicate)
+        self.assertEqual(['?i', '?r'], domain.actions['calibrate'].effects.effects[0].parameters)
+
+        self.assertEqual(2, len(domain.actions['take_image'].effects.effects))
+        self.assertEqual(True, domain.actions['take_image'].effects.effects[0].negated)
+        self.assertEqual('calibrated', domain.actions['take_image'].effects.effects[0].predicate)
+        self.assertEqual(['?i', '?r'], domain.actions['take_image'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['take_image'].effects.effects[1].negated)
+        self.assertEqual('have_image', domain.actions['take_image'].effects.effects[1].predicate)
+        self.assertEqual(['?r', '?o', '?m'], domain.actions['take_image'].effects.effects[1].parameters)
+
+        self.assertEqual(3, len(domain.actions['communicate_soil_data'].effects.effects))
+        self.assertEqual(False, domain.actions['communicate_soil_data'].effects.effects[0].negated)
+        self.assertEqual('channel_free', domain.actions['communicate_soil_data'].effects.effects[0].predicate)
+        self.assertEqual(['?l'], domain.actions['communicate_soil_data'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['communicate_soil_data'].effects.effects[1].negated)
+        self.assertEqual('communicated_soil_data', domain.actions['communicate_soil_data'].effects.effects[1].predicate)
+        self.assertEqual(['?p'], domain.actions['communicate_soil_data'].effects.effects[1].parameters)
+        self.assertEqual(False, domain.actions['communicate_soil_data'].effects.effects[2].negated)
+        self.assertEqual('available', domain.actions['communicate_soil_data'].effects.effects[2].predicate)
+        self.assertEqual(['?r'], domain.actions['communicate_soil_data'].effects.effects[2].parameters)
+
+        self.assertEqual(3, len(domain.actions['communicate_rock_data'].effects.effects))
+        self.assertEqual(False, domain.actions['communicate_rock_data'].effects.effects[0].negated)
+        self.assertEqual('channel_free', domain.actions['communicate_rock_data'].effects.effects[0].predicate)
+        self.assertEqual(['?l'], domain.actions['communicate_rock_data'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['communicate_rock_data'].effects.effects[1].negated)
+        self.assertEqual('communicated_rock_data', domain.actions['communicate_rock_data'].effects.effects[1].predicate)
+        self.assertEqual(['?p'], domain.actions['communicate_rock_data'].effects.effects[1].parameters)
+        self.assertEqual(False, domain.actions['communicate_rock_data'].effects.effects[2].negated)
+        self.assertEqual('available', domain.actions['communicate_rock_data'].effects.effects[2].predicate)
+        self.assertEqual(['?r'], domain.actions['communicate_rock_data'].effects.effects[2].parameters)
+
+        self.assertEqual(3, len(domain.actions['communicate_image_data'].effects.effects))
+        self.assertEqual(False, domain.actions['communicate_image_data'].effects.effects[0].negated)
+        self.assertEqual('channel_free', domain.actions['communicate_image_data'].effects.effects[0].predicate)
+        self.assertEqual(['?l'], domain.actions['communicate_image_data'].effects.effects[0].parameters)
+        self.assertEqual(False, domain.actions['communicate_image_data'].effects.effects[1].negated)
+        self.assertEqual('communicated_image_data', domain.actions['communicate_image_data'].effects.effects[1].predicate)
+        self.assertEqual(['?o', '?m'], domain.actions['communicate_image_data'].effects.effects[1].parameters)
+        self.assertEqual(False, domain.actions['communicate_image_data'].effects.effects[2].negated)
+        self.assertEqual('available', domain.actions['communicate_image_data'].effects.effects[2].predicate)
+        self.assertEqual(['?r'], domain.actions['communicate_image_data'].effects.effects[2].parameters)
+
+        self.assertEqual(1, len(domain.actions['visit'].effects.effects))
+        self.assertEqual(False, domain.actions['visit'].effects.effects[0].negated)
+        self.assertEqual('visited', domain.actions['visit'].effects.effects[0].predicate)
+        self.assertEqual(['?waypoint'], domain.actions['visit'].effects.effects[0].parameters)
+
+        self.assertEqual(1, len(domain.actions['unvisit'].effects.effects))
+        self.assertEqual(True, domain.actions['unvisit'].effects.effects[0].negated)
+        self.assertEqual('visited', domain.actions['unvisit'].effects.effects[0].predicate)
+        self.assertEqual(['?waypoint'], domain.actions['unvisit'].effects.effects[0].parameters)
+
+    def test_parsing_subtasks(self):
+        # Basic
+        # Rover
+        self.assertEqual(1, 2)
+
     # Test actions
 
     # Test actions with the same name

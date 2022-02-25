@@ -15,5 +15,7 @@ class Effects:
                               : False otherwise"""
         assert type(predicate) == str
         assert type(parameters) == list
+        for p in parameters:
+            assert type(p) == str
         assert type(negated) == bool
         self.effects.append(self.Effect(predicate, parameters, negated))

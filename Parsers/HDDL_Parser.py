@@ -47,7 +47,7 @@ class HDDLParser(Parser):
 
     def parse_problem(self, problem_path):
         self.problem_path = problem_path
-        tokens = self.__scan_tokens(problem_path)
+        tokens = self._scan_tokens(problem_path)
         if type(tokens) is list and tokens.pop(0) == 'define':
             while tokens:
                 group = tokens.pop(0)
@@ -161,20 +161,31 @@ class HDDLParser(Parser):
         while i < l:
             negated, predicate_name, parameters = False, None, []
             if params[i] == "and":
-                pass
+                return self._parse_effects(params[1:])
+            elif type(params[i]) == str and params[i] != "not":
+                predicate_name, parameters = __extract_effect_values(params)
+                i += len(params)
+            elif type(params[i]) == list:
+                # [['not', ['at', '?x', '?y']], ['at', '?x', '?z']]
+                if params[i][0] == "not":
+                    negated = True
+                    assert len(params[i]) == 2 and type(params[i][1]) == list
+                    predicate_name, parameters = __extract_effect_values(params[i][1])
+                else:
+                    for v in params[i]:
+                        assert type(v) == str
+                    predicate_name, parameters = __extract_effect_values(params[i])
             else:
-                e = 0
-                while e < len(params[i]):
-                    if params[i][e] == "not":
-                        negated = True
-                        assert type(params[i][e + 1]) == list
-                        predicate_name, parameters = __extract_effect_values(params[i][e+1])
-                        e += 1
-                    else:
-                        predicate_name, parameters = __extract_effect_values(params[i])
-                        e += len(parameters) + 1
-                    e += 1
-                effects.add_effect(predicate_name, parameters, negated)
+                # ['not', ['have', '?a']]
+                if params[i] == "not":
+                    negated = True
+                    assert type(params[i + 1]) == list
+                    predicate_name, parameters = __extract_effect_values(params[i + 1])
+                    i += 1
+                else:
+                    predicate_name, parameters = __extract_effect_values(params[i])
+
+            effects.add_effect(predicate_name, parameters, negated)
             i += 1
         return effects
 
@@ -246,11 +257,17 @@ class HDDLParser(Parser):
                         task_label = params[i][0]
                         task_modifier = params[i][1][0]
 
-                        task_modifier_ob = self.domain.get_modifier(task_modifier)
-                        if not task_modifier_ob is None:
-                            task_modifier = task_modifier_ob
-
                         task_parameters = self._parse_parameters(params[i][1][1:])
+                    elif type(params[i]) == list:
+                        # No task Label
+                        task_modifier = params[i][0]
+                        task_parameters = self._parse_parameters(params[i][1:])
+                    else:
+                        raise SyntaxError("Unrecognised Format {}".format(params))
+
+                    task_modifier_ob = self.domain.get_modifier(task_modifier)
+                    if not task_modifier_ob is None:
+                        task_modifier = task_modifier_ob
                     subtasks.add_subtask(task_label, task_modifier, task_parameters)
 
                     if type(task_modifier) == str:
