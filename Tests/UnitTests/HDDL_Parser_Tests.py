@@ -445,8 +445,69 @@ class HDDLTests(unittest.TestCase):
 
     def test_parsing_subtasks(self):
         # Basic
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+
+        self.assertEqual(2, len(domain.methods['have_first'].subtasks.tasks))
+        self.assertEqual('drop', domain.methods['have_first'].subtasks.tasks[0].task.name)
+        self.assertEqual(1, len(domain.methods['have_first'].subtasks.tasks[0].task.parameters))
+        self.assertEqual('?x', domain.methods['have_first'].subtasks.tasks[0].parameters[0].name)
+        self.assertEqual('pickup', domain.methods['have_first'].subtasks.tasks[1].task.name)
+        self.assertEqual(1, len(domain.methods['have_first'].subtasks.tasks[1].parameters))
+        self.assertEqual('?y', domain.methods['have_first'].subtasks.tasks[1].parameters[0].name)
+
+        self.assertEqual(2, len(domain.methods['have_second'].subtasks.tasks))
+        self.assertEqual('drop', domain.methods['have_second'].subtasks.tasks[0].task.name)
+        self.assertEqual(1, len(domain.methods['have_second'].subtasks.tasks[0].parameters))
+        self.assertEqual('?y', domain.methods['have_second'].subtasks.tasks[0].parameters[0].name)
+        self.assertEqual('pickup', domain.methods['have_second'].subtasks.tasks[1].task.name)
+        self.assertEqual(1, len(domain.methods['have_second'].subtasks.tasks[1].parameters))
+        self.assertEqual('?x', domain.methods['have_second'].subtasks.tasks[1].parameters[0].name)
+
+    def test_parsing_subtasks_2(self):
         # Rover
-        self.assertEqual(1, 2)
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+
+        self.assertEqual(None, domain.methods['m_empty_store_1_ordering_0'].subtasks)
+
+        self.assertEqual(1, len(domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks))
+        self.assertEqual(1, len(domain.methods['m_empty_store_2_ordering_0'].subtasks.labelled_tasks))
+        self.assertEqual(['task0'], list(domain.methods['m_empty_store_2_ordering_0'].subtasks.labelled_tasks.keys()))
+        self.assertEqual(domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0],
+                         domain.methods['m_empty_store_2_ordering_0'].subtasks.labelled_tasks['task0'])
+        self.assertEqual('drop', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].task)
+        self.assertEqual(2, len(domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters))
+        self.assertEqual('?rover', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters[0].name)
+        self.assertEqual('?s', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters[1].name)
+
+        self.assertEqual(3, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks))
+        self.assertEqual(3, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks))
+        self.assertEqual(['task0', 'task1', 'task2'], list(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks.keys()))
+        self.assertEqual(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0],
+                         domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks['task0'])
+        self.assertEqual(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1],
+                         domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks['task1'])
+        self.assertEqual(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2],
+                         domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks['task2'])
+        self.assertEqual('visit', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].task)
+        self.assertEqual(1, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].parameters))
+        self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].parameters[0].name)
+        self.assertEqual('navigate', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].task)
+        self.assertEqual(3, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters))
+        self.assertEqual('?rover', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters[0].name)
+        self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters[1].name)
+        self.assertEqual('?to', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters[2].name)
+        self.assertEqual(1, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2].parameters))
+        self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2].parameters[0].name)
 
     # Test actions
 
