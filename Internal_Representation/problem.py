@@ -4,13 +4,14 @@ from Internal_Representation.Type import Type
 from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.problem_predicate import ProblemPredicate
 
 
 class Problem:
     def __init__(self, domain):
         self.name = None
         self.objects = {}
-        self.initial_state = State(self)
+        self.initial_state = State()
         self.subtasks = None
         self.domain = domain
         self.goal_conditions = None
@@ -28,10 +29,8 @@ class Problem:
             self.objects[ob.name] = ob
 
     def add_to_initial_state(self, v):
-        if len(v) == 1:
-            self.initial_state.add_element(v[0])
-        else:
-            self.initial_state.add_element(v[0], v[1:])
+        assert type(v) == ProblemPredicate
+        self.initial_state.add_element(v)
 
     def add_subtasks(self, sub_tasks):
         assert type(sub_tasks) == Subtasks

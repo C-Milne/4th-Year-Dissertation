@@ -329,7 +329,7 @@ class HDDLParser(Parser):
         for i in params:
             # Create ProblemPredicate
             obs = [self.problem.get_object(x) for x in i[1:]]
-            ProblemPredicate(self.domain.get_predicate(i[0]), obs)
+            self.problem.add_to_initial_state(ProblemPredicate(self.domain.get_predicate(i[0]), obs))
 
     def _parse_htn_tag(self, params):
         while params:

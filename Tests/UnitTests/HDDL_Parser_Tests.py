@@ -6,6 +6,7 @@ from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+from Internal_Representation.parameter import Parameter
 
 
 class HDDLTests(unittest.TestCase):
@@ -519,11 +520,34 @@ class HDDLTests(unittest.TestCase):
         parser.parse_problem(self.basic_pb1_path)
 
         # Check initial state
+        self.assertEqual(1, len(problem.initial_state.elements))
+        self.assertEqual('have', problem.initial_state.elements[0].predicate.name)
+
         # Check objects
+        self.assertEqual(1, len(problem.initial_state.elements[0].objects))
+        self.assertEqual('kiwi', problem.initial_state.elements[0].objects[0].name)
+        self.assertEqual(None, problem.initial_state.elements[0].objects[0].type)
+
         # Check subtasks - must be subtask object - Perhaps we should reference the object in subtask parameters instead of the object name
-        self.assertEqual(1, 2)
+        self.assertEqual(1, len(problem.subtasks.tasks))
+        self.assertEqual('swap', problem.subtasks.tasks[0].task.name)
+        self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
+        self.assertEqual('banjo', problem.subtasks.tasks[0].parameters[0].name)
+        self.assertEqual(None, problem.subtasks.tasks[0].parameters[0].type)
+        self.assertEqual(Parameter, type(problem.subtasks.tasks[0].parameters[0]))
+        self.assertEqual('kiwi', problem.subtasks.tasks[0].parameters[1].name)
+        self.assertEqual(None, problem.subtasks.tasks[0].parameters[1].type)
+        self.assertEqual(Parameter, type(problem.subtasks.tasks[0].parameters[1]))
 
     def test_parsing_rover_pb1(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
+
         self.assertEqual(1, 2)
 
     # Test actions
