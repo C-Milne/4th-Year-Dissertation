@@ -17,3 +17,11 @@ class State:
             self._index[name].append(len(self.elements) - 1)
         else:
             self._index[name] = [len(self.elements) - 1]
+
+    def get_indexes(self, pred_name: str):
+        if type(pred_name) != str:
+            raise TypeError("Parameter 'pred_name' must be a string. Type received: {}".format(type(pred_name)))
+        if pred_name in self._index.keys():
+            return self._index[pred_name]
+        else:
+            return None

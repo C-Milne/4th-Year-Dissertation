@@ -11,7 +11,7 @@ class SearchQueue:
                             "Expected Model got {}".format(type(model)))
 
         # This is where the heuristic value would be calculated
-        ranking = model.num_actions_taken
+        ranking = len(model.actions_taken)
         model.set_ranking(ranking)
 
         added = False

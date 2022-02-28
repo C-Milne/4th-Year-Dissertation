@@ -51,6 +51,13 @@ class Precondition:
                     return False
 
                 for j in indexes:
-                    if param_dict[cons[1]].name in model.current_state.elements[j]:
+                    index = 0
+                    broken = False
+                    for p in cons[1:]:
+                        if param_dict[p] != model.current_state.elements[j].objects[index]:
+                            broken = True
+                            break
+                        index += 1
+                    if not broken:
                         return True
                 return False

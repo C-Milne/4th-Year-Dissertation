@@ -3,7 +3,7 @@ from Internal_Representation.precondition import Precondition
 
 
 class Modifier:
-    def __init__(self, name, parameters, preconditions=None):
+    def __init__(self, name, parameters: list[Parameter], preconditions=None):
         assert type(name) == str
         self.name = name
         assert type(parameters) == list
