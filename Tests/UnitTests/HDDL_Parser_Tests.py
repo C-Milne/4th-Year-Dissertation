@@ -43,7 +43,13 @@ class HDDLTests(unittest.TestCase):
 
     def test_load_known_file(self):
         # Test loading basic domain and basic pb1
-        Runner(self.basic_domain_path, self.basic_pb1_path)
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
 
     def test_load_one_file(self):
         # Test only passing in one file path
@@ -69,47 +75,22 @@ class HDDLTests(unittest.TestCase):
             Runner("TestTools/fakeDomain2", self.basic_pb1_path)
         self.assertEqual("File type not identified. (TestTools/fakeDomain2)", str(error.exception))
 
-    def test_basic_pb1(self):
-        # Test running basic pb1 - Check final state and actions taken
-        runner = Runner(self.basic_domain_path, self.basic_pb1_path)
-
-        # Check number of tasks
-        self.assertEqual(1, len(runner.parser.tasks))
-        # Check number of predicates
-        self.assertEqual(1, len(runner.parser.predicates.keys()))
-        # Check number of actions
-        self.assertEqual(2, len(runner.parser.actions))
-        # Check number of methods
-        self.assertEqual(2, len(runner.parser.methods))
-        # Check state of model after planning
-        self.assertEqual({'have': ['banjo']}, runner.solver.initial_model.current_state)
-        # Check number of steps taken in plan
-        self.assertEqual(2, len(runner.solver.initial_model.actions_taken))
-
-    def test_method_same_name(self):
-        # Test setting methods with same name
-        with self.assertRaises(Exception) as error:
-            Runner(self.test_tools_path + "basic_domain_test_1.hddl", self.basic_pb1_path)
-        self.assertEqual("Name 'swap_ob_1' is already assigned", str(error.exception))
-
-    def test_modify_method_task(self):
-        # Test setting method task after it has already been set
-        with self.assertRaises(KeyError) as error:
-            Runner(self.test_tools_path + "basic_domain_test_2.hddl", self.basic_pb1_path)
-        self.assertEqual("Task has already been set for method 'have_first'. Please check your domain file.",
-                         str(error.exception).replace("\"", ""))
-
     def test_set_unknown_task_method(self):
         # Test again with task that is not defined at all
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+        parser = HDDLParser(domain, problem)
+
         with self.assertRaises(KeyError) as error:
-            Runner(self.test_tools_path + "basic_domain_test_3.hddl", self.basic_pb1_path)
+            parser.parse_domain(self.test_tools_path + "basic/basic_domain_test_3.hddl")
         self.assertEqual("Task 'swap' is not defined. Please check your domain file.",
                          str(error.exception).replace("\"", ""))
 
     def test_method_no_name(self):
         # Define method with no name
         with self.assertRaises(SyntaxError) as error:
-            Runner(self.test_tools_path + "basic_domain_test_4.hddl", self.basic_pb1_path)
+            Runner(self.test_tools_path + "basic/basic_domain_test_4.hddl", self.basic_pb1_path)
         self.assertEqual("Error with Method name. Must be a string not beginning with ':'."
                          "\nPlease check your domain file.",
                          str(error.exception).replace("\"", ""))
@@ -194,42 +175,32 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual('mode', domain.actions['take_image'].parameters[4].type.name)
 
     def test_precondition_parsing(self):
-        # Testing parsing with blank predicates
-        # Test and
-        precon_list = ['and']
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car']}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+        # Basic
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
 
-        # Test or
-        precon_list = ['or']
-        precons = Precondition(precon_list)
+        self.assertEqual(['and', ['have', '?x'], ['not', ['have', '?y']]], domain.methods['have_first'].preconditions.conditions)
+        self.assertEqual(['and', ['have', '?y'], ['not', ['have', '?x']]], domain.methods['have_second'].preconditions.conditions)
+        self.assertEqual(['have', '?a'], domain.actions['drop'].preconditions.conditions)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        # Rover
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        # Test not
-        precon_list = ['not']
-        precons = Precondition(precon_list)
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
-
-        # Test all 3 at once
-        precon_list = ['and', ['or'], ['not'], ['and']]
-        precons = Precondition(precon_list)
-
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        self.assertEqual(['and', ['at', '?r', '?x'], ['at_lander', '?l', '?y'], ['have_soil_analysis', '?r', '?p'],
+                          ['visible', '?x', '?y'], ['available', '?r'], ['channel_free', '?l']],
+                         domain.actions['communicate_soil_data'].preconditions.conditions)
+        self.assertEqual(['and', ['equipped_for_imaging', '?rover'], ['on_board', '?camera', '?rover'],
+                          ['supports', '?camera', '?mode'], ['visible_from', '?objective', '?waypoint']],
+                         domain.methods['m_get_image_data_ordering_0'].preconditions.conditions)
 
     def test_parameter_parsing(self):
         domain = Domain(None)
@@ -245,15 +216,15 @@ class HDDLTests(unittest.TestCase):
         action = domain.get_action("take_image")
         self.assertEqual(5, len(action.parameters))
         self.assertEqual("?r", action.parameters[0].name)
-        self.assertEqual("rover", action.parameters[0].param_type.name)
+        self.assertEqual("rover", action.parameters[0].type.name)
         self.assertEqual("?p", action.parameters[1].name)
-        self.assertEqual("waypoint", action.parameters[1].param_type.name)
+        self.assertEqual("waypoint", action.parameters[1].type.name)
         self.assertEqual("?o", action.parameters[2].name)
-        self.assertEqual("objective", action.parameters[2].param_type.name)
+        self.assertEqual("objective", action.parameters[2].type.name)
         self.assertEqual("?i", action.parameters[3].name)
-        self.assertEqual("camera", action.parameters[3].param_type.name)
+        self.assertEqual("camera", action.parameters[3].type.name)
         self.assertEqual("?m", action.parameters[4].name)
-        self.assertEqual("mode", action.parameters[4].param_type.name)
+        self.assertEqual("mode", action.parameters[4].type.name)
 
     def test_parsing_tasks(self):
         domain = Domain(None)
@@ -307,20 +278,20 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual("?to", domain.methods["m_navigate_abs_4_ordering_0"].task['params'][1].name)
 
         # Test ordering as well
-        self.assertEqual('navigate', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].task)
+        self.assertEqual(domain.actions['navigate'], domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].task)
         self.assertEqual("?rover", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[0].name)
         self.assertEqual("?from", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[1].name)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[0].parameters[2].name)
 
-        self.assertEqual('visit', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[1].task)
+        self.assertEqual(domain.actions['visit'], domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[1].task)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[1].parameters[0].name)
 
-        self.assertEqual('navigate', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].task)
+        self.assertEqual(domain.actions['navigate'], domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].task)
         self.assertEqual("?rover", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[0].name)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[1].name)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[2].parameters[1].name)
 
-        self.assertEqual('unvisit', domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].task)
+        self.assertEqual(domain.actions['unvisit'], domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].task)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].parameters[0].name)
 
     def test_parsing_effects(self):
@@ -486,7 +457,7 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual(['task0'], list(domain.methods['m_empty_store_2_ordering_0'].subtasks.labelled_tasks.keys()))
         self.assertEqual(domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0],
                          domain.methods['m_empty_store_2_ordering_0'].subtasks.labelled_tasks['task0'])
-        self.assertEqual('drop', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].task)
+        self.assertEqual(domain.actions['drop'], domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].task)
         self.assertEqual(2, len(domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters))
         self.assertEqual('?rover', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters[0].name)
         self.assertEqual('?s', domain.methods['m_empty_store_2_ordering_0'].subtasks.tasks[0].parameters[1].name)
@@ -500,10 +471,10 @@ class HDDLTests(unittest.TestCase):
                          domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks['task1'])
         self.assertEqual(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[2],
                          domain.methods['m_navigate_abs_1_ordering_0'].subtasks.labelled_tasks['task2'])
-        self.assertEqual('visit', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].task)
+        self.assertEqual(domain.actions['visit'], domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].task)
         self.assertEqual(1, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].parameters))
         self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[0].parameters[0].name)
-        self.assertEqual('navigate', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].task)
+        self.assertEqual(domain.actions['navigate'], domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].task)
         self.assertEqual(3, len(domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters))
         self.assertEqual('?rover', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters[0].name)
         self.assertEqual('?from', domain.methods['m_navigate_abs_1_ordering_0'].subtasks.tasks[1].parameters[1].name)

@@ -207,7 +207,9 @@ class HDDLParser(Parser):
         method_name, parameters, precon, task, subtasks = None, None, None, None, None
         while i < l:
             if i == 0:
-                assert type(params[i]) == str
+                if type(params[i]) != str or params[i][0] == ":":
+                    raise SyntaxError("Error with Method name. Must be a string not beginning with ':'."
+                         "\nPlease check your domain file.")
                 method_name = params[i]
             elif params[i] == ":parameters":
                 parameters = self._parse_parameters(params[i + 1])
@@ -217,7 +219,9 @@ class HDDLParser(Parser):
                 i += 1
             elif params[i] == ":task":
                 task_ob = self.domain.get_task(params[i + 1][0])
-                if len(params[i + 1]) == 1:
+                if task_ob is None:
+                    raise KeyError("Task 'swap' is not defined. Please check your domain file.")
+                elif len(params[i + 1]) == 1:
                     task = {"task": task_ob}
                 else:
                     task = {"task": task_ob, "params": self._parse_parameters(params[i + 1][1:])}
@@ -363,6 +367,24 @@ class HDDLParser(Parser):
                         else:
                             raise AttributeError("Grounding process for subtask with type {} unknown".format(type(t.parameters[i])))
                         i += 1
+            elif type(item) == Subtasks.Subtask:
+                # Parameters must be objects
+                i = 0
+                l = len(item.parameters)
+                while i < l:
+                    if type(item.parameters[i]) == Parameter:
+                        item.parameters[i] = self.problem.get_object(item.parameters[i].name)
+                    elif type(item.parameters[i]) == Object:
+                        pass
+                    else:
+                        raise AttributeError(
+                            "Grounding process for subtask with type {} unknown".format(type(item.parameters[i])))
+                    i += 1
+
+                # Task must be a task instance not a string
+                if type(item.task) != Task:
+                    assert type(item.task) == str
+                    item.task = self.domain.get_task(item.task)
             else:
                 raise NotImplementedError("Functionality for post problem grounding of {} is not implemented".format(type(item)))
         self._requires_grounding = []

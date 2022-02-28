@@ -165,3 +165,41 @@ class SolvingTests(unittest.TestCase):
                           'on': [1, 2], 'on-table': [0, 4], 'holding': [12]}
         # Check _index dictionary
         self.assertEqual(expected_index, model.current_state._index)
+
+    def test_precondition_evaluation(self):
+        # Testing parsing with blank predicates
+        # Test and
+        precon_list = ['and']
+        precons = Precondition(precon_list)
+        # Set up model
+        state_dict = {'have': ['ham', 'irn-bru', 'car']}
+        model = Model(state_dict)
+        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test or
+        precon_list = ['or']
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test not
+        precon_list = ['not']
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
+
+        # Test all 3 at once
+        precon_list = ['and', ['or'], ['not'], ['and']]
+        precons = Precondition(precon_list)
+
+        with self.assertRaises(SyntaxError) as error:
+            precons.evaluate(model, param_dict)
+        self.assertEqual("Test", str(error.exception))
