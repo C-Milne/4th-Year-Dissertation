@@ -68,6 +68,7 @@ class HDDLParser(Parser):
                     self._parse_goal_state(group)
                 elif lead == ":htn":
                     self._parse_htn_tag(group)
+        self._post_problem_parsing_grounding()
 
     """Methods for parsing domains"""
     def _parse_type(self, params):
@@ -338,8 +339,33 @@ class HDDLParser(Parser):
             if lead == ":subtasks" or lead == ":ordered-subtasks" or lead == ":tasks" or lead == ":ordered-tasks":
                 subtasks = self._parse_subtasks(params.pop(0))
                 self.problem.add_subtasks(subtasks)
+                self._requires_grounding.append(subtasks)
+            elif lead == ":parameters":
+                if params.pop(0) != []:
+                    raise NotImplementedError
+            elif lead == ":ordering":
+                self.problem.order_subtasks(params.pop(0))
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
+
+    def _post_problem_parsing_grounding(self):
+        for item in self._requires_grounding:
+            if type(item) == Subtasks:
+                # Subtask parameter type should be object
+                for t in item.tasks:
+                    i = 0
+                    l = len(t.parameters)
+                    while i < l:
+                        if type(t.parameters[i]) == Parameter:
+                            t.parameters[i] = self.problem.get_object(t.parameters[i].name)
+                        elif type(t.parameters[i]) == Object:
+                            pass
+                        else:
+                            raise AttributeError("Grounding process for subtask with type {} unknown".format(type(t.parameters[i])))
+                        i += 1
+            else:
+                raise NotImplementedError("Functionality for post problem grounding of {} is not implemented".format(type(item)))
+        self._requires_grounding = []
     
     def _scan_tokens(self, file_path):
         return super(HDDLParser, self)._scan_tokens(file_path)

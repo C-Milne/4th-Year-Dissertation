@@ -7,6 +7,7 @@ from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.parameter import Parameter
+from Internal_Representation.Object import Object
 
 
 class HDDLTests(unittest.TestCase):
@@ -522,22 +523,27 @@ class HDDLTests(unittest.TestCase):
         # Check initial state
         self.assertEqual(1, len(problem.initial_state.elements))
         self.assertEqual('have', problem.initial_state.elements[0].predicate.name)
-
-        # Check objects
         self.assertEqual(1, len(problem.initial_state.elements[0].objects))
         self.assertEqual('kiwi', problem.initial_state.elements[0].objects[0].name)
         self.assertEqual(None, problem.initial_state.elements[0].objects[0].type)
 
-        # Check subtasks - must be subtask object - Perhaps we should reference the object in subtask parameters instead of the object name
+        # Check objects
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual('kiwi', problem.objects['kiwi'].name)
+        self.assertEqual(None, problem.objects['kiwi'].type)
+        self.assertEqual('banjo', problem.objects['banjo'].name)
+        self.assertEqual(None, problem.objects['banjo'].type)
+
+        # Check subtasks - must be subtask object
         self.assertEqual(1, len(problem.subtasks.tasks))
         self.assertEqual('swap', problem.subtasks.tasks[0].task.name)
         self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
         self.assertEqual('banjo', problem.subtasks.tasks[0].parameters[0].name)
         self.assertEqual(None, problem.subtasks.tasks[0].parameters[0].type)
-        self.assertEqual(Parameter, type(problem.subtasks.tasks[0].parameters[0]))
+        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[0]))
         self.assertEqual('kiwi', problem.subtasks.tasks[0].parameters[1].name)
         self.assertEqual(None, problem.subtasks.tasks[0].parameters[1].type)
-        self.assertEqual(Parameter, type(problem.subtasks.tasks[0].parameters[1]))
+        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[1]))
 
     def test_parsing_rover_pb1(self):
         domain = Domain(None)
@@ -548,7 +554,91 @@ class HDDLTests(unittest.TestCase):
         parser.parse_domain(self.rover_path + "rover-domain.hddl")
         parser.parse_problem(self.rover_path + "pfile01.hddl")
 
-        self.assertEqual(1, 2)
+        # Check initial state
+        self.assertEqual(45, len(problem.initial_state.elements))
+        self.assertEqual('visible', problem.initial_state.elements[0].predicate.name)
+        self.assertEqual(2, len(problem.initial_state.elements[0].objects))
+        self.assertEqual('waypoint1', problem.initial_state.elements[0].objects[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[0].objects[0].type)
+        self.assertEqual('waypoint0', problem.initial_state.elements[0].objects[1].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[0].objects[1].type)
+
+        self.assertEqual('at_soil_sample', problem.initial_state.elements[12].predicate.name)
+        self.assertEqual(1, len(problem.initial_state.elements[12].objects))
+        self.assertEqual('waypoint0', problem.initial_state.elements[12].objects[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[12].objects[0].type)
+
+        self.assertEqual('at_rock_sample', problem.initial_state.elements[17].predicate.name)
+        self.assertEqual(1, len(problem.initial_state.elements[17].objects))
+        self.assertEqual('waypoint3', problem.initial_state.elements[17].objects[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[17].objects[0].type)
+
+        self.assertEqual('can_traverse', problem.initial_state.elements[27].predicate.name)
+        self.assertEqual(3, len(problem.initial_state.elements[27].objects))
+        self.assertEqual('rover0', problem.initial_state.elements[27].objects[0].name)
+        self.assertEqual(domain.types['rover'], problem.initial_state.elements[27].objects[0].type)
+        self.assertEqual('waypoint3', problem.initial_state.elements[27].objects[1].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[27].objects[1].type)
+        self.assertEqual('waypoint0', problem.initial_state.elements[27].objects[2].name)
+        self.assertEqual(domain.types['waypoint'], problem.initial_state.elements[27].objects[2].type)
+
+        # Check objects
+        self.assertEqual(13, len(problem.objects))
+        self.assertEqual('waypoint0', problem.objects['waypoint0'].name)
+        self.assertEqual(domain.types['waypoint'], problem.objects['waypoint0'].type)
+        self.assertEqual('waypoint1', problem.objects['waypoint1'].name)
+        self.assertEqual(domain.types['waypoint'], problem.objects['waypoint1'].type)
+        self.assertEqual('waypoint2', problem.objects['waypoint2'].name)
+        self.assertEqual(domain.types['waypoint'], problem.objects['waypoint2'].type)
+        self.assertEqual('waypoint3', problem.objects['waypoint3'].name)
+        self.assertEqual(domain.types['waypoint'], problem.objects['waypoint3'].type)
+
+        self.assertEqual('colour', problem.objects['colour'].name)
+        self.assertEqual(domain.types['mode'], problem.objects['colour'].type)
+        self.assertEqual('high_res', problem.objects['high_res'].name)
+        self.assertEqual(domain.types['mode'], problem.objects['high_res'].type)
+        self.assertEqual('low_res', problem.objects['low_res'].name)
+        self.assertEqual(domain.types['mode'], problem.objects['low_res'].type)
+
+        self.assertEqual('rover0store', problem.objects['rover0store'].name)
+        self.assertEqual(domain.types['store'], problem.objects['rover0store'].type)
+        self.assertEqual('rover0', problem.objects['rover0'].name)
+        self.assertEqual(domain.types['rover'], problem.objects['rover0'].type)
+        self.assertEqual('camera0', problem.objects['camera0'].name)
+        self.assertEqual(domain.types['camera'], problem.objects['camera0'].type)
+        self.assertEqual('general', problem.objects['general'].name)
+        self.assertEqual(domain.types['lander'], problem.objects['general'].type)
+
+        self.assertEqual('objective0', problem.objects['objective0'].name)
+        self.assertEqual(domain.types['objective'], problem.objects['objective0'].type)
+        self.assertEqual('objective1', problem.objects['objective1'].name)
+        self.assertEqual(domain.types['objective'], problem.objects['objective1'].type)
+
+        # Check subtasks and orderings
+        self.assertEqual(3, len(problem.subtasks.tasks))
+        self.assertEqual('get_image_data', problem.subtasks.tasks[0].task.name)
+        self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
+        self.assertEqual('objective1', problem.subtasks.tasks[0].parameters[0].name)
+        self.assertEqual(domain.types['objective'], problem.subtasks.tasks[0].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[0]))
+        self.assertEqual('high_res', problem.subtasks.tasks[0].parameters[1].name)
+        self.assertEqual(domain.types['mode'], problem.subtasks.tasks[0].parameters[1].type)
+        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[1]))
+        self.assertEqual(problem.subtasks.tasks[0], problem.subtasks.labelled_tasks['task2'])
+
+        self.assertEqual('get_soil_data', problem.subtasks.tasks[1].task.name)
+        self.assertEqual(1, len(problem.subtasks.tasks[1].parameters))
+        self.assertEqual('waypoint2', problem.subtasks.tasks[1].parameters[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.subtasks.tasks[1].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.tasks[1].parameters[0]))
+        self.assertEqual(problem.subtasks.tasks[1], problem.subtasks.labelled_tasks['task0'])
+
+        self.assertEqual('get_rock_data', problem.subtasks.tasks[2].task.name)
+        self.assertEqual(1, len(problem.subtasks.tasks[2].parameters))
+        self.assertEqual('waypoint3', problem.subtasks.tasks[2].parameters[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.subtasks.tasks[2].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.tasks[2].parameters[0]))
+        self.assertEqual(problem.subtasks.tasks[2], problem.subtasks.labelled_tasks['task1'])
 
     # Test actions
 
