@@ -25,8 +25,8 @@ class Runner:
 
         # Solve
         self.solver = Solver(self.domain, self.problem)
-        self.solver.solve()
-        self.solver.output()
+        search_result = self.solver.solve()
+        self.solver.output(search_result)
 
     def __parse_domain(self, domain_path):
         # Check for valid suffix

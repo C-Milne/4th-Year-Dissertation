@@ -1,4 +1,5 @@
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.predicate import Predicate
 
 
 class State:
@@ -25,3 +26,57 @@ class State:
             return self._index[pred_name]
         else:
             return None
+
+    def remove_element(self, predicate: Predicate, predicate_objects=None):
+        assert type(predicate) == Predicate
+        if predicate_objects is None or len(predicate_objects) == 0:
+            self.__remove_element_no_objects(predicate)
+        else:
+            self.__remove_element_objects(predicate, predicate_objects)
+
+    def __remove_element_objects(self, predicate: Predicate, predicate_objects):
+        """Params:  - predicate : Predicate
+                    - predicate_objects : [Object] - List of objects taken as parameters"""
+        predicate_indexes = self.get_indexes(predicate.name)
+        for i in predicate_indexes:
+            element_objects = self.elements[i].objects
+            if element_objects == predicate_objects:
+                del self.elements[i]
+                break
+        # Adjust self._index
+        self.__adjust_index_remove_element(predicate.name, i)
+
+    def __remove_element_no_objects(self, predicate: Predicate):
+        """Params:  - predicate : Predicate"""
+        index = self.get_indexes(predicate.name)
+        assert len(index) == 1
+        index = index[0]
+
+        # Do the deletion
+        del self.elements[index]
+
+        # Adjust self._index
+        self.__adjust_index_remove_element(predicate.name, index)
+
+    def __adjust_index_remove_element(self, identifier: str, index_removed: int):
+        assert type(identifier) == str and type(index_removed) == int
+        # Remove deleted element from self._index
+        if len(self._index[identifier]) == 1:
+            del self._index[identifier]
+        else:
+            del self._index[identifier][self._index[identifier].index(index_removed)]
+
+        # Update self._index
+        for k in self._index.keys():
+            i = 0
+            while i < len(self._index[k]):
+                if self._index[k][i] > index_removed:
+                    self._index[k][i] -= 1
+                i += 1
+
+    def __str__(self):
+        print_string = ""
+        for e in self.elements[:-1]:
+            print_string += str(e) + "\n"
+        print_string += str(self.elements[-1])
+        return print_string

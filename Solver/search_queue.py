@@ -4,6 +4,7 @@ from Solver.model import Model
 class SearchQueue:
     def __init__(self):
         self.__Q = []
+        self.__completed_models = []
 
     def add(self, model):
         if type(model) != Model:
@@ -14,6 +15,12 @@ class SearchQueue:
         ranking = len(model.actions_taken)
         model.set_ranking(ranking)
 
+        if len(model.search_modifiers) > 0:
+            self.__add_model(model, ranking)
+        else:
+            self.__completed_models.append(model)
+
+    def __add_model(self, model, ranking):
         added = False
         i = 0
         while i < len(self.__Q):
@@ -30,6 +37,17 @@ class SearchQueue:
 
     def clear(self):
         self.__Q = []
+
+    def get_num_search_models(self):
+        return len(self.__Q)
+
+    def get_num_completed_models(self):
+        return len(self.__completed_models)
+
+    def get_sole_completed_model(self):
+        if len(self.__completed_models) == 1:
+            return self.__completed_models[0]
+        return None
 
     def __len__(self):
         return len(self.__Q)

@@ -11,3 +11,11 @@ class ProblemPredicate:
 
         self.predicate = predicate
         self.objects = objects
+
+    def __str__(self):
+        print_string = self.predicate.name
+        if len(self.objects) > 0:
+            print_string += " -"
+        for o in self.objects:
+            print_string += " " + o.name
+        return print_string

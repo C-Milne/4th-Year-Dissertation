@@ -39,6 +39,10 @@ class Model:
                (type(modifier) == Subtasks.Subtask and type(modifier.task) == Action)
         self.search_modifiers.insert(index, modifier)
 
+    def add_action_taken(self, action: Action):
+        assert type(action) == Action
+        self.actions_taken.append(action)
+
     def __merge_dictionaries(self, a, b):
         c = a.copy()
         c.update(b)

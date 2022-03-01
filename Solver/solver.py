@@ -7,6 +7,8 @@ from Internal_Representation.action import Action
 from Internal_Representation.task import Task
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.Object import Object
+from Internal_Representation.problem_predicate import ProblemPredicate
 
 
 class Solver:
@@ -18,18 +20,22 @@ class Solver:
 
     def solve(self):
         task_counter = 0
+        search_result = None
         for subT in self.problem.subtasks.get_tasks():
             if subT == "and" or subT == "or":
                 continue
 
-            print("Subtask:", task_counter, "-", subT.get_name(), "(" + str(subT.parameters) + ")")
+            print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
             # Prepare search_models
             self.search_models.clear()
 
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
-            initial_model = Model(self.problem.initial_state, [subT.task], param_dict)
+            if search_result is None:
+                initial_model = Model(self.problem.initial_state, [subT.task], param_dict)
+            else:
+                initial_model = Model(search_result.current_state, [subT.task], param_dict)
             self.search_models.add(initial_model)
 
             search_result = self.__search()
@@ -37,6 +43,7 @@ class Solver:
                 print("No plan Found")
                 sys.exit()
             task_counter += 1
+        return search_result
 
     def __search(self):
         while True:
@@ -51,16 +58,21 @@ class Solver:
                 self.__expand_method(next_modifier, search_model)
             elif type(next_modifier) == Subtasks.Subtask and type(next_modifier.task) == Action:
                 i = 0
-                param_dict = {}
+                param_list = []
                 while i < len(next_modifier.parameters):
-                    param_dict[next_modifier.parameters[i].name] = None
+                    # param_list.append[next_modifier.task.parameters[i].name] = search_model.given_params[next_modifier.parameters[i].name]
+                    param_list.append(search_model.given_params[next_modifier.parameters[i].name])
                     i += 1
-                self.__expand_action(next_modifier, search_model, param_dict)
+                self.__expand_action(next_modifier, search_model, param_list)
             else:
                 raise NotImplementedError
 
             # Loop exit conditions
-            print("here")
+            if self.search_models.get_num_search_models() == 0:
+                if self.search_models.get_num_completed_models() == 1:
+                    return self.search_models.get_sole_completed_model()
+                break
+            # Also check goal conditions
 
     def __expand_task(self, task: Task, search_model: Model):
         # For each method, create a new search model
@@ -91,16 +103,23 @@ class Solver:
             i += 1
         self.search_models.add(search_model)
 
-    def __expand_action(self, action, search_model: Model, param_dict):
+    def __expand_action(self, action, search_model: Model, param_list: list[Object]):
         assert type(action) == Subtasks.Subtask and type(action.task) == Action
-        print("here")
+        assert type(param_list) == list
+        for l in param_list:
+            assert type(l) == Object
+
         for eff in action.task.effects.effects:
             if eff.negated:
                 # Predicate needs to be removed
-                pass
+                search_model.current_state.remove_element(eff.predicate, param_list)
             else:
                 # Predicate needs to be added
-                raise NotImplementedError
+                new_predicate = ProblemPredicate(eff.predicate, param_list)
+                search_model.current_state.add_element(new_predicate)
+
+        search_model.add_action_taken(action.task)
+        self.search_models.add(search_model)
 
     def __generate_param_dict(self, modifier, params):
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task
@@ -118,9 +137,11 @@ class Solver:
             i += 1
         return param_dict
 
-    def output(self):
+    def output(self, resulting_model: Model):
+        assert type(resulting_model) == Model
+
         print("\nActions Taken:")
-        print(self.initial_model.actions_taken)
+        print([a.name for a in resulting_model.actions_taken])
 
         print("Final State:")
-        print(self.initial_model.current_state)
+        print(resulting_model.current_state)
