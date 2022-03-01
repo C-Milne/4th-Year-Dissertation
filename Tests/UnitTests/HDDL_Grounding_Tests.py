@@ -8,6 +8,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.modifier import Modifier
 from Solver.solver import Solver
+from Internal_Representation.predicate import Predicate
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -255,3 +256,16 @@ class HDDLGroundingTests(unittest.TestCase):
                     print("Method: {}\tSubtask: {}".format(m, t.task))
                     self.assertIsInstance(t.task, Modifier)
 
+    def test_action_effects(self):
+        # basic domain
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+
+        self.assertEqual(Predicate, type(domain.actions['pickup'].effects.effects[0].predicate))
+        self.assertEqual(False, domain.actions['pickup'].effects.effects[0].negated)
+        self.assertEqual(Predicate, type(domain.actions['drop'].effects.effects[0].predicate))
+        self.assertEqual(True, domain.actions['drop'].effects.effects[0].negated)

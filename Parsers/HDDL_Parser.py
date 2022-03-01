@@ -180,7 +180,8 @@ class HDDLParser(Parser):
                 else:
                     predicate_name, parameters = __extract_effect_values(params[i])
 
-            effects.add_effect(predicate_name, parameters, negated)
+            predicate = self.domain.get_predicate(predicate_name)
+            effects.add_effect(predicate, parameters, negated)
             i += 1
         return effects
 

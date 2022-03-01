@@ -1,3 +1,6 @@
+from Internal_Representation.predicate import Predicate
+
+
 class Effects:
     class Effect:
         def __init__(self, predicate, parameters, negated):
@@ -13,7 +16,7 @@ class Effects:
                     - parameters : list of parameters belonging to predicate
                     - negated : True if 'not' statement encapsulates effect
                               : False otherwise"""
-        assert type(predicate) == str
+        assert type(predicate) == Predicate
         assert type(parameters) == list
         for p in parameters:
             assert type(p) == str

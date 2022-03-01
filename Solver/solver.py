@@ -91,9 +91,16 @@ class Solver:
             i += 1
         self.search_models.add(search_model)
 
-    def __expand_action(self, action: Action, search_model: Model, param_dict):
+    def __expand_action(self, action, search_model: Model, param_dict):
+        assert type(action) == Subtasks.Subtask and type(action.task) == Action
         print("here")
-        pass
+        for eff in action.task.effects.effects:
+            if eff.negated:
+                # Predicate needs to be removed
+                pass
+            else:
+                # Predicate needs to be added
+                raise NotImplementedError
 
     def __generate_param_dict(self, modifier, params):
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task
