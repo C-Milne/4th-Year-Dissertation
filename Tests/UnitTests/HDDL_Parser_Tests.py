@@ -56,7 +56,7 @@ class HDDLTests(unittest.TestCase):
         with self.assertRaises(Exception) as error:
             Runner(self.basic_domain_path)
         print(str(error.exception))
-        self.assertEqual("__init__() missing 1 required positional argument: 'problem_path'", str(error.exception))
+        self.assertEqual("Runner.__init__() missing 1 required positional argument: 'problem_path'", str(error.exception))
 
     def test_load_incompatible_files(self):
         # Test loading incompatible files
@@ -120,11 +120,11 @@ class HDDLTests(unittest.TestCase):
             self.assertEqual(domain.types['object'], domain.types[k].parent)
 
     def test_parsing_predicates(self):
+        # Rover Domain
         domain = Domain(None)
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain1.hddl")
         self.assertEqual(26, len(domain.predicates))
@@ -140,6 +140,42 @@ class HDDLTests(unittest.TestCase):
         self.assertEqual('visible_from', domain.predicates['visible_from'].name)
         self.assertEqual('?arg1', domain.predicates['at'].parameters[1].name)
         self.assertEqual('waypoint', domain.predicates['at'].parameters[1].type.name)
+
+    def test_parsing_predicates_1(self):
+        # Blocks world domain
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
+
+        self.assertIn('hand-empty', domain.predicates.keys())
+        self.assertEqual('hand-empty', domain.predicates['hand-empty'].name)
+        self.assertEqual(None, domain.predicates['hand-empty'].parameters)
+
+        self.assertEqual('goal_on', domain.predicates['goal_on'].name)
+        self.assertEqual('?t', domain.predicates['goal_on'].parameters[0].name)
+        self.assertEqual(domain.types['block'], domain.predicates['goal_on'].parameters[0].type)
+        self.assertEqual('?b', domain.predicates['goal_on'].parameters[1].name)
+        self.assertEqual(domain.types['block'], domain.predicates['goal_on'].parameters[1].type)
+
+        self.assertEqual(9, len(domain.predicates))
+
+    def test_parsing_predicates_2(self):
+        # Basic Domain
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+
+        self.assertEqual('have', domain.predicates['have'].name)
+        self.assertEqual(1, len(domain.predicates['have'].parameters))
+        self.assertEqual('?a', domain.predicates['have'].parameters[0].name)
+        self.assertEqual(None, domain.predicates['have'].parameters[0].type)
+        self.assertEqual(1, len(domain.predicates.keys()))
 
     def test_parsing_action(self):
         domain = Domain(None)

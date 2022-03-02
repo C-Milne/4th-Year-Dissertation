@@ -43,8 +43,8 @@ class HDDLGroundingTests(unittest.TestCase):
                                               ['goal_on', 'b2', 'b5'], ['goal_on', 'b5', 'b4'], ['goal_clear', 'b1'],
                                               ['goal_on-table', 'b3'], ['goal_on', 'b1', 'b3']]
         blocksworld_pb1_initial_state_index = {'hand-empty': [0], 'clear': [1, 6], 'goal_clear': [8, 12],
-                                                    'goal_on': [10, 11, 14], 'goal_on-table': [9, 13],
-                                                    'on': [3, 4, 5], 'on-table': [2, 7]}
+                                                'goal_on': [10, 11, 14], 'goal_on-table': [9, 13],
+                                                'on': [3, 4, 5], 'on-table': [2, 7]}
         self.assertEqual(blocksworld_pb1_initial_state, model.current_state.elements)
         self.assertEqual(blocksworld_pb1_initial_state_index, model.current_state._index)
 
@@ -52,13 +52,13 @@ class HDDLGroundingTests(unittest.TestCase):
         # Devise a complex precondition and test it
         precon_list = ['and',
                        ['not',
-                            ['and',['have','?y'],['have','?a']]
+                        ['and', ['have', '?y'], ['have', '?a']]
                         ],
                        ['and',
-                            ['have', '?x'], ['or', ['have', '?b'], ['have', '?c']]
+                        ['have', '?x'], ['or', ['have', '?b'], ['have', '?c']]
                         ],
                        ['or',
-                            ['hate','?z'], ['hate', '?d']
+                        ['hate', '?z'], ['hate', '?d']
                         ]
                        ]
         precons = Precondition(precon_list)

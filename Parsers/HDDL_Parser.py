@@ -97,6 +97,8 @@ class HDDLParser(Parser):
             if len(i) > 1:
                 parameter_list = self._parse_parameters(i[1:])
                 self.domain.add_predicate(Predicate(predicate_name, parameter_list))
+            else:
+                self.domain.add_predicate(Predicate(i[0]))
 
     def _parse_parameters(self, params):
         """TODO : test this - check parameter name not already in use"""
@@ -223,7 +225,7 @@ class HDDLParser(Parser):
                 if task_ob is None:
                     raise KeyError("Task 'swap' is not defined. Please check your domain file.")
                 elif len(params[i + 1]) == 1:
-                    task = {"task": task_ob}
+                    task = {"task": task_ob, "params": []}
                 else:
                     task = {"task": task_ob, "params": self._parse_parameters(params[i + 1][1:])}
                 i += 1
