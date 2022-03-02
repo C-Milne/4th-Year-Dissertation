@@ -45,7 +45,8 @@ class Solver:
             task_counter += 1
         return search_result
 
-    def __search(self):
+    def __search(self, step_control=False):
+        """:parameter   - step_control  - If True, then loop will only execute once"""
         while True:
             # New model to operate on
             search_model = self.search_models.pop()
@@ -60,7 +61,8 @@ class Solver:
                 i = 0
                 param_list = []
                 while i < len(next_modifier.parameters):
-                    # param_list.append[next_modifier.task.parameters[i].name] = search_model.given_params[next_modifier.parameters[i].name]
+                    # param_list.append[next_modifier.task.parameters[i].name] =
+                    # search_model.given_params[next_modifier.parameters[i].name]
                     param_list.append(search_model.given_params[next_modifier.parameters[i].name])
                     i += 1
                 self.__expand_action(next_modifier, search_model, param_list)
@@ -71,6 +73,8 @@ class Solver:
             if self.search_models.get_num_search_models() == 0:
                 if self.search_models.get_num_completed_models() == 1:
                     return self.search_models.get_sole_completed_model()
+                break
+            elif step_control:
                 break
             # Also check goal conditions
 

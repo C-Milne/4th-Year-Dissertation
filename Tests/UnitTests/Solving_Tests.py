@@ -17,13 +17,13 @@ class SolvingTests(unittest.TestCase):
         self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
+        self.rover_path = "../Examples/IPC_Tests/Rover/"
 
     def test_model_requirement_satisfier(self):
         domain = Domain(None)
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_3.hddl")
         parser.parse_problem(self.blocksworld_path + "pb1.hddl")
@@ -50,7 +50,6 @@ class SolvingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.blocksworld_path + "domain.hddl")
         parser.parse_problem(self.blocksworld_path + "pb1.hddl")
@@ -67,6 +66,7 @@ class SolvingTests(unittest.TestCase):
         ['goal_clear', 'b2'], ['goal_on-table', 'b4'],['goal_on', 'b2', 'b5'],
         ['goal_on', 'b5', 'b4'], ['goal_clear', 'b1'],['goal_on-table', 'b3'],
         ['goal_on', 'b1', 'b3'], ['holding', 'b1']], model.current_state.elements)
+
         # Check model.current_state._index
         self.assertEqual({'clear': [0],'goal_clear': [5, 9],
         'goal_on': [7, 8, 11],'goal_on-table': [6, 10],'on': [2, 3, 4],
@@ -77,7 +77,6 @@ class SolvingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.blocksworld_path + "domain.hddl")
         parser.parse_problem(self.blocksworld_path + "pb1.hddl")
@@ -106,7 +105,6 @@ class SolvingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.blocksworld_path + "domain.hddl")
         parser.parse_problem(self.blocksworld_path + "pb1.hddl")
@@ -140,7 +138,6 @@ class SolvingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.blocksworld_path + "domain.hddl")
         parser.parse_problem(self.blocksworld_path + "pb1.hddl")
@@ -166,40 +163,86 @@ class SolvingTests(unittest.TestCase):
         # Check _index dictionary
         self.assertEqual(expected_index, model.current_state._index)
 
-    def test_precondition_evaluation(self):
-        # Testing parsing with blank predicates
-        # Test and
-        precon_list = ['and']
-        precons = Precondition(precon_list)
-        # Set up model
-        state_dict = {'have': ['ham', 'irn-bru', 'car']}
-        model = Model(state_dict)
-        param_dict = {"?z": "ham", "?x": "irn-bru", "?y": "car"}
+    def test_basic_execution(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
 
-        # Test or
-        precon_list = ['or']
-        precons = Precondition(precon_list)
+        task = problem.subtasks.get_tasks()[0]
+        self.assertEqual(domain.tasks['swap'], task.task)
+        self.assertEqual([problem.objects['banjo'], problem.objects['kiwi']], task.parameters)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        # Initialise solver
+        solver = Solver(domain, problem)
 
-        # Test not
-        precon_list = ['not']
-        precons = Precondition(precon_list)
+        # Create initial model
+        solver.search_models.clear()
+        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        initial_model = Model(problem.initial_state, [task.task], param_dict, problem)
+        solver.search_models.add(initial_model)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        # Execute Step 1
+        solver._Solver__search(True)
 
-        # Test all 3 at once
-        precon_list = ['and', ['or'], ['not'], ['and']]
-        precons = Precondition(precon_list)
+        # Expect task to be expanded
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].search_modifiers))
+        self.assertEqual(domain.methods['have_second'], solver.search_models._SearchQueue__Q[0].search_modifiers[0])
+        self.assertEqual(domain.predicates['have'],
+                         solver.search_models._SearchQueue__Q[0].current_state.elements[0].predicate)
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects))
+        self.assertEqual(problem.objects['kiwi'], solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0])
+        self.assertEqual(None, solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0].type)
 
-        with self.assertRaises(SyntaxError) as error:
-            precons.evaluate(model, param_dict)
-        self.assertEqual("Test", str(error.exception))
+        # Execute step 2
+        solver._Solver__search(True)
+
+        # Expect method to be expanded - should be tasks drop and pickup in the place of the method
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
+        self.assertEqual(2, len(solver.search_models._SearchQueue__Q[0].search_modifiers))
+
+        self.assertEqual(domain.actions['drop'], solver.search_models._SearchQueue__Q[0].search_modifiers[0].task)
+        self.assertEqual(domain.actions['pickup'], solver.search_models._SearchQueue__Q[0].search_modifiers[1].task)
+
+        self.assertEqual(domain.predicates['have'],
+                         solver.search_models._SearchQueue__Q[0].current_state.elements[0].predicate)
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects))
+        self.assertEqual(problem.objects['kiwi'], solver.search_models._SearchQueue__Q[0].current_state.elements[0].
+                         objects[0])
+        self.assertEqual(None, solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0].type)
+
+        # Execute step 3
+        solver._Solver__search(True)
+
+        # Expect the drop action to be carried out
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
+        model = solver.search_models._SearchQueue__Q[0]
+        self.assertEqual(1, len(model.search_modifiers))
+        self.assertEqual(domain.actions['pickup'], model.search_modifiers[0].task)
+        self.assertEqual([], model.current_state.elements)
+
+        # Execute step 4
+        solver._Solver__search(True)
+
+        # Expect the pickup action to be carried out
+        self.assertEqual(0, len(solver.search_models._SearchQueue__Q))
+        self.assertEqual(1, len(solver.search_models._SearchQueue__completed_models))
+        model = solver.search_models._SearchQueue__completed_models[0]
+        self.assertEqual(0, len(model.search_modifiers))
+        self.assertEqual(1, len(model.current_state.elements))
+        self.assertEqual(domain.predicates['have'], model.current_state.elements[0].predicate)
+        self.assertEqual(1, len(model.current_state.elements[0].objects))
+        self.assertEqual(problem.objects['banjo'], model.current_state.elements[0].objects[0])
+
+    def test_rover_execution(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")

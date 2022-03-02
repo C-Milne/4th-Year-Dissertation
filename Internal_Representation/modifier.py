@@ -64,3 +64,6 @@ class Modifier:
 
         if add_prelayer:
             self.__prepare_prelayer = self.__prepare_prelayer[:-1]
+
+    def __str__(self):
+        return self.name
