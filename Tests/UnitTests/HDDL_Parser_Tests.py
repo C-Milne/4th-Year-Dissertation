@@ -663,18 +663,18 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(Object, type(problem.subtasks.tasks[2].parameters[0]))
         self.assertEqual(problem.subtasks.tasks[2], problem.subtasks.labelled_tasks['task1'])
 
-    def test_parsing_goal_state(self):
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        parser = HDDLParser(domain, problem)
-
-        # Find a rover problem with a goal state or use blocksworld
-        parser.parse_domain(self.rover_path + "rover-domain.hddl")
-        parser.parse_problem(self.rover_path + "pfile.hddl")
-
-        self.assertEqual(1, 2)
+    # def test_parsing_goal_state(self):
+    #     domain = Domain(None)
+    #     problem = Problem(domain)
+    #     domain.add_problem(problem)
+    #
+    #     parser = HDDLParser(domain, problem)
+    #
+    #     # Find a rover problem with a goal state or use blocksworld
+    #     parser.parse_domain(self.rover_path + "rover-domain.hddl")
+    #     parser.parse_problem(self.rover_path + "pfile.hddl")
+    #
+    #     self.assertEqual(1, 2)
 
     # Test actions
 
