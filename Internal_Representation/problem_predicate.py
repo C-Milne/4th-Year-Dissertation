@@ -4,6 +4,9 @@ from Internal_Representation.Object import Object
 
 class ProblemPredicate:
     def __init__(self, predicate: Predicate, objects: list[Object]):
+        """:Params  - predicate : Predicate
+                    - objects   : List of objects that belong to this predicate in ONE instance
+                                [object[waypoint1], object[waypoint0]]"""
         assert type(predicate) == Predicate
         assert type(objects) == list
         for o in objects:

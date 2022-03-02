@@ -4,7 +4,7 @@ from Internal_Representation.parameter import Parameter
 class Predicate:
     """Defines predicates as they are given in the domain file.
     Looking for predicates relating to the state of a problem - see problem_predicate.py"""
-    def __init__(self, name, parameters=None):
+    def __init__(self, name, parameters: list[Parameter] = None):
         assert type(name) == str
         self.name = name
         assert type(parameters) == list or parameters is None

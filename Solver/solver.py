@@ -33,9 +33,9 @@ class Solver:
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
             if search_result is None:
-                initial_model = Model(self.problem.initial_state, [subT.task], param_dict)
+                initial_model = Model(self.problem.initial_state, [subT.task], param_dict, self.problem)
             else:
-                initial_model = Model(search_result.current_state, [subT.task], param_dict)
+                initial_model = Model(search_result.current_state, [subT.task], param_dict, self.problem)
             self.search_models.add(initial_model)
 
             search_result = self.__search()
@@ -88,7 +88,8 @@ class Solver:
 
             if result:
                 # Create new model and add to search_models
-                new_model = Model(search_model.current_state, [method] + search_model.search_modifiers, parameters)
+                new_model = Model(search_model.current_state, [method] + search_model.search_modifiers, parameters,
+                                  self.problem)
                 self.search_models.add(new_model)
 
     def __expand_method(self, method: Method, search_model: Model):

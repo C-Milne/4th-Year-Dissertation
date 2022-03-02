@@ -10,7 +10,7 @@ from Internal_Representation.parameter import Parameter
 from Internal_Representation.Object import Object
 
 
-class HDDLTests(unittest.TestCase):
+class HDDLParsingTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.basic_domain_path = "../Examples/Basic/basic.hddl"
@@ -329,6 +329,22 @@ class HDDLTests(unittest.TestCase):
 
         self.assertEqual(domain.actions['unvisit'], domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].task)
         self.assertEqual("?mid", domain.methods["m_navigate_abs_4_ordering_0"].subtasks.tasks[3].parameters[0].name)
+
+    def test_parsing_method_1(self):
+        # Blocks world domain
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
+
+        self.assertEqual("setdone", domain.methods["setdone"].name)
+        self.assertEqual([], domain.methods["setdone"].subtasks.tasks)
+        self.assertEqual(domain.tasks["achieve-goals"], domain.methods["setdone"].task['task'])
+        self.assertEqual([], domain.methods["setdone"].task['params'])
+        self.assertEqual(0, len(domain.methods["setdone"].parameters))
+        self.assertEqual(1, len(domain.methods))
 
     def test_parsing_effects(self):
         domain = Domain(None)

@@ -10,15 +10,17 @@ from Internal_Representation.subtasks import Subtasks
 
 
 class Model:
-    def __init__(self, state: State, search_modifiers: list[Method, Action, Task], given_params: dict=None):
+    def __init__(self, state: State, search_modifiers: list[Method, Action, Task], given_params: dict = None,
+                 problem=None):
         assert type(state) == State
         self.current_state = state
         assert type(search_modifiers) == list
         for m in search_modifiers:
             assert type(m) == Method or type(m) == Action or type(m) == Task
         self.search_modifiers = search_modifiers
-        assert type(given_params) == dict
+        assert type(given_params) == dict or given_params is None
         self.given_params = given_params
+        self.problem = problem  # Problem object from internal rep
 
         self.actions_taken = []
         self.ranking = None
