@@ -45,7 +45,8 @@ class Model:
         assert type(action) == Action
         self.actions_taken.append(action)
 
-    def __merge_dictionaries(self, a, b):
+    @staticmethod
+    def merge_dictionaries(a, b):
         c = a.copy()
         c.update(b)
         return c

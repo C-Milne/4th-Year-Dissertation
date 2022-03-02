@@ -11,3 +11,6 @@ class Object:
     def set_type(self, t):
         assert type(t) == Type
         self.type = t
+
+    def __str__(self):
+        return self.name

@@ -7,6 +7,7 @@ from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+import Tests.UnitTests.TestTools.rover_execution as RovEx
 
 
 class SolvingTests(unittest.TestCase):
@@ -238,11 +239,51 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(1, len(model.current_state.elements[0].objects))
         self.assertEqual(problem.objects['banjo'], model.current_state.elements[0].objects[0])
 
-    def test_rover_execution(self):
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
+    def test_compare_parameters(self):
+        domain, problem, solver = RovEx.setup()
+        model = solver.search_models._SearchQueue__Q[0]
 
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.rover_path + "rover-domain.hddl")
-        parser.parse_problem(self.rover_path + "pfile01.hddl")
+        response = solver._Solver__compare_parameters(domain.methods['m_get_image_data_ordering_0'], model.given_params)
+        self.assertEqual(list, type(response))
+        self.assertEqual(2, len(response))
+        self.assertEqual(bool, type(response[0]))
+        self.assertEqual(list, type(response[1]))
+        self.assertEqual(False, response[0])
+        self.assertEqual(["?camera", "?rover", "?waypoint"], response[1])
+
+    def test_finding_parameters(self):
+        domain, problem, solver = RovEx.setup()
+        model = solver.search_models.pop()
+        method = domain.methods['m_get_image_data_ordering_0']
+        found_params = solver._Solver__find_satisfying_parameters(model, method, model.given_params)
+        self.assertEqual(4, len(found_params))
+        for combo in found_params:
+            self.assertEqual(problem.objects['objective1'], combo['?objective'])
+            self.assertEqual(problem.objects['high_res'], combo['?mode'])
+            self.assertEqual(problem.objects['camera0'], combo['?camera'])
+            self.assertEqual(problem.objects['rover0'], combo['?rover'])
+        self.assertEqual(problem.objects['waypoint0'], found_params[0]['?waypoint'])
+        self.assertEqual(problem.objects['waypoint1'], found_params[1]['?waypoint'])
+        self.assertEqual(problem.objects['waypoint2'], found_params[2]['?waypoint'])
+        self.assertEqual(problem.objects['waypoint3'], found_params[3]['?waypoint'])
+
+    def test_rover_execution_beginning(self):
+        domain, problem, solver = RovEx.setup()
+        self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
+        model = solver.search_models._SearchQueue__Q[0]
+        self.assertEqual(1, len(model.search_modifiers))
+        self.assertEqual(domain.tasks['get_image_data'], model.search_modifiers[0])
+        self.assertEqual(2, len(model.given_params))
+        self.assertEqual(problem.objects['objective1'], model.given_params['?objective'])
+        self.assertEqual(problem.objects['high_res'], model.given_params['?mode'])
+
+    def test_rover_execution_1(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        # Check searchModels has 4 search nodes each with a different ?waypoint parameter
+        self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
+        for i in range(4):
+            model = solver.search_models._SearchQueue__Q[i]
+            self.assertEqual(1, len(model.search_modifiers))
+            self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0])
+            self.assertEqual(problem.objects["waypoint" + str(i)], model.given_params['?waypoint'])
