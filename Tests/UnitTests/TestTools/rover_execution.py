@@ -21,6 +21,7 @@ def setup():
     # Create initial model
     solver.search_models.clear()
     param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
-    initial_model = Model(problem.initial_state, [task.task], param_dict, problem)
+    task.add_given_parameters(param_dict)
+    initial_model = Model(problem.initial_state, [task], problem)
     solver.search_models.add(initial_model)
     return domain, problem, solver

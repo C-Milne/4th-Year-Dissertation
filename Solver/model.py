@@ -10,16 +10,13 @@ from Internal_Representation.subtasks import Subtasks
 
 
 class Model:
-    def __init__(self, state: State, search_modifiers: list[Method, Action, Task], given_params: dict = None,
-                 problem=None):
+    def __init__(self, state: State, search_modifiers: list[Subtasks.Subtask], problem=None):
         assert type(state) == State
         self.current_state = state
         assert type(search_modifiers) == list
         for m in search_modifiers:
-            assert type(m) == Method or type(m) == Action or type(m) == Task
+            assert type(m) == Subtasks.Subtask and (type(m.task) == Method or type(m.task) == Action or type(m.task) == Task)
         self.search_modifiers = search_modifiers
-        assert type(given_params) == dict or given_params is None
-        self.given_params = given_params
         self.problem = problem  # Problem object from internal rep
 
         self.actions_taken = []
@@ -38,7 +35,8 @@ class Model:
 
     def insert_modifier(self, modifier, index=0):
         assert type(modifier) == Task or type(modifier) == Method or type(modifier) == Action or \
-               (type(modifier) == Subtasks.Subtask and type(modifier.task) == Action)
+            (type(modifier) == Subtasks.Subtask and type(modifier.task) == Action) or \
+            (type(modifier) == Subtasks.Subtask and type(modifier.task) == Task)
         self.search_modifiers.insert(index, modifier)
 
     def add_action_taken(self, action: Action):

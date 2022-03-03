@@ -125,7 +125,7 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1.hddl")
         method = domain.methods['setdone']
-        model = Model(problem.initial_state, [], None, problem)
+        model = Model(problem.initial_state, [], problem)
         result = method.evaluate_preconditions(model, {})
         self.assertEqual(False, result)
 
@@ -139,7 +139,7 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1_1.hddl")
         method = domain.methods['setdone']
-        model = Model(problem.initial_state, [], None, problem)
+        model = Model(problem.initial_state, [], problem)
         result = method.evaluate_preconditions(model, {})
         self.assertEqual(True, result)
 

@@ -32,10 +32,11 @@ class Solver:
 
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
+            subT.add_given_parameters(param_dict)
             if search_result is None:
-                initial_model = Model(self.problem.initial_state, [subT.task], param_dict, self.problem)
+                initial_model = Model(self.problem.initial_state, [subT], self.problem)
             else:
-                initial_model = Model(search_result.current_state, [subT.task], param_dict, self.problem)
+                initial_model = Model(search_result.current_state, [subT], self.problem)
             self.search_models.add(initial_model)
 
             search_result = self.__search()
@@ -53,19 +54,14 @@ class Solver:
 
             # Check what needs to be done to this model
             next_modifier = search_model.get_next_modifier()
-            if type(next_modifier) == Task:
+            assert type(next_modifier) == Subtasks.Subtask
+
+            if type(next_modifier.task) == Task:
                 self.__expand_task(next_modifier, search_model)
-            elif type(next_modifier) == Method:
+            elif type(next_modifier.task) == Method:
                 self.__expand_method(next_modifier, search_model)
-            elif type(next_modifier) == Subtasks.Subtask and type(next_modifier.task) == Action:
-                i = 0
-                param_list = []
-                while i < len(next_modifier.parameters):
-                    # param_list.append[next_modifier.task.parameters[i].name] =
-                    # search_model.given_params[next_modifier.parameters[i].name]
-                    param_list.append(search_model.given_params[next_modifier.parameters[i].name])
-                    i += 1
-                self.__expand_action(next_modifier, search_model, param_list)
+            elif type(next_modifier.task) == Action:
+                self.__expand_action(next_modifier, search_model)
             else:
                 raise NotImplementedError
 
@@ -78,12 +74,12 @@ class Solver:
                 break
             # Also check goal conditions
 
-    def __expand_task(self, task: Task, search_model: Model):
+    def __expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
         # For each method, create a new search model
-        for method in task.methods:
+        for method in subtask.task.methods:
             # Check parameters for new_model
             # Is all the required parameters present or do some need to be chosen
-            parameters = search_model.given_params
+            parameters = subtask.given_params
             comparison_result = self.__compare_parameters(method, parameters)
 
             if not comparison_result[0]:
@@ -96,30 +92,41 @@ class Solver:
                 result = method.preconditions.evaluate(search_model, param_option)
 
                 if result:
+                    subT = Subtasks.Subtask(method, method.parameters)
+                    subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
-                    new_model = Model(search_model.current_state, [method] + search_model.search_modifiers, param_option,
-                                      self.problem)
+                    new_model = Model(search_model.current_state, [subT] + search_model.search_modifiers, self.problem)
                     self.search_models.add(new_model)
 
-    def __expand_method(self, method: Method, search_model: Model):
+    def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
         i = 0
-        for action in method.subtasks.tasks:
-            assert type(action.task) == Action
+        for mod in subtask.task.subtasks.tasks:
+            assert type(mod.task) == Action or type(mod.task) == Task
+
             # Check parameter count
-            assert len(search_model.given_params) >= len(action.parameters)
-            # Add action to search_model
-            search_model.insert_modifier(action, i)
+            parameters = {}
+            param_keys = [p.name for p in mod.parameters]
+            action_keys = [p.name for p in mod.task.parameters]
+            for j in range(len(action_keys)):
+                parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+
+            comparison_result = self.__compare_parameters(mod.task, parameters)
+            assert comparison_result[0] == True
+            mod.add_given_parameters(parameters)
+
+            # Add mod to search_model
+            search_model.insert_modifier(mod, i)
             i += 1
         self.search_models.add(search_model)
 
-    def __expand_action(self, action: Action, search_model: Model, param_list: list[Object]):
-        assert type(action) == Subtasks.Subtask and type(action.task) == Action
-        assert type(param_list) == list
-        for l in param_list:
-            assert type(l) == Object
+    def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
+        assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
 
-        for eff in action.task.effects.effects:
+        for eff in subtask.task.effects.effects:
+            param_list = []
+            for i in eff.parameters:
+                param_list.append(subtask.given_params[i])
             if eff.negated:
                 # Predicate needs to be removed
                 search_model.current_state.remove_element(eff.predicate, param_list)
@@ -128,7 +135,7 @@ class Solver:
                 new_predicate = ProblemPredicate(eff.predicate, param_list)
                 search_model.current_state.add_element(new_predicate)
 
-        search_model.add_action_taken(action.task)
+        search_model.add_action_taken(subtask.task)
         self.search_models.add(search_model)
 
     def __compare_parameters(self, method: Method, parameters: dict[Object]):
@@ -138,7 +145,7 @@ class Solver:
         :returns    - [True] : if parameters match what is required by method
         :returns    - [False, missing_params] : otherwise. missing_params = ["name1", "name2" ... ]
         """
-        assert type(method) == Method
+        assert type(method) == Method or type(method) == Action or type(method) == Task
         assert type(parameters) == dict
         for p in parameters:
             assert type(parameters[p]) == Object

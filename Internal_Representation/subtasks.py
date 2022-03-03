@@ -1,15 +1,27 @@
 from Internal_Representation.modifier import Modifier
 from Internal_Representation.parameter import Parameter
+from Internal_Representation.Object import Object
 
 
 class Subtasks:
     class Subtask:
         def __init__(self, task, parameters=[]):
+            assert isinstance(task, Modifier) or type(task) == str
             self.task = task
+            assert type(parameters) == list
+            for p in parameters:
+                assert type(p) == Parameter
             self.parameters = parameters
+            self.given_params = {}
 
         def get_name(self):
             return self.task.name
+
+        def add_given_parameters(self, params: dict[Object]):
+            assert type(params) == dict
+            for i in params:
+                assert type(params[i]) == Object
+            self.given_params = params
 
     def __init__(self):
         self.tasks = []
