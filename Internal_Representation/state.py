@@ -76,6 +76,13 @@ class State:
                     self._index[k][i] -= 1
                 i += 1
 
+    @staticmethod
+    def reproduce(state):
+        returnState = State()
+        for e in state.elements:
+            returnState.add_element(e)
+        return returnState
+
     def __str__(self):
         print_string = ""
         for e in self.elements[:-1]:

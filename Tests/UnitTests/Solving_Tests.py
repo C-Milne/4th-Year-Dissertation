@@ -204,7 +204,7 @@ class SolvingTests(unittest.TestCase):
                           'equipped_for_rock_analysis': [25],
                           'equipped_for_imaging': [26], 'can_traverse': [27, 28, 29, 30, 31, 32], 'on_board': [33],
                           'calibration_target': [34], 'supports': [35, 36],
-                          'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [46]},
+                          'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [45]},
                          model.current_state._index)
 
     def test_basic_execution(self):

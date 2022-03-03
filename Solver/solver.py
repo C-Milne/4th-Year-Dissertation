@@ -9,6 +9,7 @@ from Internal_Representation.parameter import Parameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.state import State
 
 
 class Solver:
@@ -34,9 +35,9 @@ class Solver:
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
             subT.add_given_parameters(param_dict)
             if search_result is None:
-                initial_model = Model(self.problem.initial_state, [subT], self.problem)
+                initial_model = Model(State.reproduce(self.problem.initial_state), [subT], self.problem)
             else:
-                initial_model = Model(search_result.current_state, [subT], self.problem)
+                initial_model = Model(State.reproduce(search_result.current_state), [subT], self.problem)
             self.search_models.add(initial_model)
 
             search_result = self.__search()
@@ -104,7 +105,7 @@ class Solver:
                     subT = Subtasks.Subtask(method, method.parameters)
                     subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
-                    new_model = Model(search_model.current_state, [subT] + search_model.search_modifiers, self.problem)
+                    new_model = Model(State.reproduce(search_model.current_state), [subT] + search_model.search_modifiers, self.problem)
                     self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
