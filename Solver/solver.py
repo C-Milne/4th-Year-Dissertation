@@ -79,7 +79,10 @@ class Solver:
         for method in subtask.task.methods:
             # Check parameters for new_model
             # Is all the required parameters present or do some need to be chosen
-            parameters = subtask.given_params
+            parameters = {}
+            for k in subtask.given_params.keys():
+                parameters[k] = subtask.given_params[k]
+
             comparison_result = self.__compare_parameters(method, parameters)
 
             if not comparison_result[0]:
@@ -89,7 +92,13 @@ class Solver:
 
             for param_option in found_params:
                 # Check preconditions of new_model
-                result = method.preconditions.evaluate(search_model, param_option)
+                result = None
+                for k in method.parameters:
+                    if not k.name in param_option:
+                        result = False
+
+                if result is None:
+                    result = method.preconditions.evaluate(search_model, param_option)
 
                 if result:
                     subT = Subtasks.Subtask(method, method.parameters)
@@ -101,6 +110,8 @@ class Solver:
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
         i = 0
+        if subtask.task.subtasks is None:
+            return
         for mod in subtask.task.subtasks.tasks:
             assert type(mod.task) == Action or type(mod.task) == Task
 

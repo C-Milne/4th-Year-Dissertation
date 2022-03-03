@@ -165,6 +165,48 @@ class SolvingTests(unittest.TestCase):
     #     # Check _index dictionary
     #     self.assertEqual(expected_index, model.current_state._index)
 
+    def test_action_execution_5(self):
+        # Test Carrying out on action with one model and check the state of the others - Also check model state and _index
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[3] = \
+            solver.search_models._SearchQueue__Q[3], solver.search_models._SearchQueue__Q[0]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = solver.search_models._SearchQueue__Q[::-1]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[6] = \
+            solver.search_models._SearchQueue__Q[6], solver.search_models._SearchQueue__Q[0]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[6] = \
+            solver.search_models._SearchQueue__Q[6], solver.search_models._SearchQueue__Q[0]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[7] = \
+            solver.search_models._SearchQueue__Q[7], solver.search_models._SearchQueue__Q[0]
+        solver._Solver__search(True)
+
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(8, len(search_models))
+        for i in range(len(search_models) - 1):
+            model = search_models[i]
+            self.assertEqual(45, len(model.current_state.elements))
+            self.assertEqual({'visible': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'at_soil_sample': [12, 14, 16],
+             'at_rock_sample': [13, 15, 17], 'at_lander': [18], 'channel_free': [19], 'at': [20], 'available': [21],
+             'store_of': [22], 'empty': [23], 'equipped_for_soil_analysis': [24], 'equipped_for_rock_analysis': [25],
+             'equipped_for_imaging': [26], 'can_traverse': [27, 28, 29, 30, 31, 32], 'on_board': [33],
+             'calibration_target': [34], 'supports': [35, 36], 'visible_from': [37, 38, 39, 40, 41, 42, 43, 44]},
+                             model.current_state._index)
+        model = search_models[7]
+        self.assertEqual(46, len(model.current_state.elements))
+        self.assertEqual({'visible': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'at_soil_sample': [12, 14, 16],
+                          'at_rock_sample': [13, 15, 17], 'at_lander': [18], 'channel_free': [19], 'at': [20],
+                          'available': [21], 'store_of': [22], 'empty': [23], 'equipped_for_soil_analysis': [24],
+                          'equipped_for_rock_analysis': [25],
+                          'equipped_for_imaging': [26], 'can_traverse': [27, 28, 29, 30, 31, 32], 'on_board': [33],
+                          'calibration_target': [34], 'supports': [35, 36],
+                          'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [46]},
+                         model.current_state._index)
+
     def test_basic_execution(self):
         domain = Domain(None)
         problem = Problem(domain)
@@ -340,9 +382,8 @@ class SolvingTests(unittest.TestCase):
 
     def test_rover_execution_3(self):
         domain, problem, solver = RovEx.setup()
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
+        for i in range(3):
+            solver._Solver__search(True)
 
         search_models = solver.search_models._SearchQueue__Q
         for i in range(2):
@@ -384,3 +425,123 @@ class SolvingTests(unittest.TestCase):
             self.assertEqual(problem.objects["rover0"], mod.given_params['?rover'])
             self.assertEqual(problem.objects["high_res"], mod.given_params['?mode'])
             self.assertEqual(problem.objects["objective1"], mod.given_params['?objective'])
+
+    def test_rover_execution_4(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        self.assertEqual(4, len(search_models))
+        i = 0
+        for model in search_models:
+            self.assertEqual(4, len(model.search_modifiers))
+
+            self.assertEqual(4, len(model.search_modifiers[0].given_params))
+            self.assertEqual(domain.methods['m_calibrate_abs_ordering_0'], model.search_modifiers[0].task)
+            self.assertEqual(problem.objects['rover0'], model.search_modifiers[0].given_params["?rover"])
+            self.assertEqual(problem.objects['camera0'], model.search_modifiers[0].given_params["?camera"])
+            self.assertEqual(problem.objects['objective1'], model.search_modifiers[0].given_params["?objective"])
+            self.assertEqual(problem.objects['waypoint' + str(i)], model.search_modifiers[0].given_params["?waypoint"])
+
+            mod = model.search_modifiers[1]
+            self.assertEqual(2, len(mod.given_params))
+            self.assertEqual(domain.tasks['navigate_abs'], mod.task)
+            self.assertEqual(problem.objects['rover0'], mod.given_params["?rover"])
+            self.assertEqual(problem.objects['waypoint0'], mod.given_params["?to"])
+
+            mod = model.search_modifiers[2]
+            self.assertEqual(5, len(mod.given_params))
+            self.assertEqual(domain.actions['take_image'], mod.task)
+            self.assertEqual(problem.objects['rover0'], mod.given_params["?r"])
+            self.assertEqual(problem.objects['waypoint0'], mod.given_params["?p"])
+            self.assertEqual(problem.objects['objective1'], mod.given_params["?o"])
+            self.assertEqual(problem.objects['camera0'], mod.given_params["?i"])
+            self.assertEqual(problem.objects['high_res'], mod.given_params["?m"])
+
+            mod = model.search_modifiers[3]
+            self.assertEqual(3, len(mod.given_params))
+            self.assertEqual(domain.tasks['send_image_data'], mod.task)
+            self.assertEqual(problem.objects['rover0'], mod.given_params["?rover"])
+            self.assertEqual(problem.objects['objective1'], mod.given_params["?objective"])
+            self.assertEqual(problem.objects['high_res'], mod.given_params["?mode"])
+            i += 1
+
+    def test_rover_execution_5(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        self.assertEqual(1, len(search_models))
+        model = search_models[0]
+
+        mod = model.search_modifiers[0]
+        self.assertEqual(2, len(mod.given_params))
+        self.assertEqual(domain.tasks['navigate_abs'], mod.task)
+        self.assertEqual(problem.objects['rover0'], mod.given_params["?rover"])
+        self.assertEqual(problem.objects['waypoint0'], mod.given_params["?to"])
+
+        mod = model.search_modifiers[1]
+        self.assertEqual(4, len(mod.given_params))
+        self.assertEqual(domain.actions['calibrate'], mod.task)
+        self.assertEqual(problem.objects['rover0'], mod.given_params["?r"])
+        self.assertEqual(problem.objects['camera0'], mod.given_params["?i"])
+        self.assertEqual(problem.objects['objective1'], mod.given_params["?t"])
+        self.assertEqual(problem.objects['waypoint0'], mod.given_params["?w"])
+
+        mod = model.search_modifiers[2]
+        self.assertEqual(2, len(mod.given_params))
+        self.assertEqual(domain.tasks['navigate_abs'], mod.task)
+        self.assertEqual(problem.objects['rover0'], mod.given_params["?rover"])
+        self.assertEqual(problem.objects['waypoint0'], mod.given_params["?to"])
+
+        mod = model.search_modifiers[3]
+        self.assertEqual(5, len(mod.given_params))
+        self.assertEqual(domain.actions['take_image'], mod.task)
+        self.assertEqual(problem.objects['rover0'], mod.given_params["?r"])
+        self.assertEqual(problem.objects['waypoint0'], mod.given_params["?p"])
+        self.assertEqual(problem.objects['objective1'], mod.given_params["?o"])
+        self.assertEqual(problem.objects['camera0'], mod.given_params["?i"])
+        self.assertEqual(problem.objects['high_res'], mod.given_params["?m"])
+
+        mod = model.search_modifiers[4]
+        self.assertEqual(3, len(mod.given_params))
+        self.assertEqual(domain.tasks['send_image_data'], mod.task)
+        self.assertEqual(problem.objects['rover0'], mod.given_params["?rover"])
+        self.assertEqual(problem.objects['objective1'], mod.given_params["?objective"])
+        self.assertEqual(problem.objects['high_res'], mod.given_params["?mode"])
+
+    def test_rover_execution_6(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        self.assertEqual(2, len(search_models))
+        model = search_models[0]
+        self.assertEqual(5, len(model.search_modifiers))
+        self.assertEqual(domain.methods["m_navigate_abs_1_ordering_0"], model.search_modifiers[0].task)
+        self.assertEqual(3, len(model.search_modifiers[0].given_params))
+        self.assertEqual(problem.objects['rover0'], model.search_modifiers[0].given_params['?rover'])
+        self.assertEqual(problem.objects['waypoint0'], model.search_modifiers[0].given_params['?to'])
+        self.assertEqual(problem.objects['waypoint3'], model.search_modifiers[0].given_params['?from'])
+
+        model = search_models[1]
+        self.assertEqual(domain.methods["m_navigate_abs_3_ordering_0"], model.search_modifiers[0].task)
+        self.assertEqual(5, len(model.search_modifiers))
+        self.assertEqual(3, len(model.search_modifiers[0].given_params))
+        self.assertEqual(problem.objects['rover0'], model.search_modifiers[0].given_params['?rover'])
+        self.assertEqual(problem.objects['waypoint0'], model.search_modifiers[0].given_params['?to'])
+        self.assertEqual(problem.objects['waypoint3'], model.search_modifiers[0].given_params['?from'])
