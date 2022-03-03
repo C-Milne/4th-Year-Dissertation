@@ -104,6 +104,8 @@ class Solver:
         for mod in subtask.task.subtasks.tasks:
             assert type(mod.task) == Action or type(mod.task) == Task
 
+            mod = Subtasks.Subtask(mod.task, mod.parameters)
+
             # Check parameter count
             parameters = {}
             param_keys = [p.name for p in mod.parameters]

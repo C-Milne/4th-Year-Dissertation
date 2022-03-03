@@ -337,3 +337,50 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(problem.objects["rover0"], mod.given_params['?rover'])
         self.assertEqual(problem.objects["high_res"], mod.given_params['?mode'])
         self.assertEqual(problem.objects["objective1"], mod.given_params['?objective'])
+
+    def test_rover_execution_3(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+
+        search_models = solver.search_models._SearchQueue__Q
+        for i in range(2):
+            model = search_models[i]
+            mod = model.search_modifiers[0]
+            self.assertEqual(1, len(model.search_modifiers))
+            self.assertEqual(Subtasks.Subtask, type(mod))
+            self.assertEqual(domain.methods['m_get_image_data_ordering_0'], mod.task)
+            self.assertEqual(problem.objects["waypoint" + str(i + 2)], mod.given_params['?waypoint'])
+
+        for i in range(2):
+            model = search_models[i + 2]
+            self.assertEqual(4, len(model.search_modifiers))
+            for j in model.search_modifiers:
+                self.assertEqual(Subtasks.Subtask, type(j))
+
+            self.assertEqual(domain.tasks['calibrate_abs'], model.search_modifiers[0].task)
+            self.assertEqual(2, len(model.search_modifiers[0].given_params))
+            self.assertEqual(problem.objects["rover0"], model.search_modifiers[0].given_params['?rover'])
+            self.assertEqual(problem.objects["camera0"], model.search_modifiers[0].given_params['?camera'])
+
+            self.assertEqual(domain.tasks['navigate_abs'], model.search_modifiers[1].task)
+            self.assertEqual(2, len(model.search_modifiers[1].given_params))
+            self.assertEqual(problem.objects["rover0"], model.search_modifiers[1].given_params['?rover'])
+            self.assertEqual(problem.objects["waypoint" + str(i)], model.search_modifiers[1].given_params['?to'])
+
+            mod = model.search_modifiers[2]
+            self.assertEqual(domain.actions['take_image'], mod.task)
+            self.assertEqual(5, len(mod.given_params))
+            self.assertEqual(problem.objects["rover0"], mod.given_params['?r'])
+            self.assertEqual(problem.objects["waypoint" + str(i)], mod.given_params['?p'])
+            self.assertEqual(problem.objects["objective1"], mod.given_params['?o'])
+            self.assertEqual(problem.objects["camera0"], mod.given_params['?i'])
+            self.assertEqual(problem.objects["high_res"], mod.given_params['?m'])
+
+            mod = model.search_modifiers[3]
+            self.assertEqual(domain.tasks['send_image_data'], mod.task)
+            self.assertEqual(3, len(mod.given_params))
+            self.assertEqual(problem.objects["rover0"], mod.given_params['?rover'])
+            self.assertEqual(problem.objects["high_res"], mod.given_params['?mode'])
+            self.assertEqual(problem.objects["objective1"], mod.given_params['?objective'])
