@@ -113,13 +113,17 @@ class Solver:
                     # Create new model and add to search_models
                     new_model = Model(State.reproduce(search_model.current_state),
                                       [subT] + search_model.search_modifiers, self.problem)
+
                     new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
+                    new_model.populate_operations_taken(Model.reproduce_operations_list(search_model))
+                    new_model.add_operation(subtask.task, subtask.given_params)
                     self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
         i = 0
         if subtask.task.subtasks is None:
+            search_model.add_operation(subtask.task, subtask.given_params)
             self.search_models.add(search_model)
             return
         for mod in subtask.task.subtasks.tasks:
@@ -142,6 +146,7 @@ class Solver:
             # Add mod to search_model
             search_model.insert_modifier(mod, i)
             i += 1
+        search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
@@ -163,7 +168,7 @@ class Solver:
                 new_predicate = ProblemPredicate(eff.predicate, param_list)
                 search_model.current_state.add_element(new_predicate)
 
-        search_model.add_action_taken(subtask.task, subtask.given_params)
+        search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
 
     def __compare_parameters(self, method: Method, parameters: dict[Object]):

@@ -1,10 +1,12 @@
 from Internal_Representation.action import Action
+from Internal_Representation.task import Task
+from Internal_Representation.method import Method
 from Internal_Representation.Object import Object
 
 
 class ActionTracker:
     def __init__(self, action: Action, parameters_used: dict[Object]):
-        assert type(action) == Action
+        assert type(action) == Action or type(action) == Method or type(action) == Task
         assert type(parameters_used) == dict
         for k in parameters_used:
             assert type(parameters_used[k]) == Object

@@ -21,6 +21,7 @@ class Model:
         self.problem = problem  # Problem object from internal rep
 
         self.actions_taken = []
+        self.operations_taken = []
         self.ranking = None
 
     def set_ranking(self, ranking):
@@ -40,17 +41,30 @@ class Model:
             (type(modifier) == Subtasks.Subtask and type(modifier.task) == Task)
         self.search_modifiers.insert(index, modifier)
 
-    def add_action_taken(self, action: Action, parameters_used):
-        assert type(action) == Action
-        self.actions_taken.append(ActionTracker(action, parameters_used))
+    def add_operation(self, mod, parameters_used):
+        assert type(mod) == Action or type(mod) == Task or type(mod) == Method
+        op = ActionTracker(mod, parameters_used)
+        if type(mod) == Action:
+            self.actions_taken.append(op)
+        self.operations_taken.append(op)
 
     def populate_actions_taken(self, v):
         self.actions_taken = v
+
+    def populate_operations_taken(self, v):
+        self.operations_taken = v
 
     @staticmethod
     def reproduce_actions_taken(model):
         return_list = []
         for a in model.actions_taken:
+            return_list.append(a)
+        return return_list
+
+    @staticmethod
+    def reproduce_operations_list(model):
+        return_list = []
+        for a in model.operations_taken:
             return_list.append(a)
         return return_list
 
