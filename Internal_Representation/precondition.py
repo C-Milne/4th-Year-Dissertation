@@ -12,6 +12,9 @@ class Precondition:
         :returns - True if precondition is satisfied
         :returns - False if precondition is not satisfied
         """
+        if self.conditions == []:
+            return True
+
         if cons is None:
             cons = self.conditions
 

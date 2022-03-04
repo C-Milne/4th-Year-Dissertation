@@ -105,7 +105,8 @@ class Solver:
                     subT = Subtasks.Subtask(method, method.parameters)
                     subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
-                    new_model = Model(State.reproduce(search_model.current_state), [subT] + search_model.search_modifiers, self.problem)
+                    new_model = Model(State.reproduce(search_model.current_state),
+                                      [subT] + search_model.search_modifiers, self.problem)
                     self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
@@ -127,6 +128,7 @@ class Solver:
 
             comparison_result = self.__compare_parameters(mod.task, parameters)
             assert comparison_result[0] == True
+
             mod.add_given_parameters(parameters)
 
             # Add mod to search_model
@@ -136,6 +138,10 @@ class Solver:
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
+
+        # Check preconditions
+        if not subtask.task.preconditions.evaluate(search_model, subtask.given_params):
+            return
 
         for eff in subtask.task.effects.effects:
             param_list = []
@@ -273,6 +279,7 @@ class Solver:
         :return: list of dictionaries containing all possible combinations
         """
         combinations = []
+
         def __create_combinations(remaining_params, selected_params={}):
             if remaining_params == {}:
                 combinations.append(selected_params)

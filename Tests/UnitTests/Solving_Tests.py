@@ -546,4 +546,27 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(problem.objects['waypoint0'], model.search_modifiers[0].given_params['?to'])
         self.assertEqual(problem.objects['waypoint3'], model.search_modifiers[0].given_params['?from'])
 
-    """Action navigate is being called on rover waypoint 2 when the preconditions are not met"""
+    def test_method_expansion(self):
+        """Action navigate is being called on rover waypoint 2 when the preconditions are not met"""
+        """Methods are being expanded with variables which do not satisfy parameters"""
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[2]]
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[1]]
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(0, len(search_models))
