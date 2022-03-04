@@ -40,13 +40,16 @@ class State:
         predicate_indexes = self.get_indexes(predicate.name)
         if predicate_indexes is None:
             raise TypeError
+        deletion = False
         for i in predicate_indexes:
             element_objects = self.elements[i].objects
             if element_objects == predicate_objects:
                 del self.elements[i]
+                deletion = True
                 break
         # Adjust self._index
-        self.__adjust_index_remove_element(predicate.name, i)
+        if deletion:
+            self.__adjust_index_remove_element(predicate.name, i)
 
     def __remove_element_no_objects(self, predicate: Predicate):
         """Params:  - predicate : Predicate"""

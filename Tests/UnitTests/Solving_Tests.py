@@ -545,3 +545,5 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(problem.objects['rover0'], model.search_modifiers[0].given_params['?rover'])
         self.assertEqual(problem.objects['waypoint0'], model.search_modifiers[0].given_params['?to'])
         self.assertEqual(problem.objects['waypoint3'], model.search_modifiers[0].given_params['?from'])
+
+    """Action navigate is being called on rover waypoint 2 when the preconditions are not met"""
