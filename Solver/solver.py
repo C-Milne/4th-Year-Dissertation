@@ -98,7 +98,11 @@ class Solver:
                     if not k.name in param_option:
                         result = False
 
+                # Check for duplicate parameters
                 if result is None:
+                    result = not self.check_duplicate_values_dictionary(param_option)
+
+                if result:
                     result = method.preconditions.evaluate(search_model, param_option)
 
                 if result:
@@ -107,12 +111,14 @@ class Solver:
                     # Create new model and add to search_models
                     new_model = Model(State.reproduce(search_model.current_state),
                                       [subT] + search_model.search_modifiers, self.problem)
+                    new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
                     self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
         i = 0
         if subtask.task.subtasks is None:
+            self.search_models.add(search_model)
             return
         for mod in subtask.task.subtasks.tasks:
             assert type(mod.task) == Action or type(mod.task) == Task
@@ -141,6 +147,8 @@ class Solver:
 
         # Check preconditions
         if not subtask.task.preconditions.evaluate(search_model, subtask.given_params):
+            search_model.add_action_taken(subtask.task)
+            self.search_models.add(search_model)
             return
 
         for eff in subtask.task.effects.effects:
@@ -287,7 +295,7 @@ class Solver:
             k = list(remaining_params.keys())[0]
             popped = remaining_params.pop(k)
             for po in popped:
-                __create_combinations(remaining_params, Model.merge_dictionaries(selected_params, {k: po}))
+                __create_combinations(self.reproduce_dict(remaining_params), Model.merge_dictionaries(selected_params, {k: po}))
 
         # Check input format
         for p in param_dict:
@@ -300,7 +308,7 @@ class Solver:
             else:
                 raise TypeError("Unknown type {}".format(type(q)))
         # Create combinations
-        __create_combinations(param_dict)
+        __create_combinations(self.reproduce_dict(param_dict))
         return combinations
 
     def __generate_param_dict(self, modifier, params):
@@ -318,6 +326,27 @@ class Solver:
             param_dict[param_name] = params[i]
             i += 1
         return param_dict
+
+    @staticmethod
+    def check_duplicate_values_dictionary(d: dict):
+        """https://www.geeksforgeeks.org/python-find-keys-with-duplicate-values-in-dictionary/
+        :returns True if a duplicate is present
+        :returns False if there is no duplicates"""
+        flipped = {}
+        for key, value in d.items():
+            if value not in flipped:
+                flipped[value] = [key]
+            else:
+                return True
+        return False
+
+    @staticmethod
+    def reproduce_dict(d: dict):
+        return_dict = {}
+        keys = list(d.keys())
+        for k in keys:
+            return_dict[k] = d[k]
+        return return_dict
 
     def output(self, resulting_model: Model):
         assert type(resulting_model) == Model

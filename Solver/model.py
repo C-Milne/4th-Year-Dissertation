@@ -43,6 +43,16 @@ class Model:
         assert type(action) == Action
         self.actions_taken.append(action)
 
+    def populate_actions_taken(self, v):
+        self.actions_taken = v
+
+    @staticmethod
+    def reproduce_actions_taken(model):
+        return_list = []
+        for a in model.actions_taken:
+            return_list.append(a)
+        return return_list
+
     @staticmethod
     def merge_dictionaries(a, b):
         c = a.copy()

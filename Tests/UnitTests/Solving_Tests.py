@@ -547,8 +547,6 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(problem.objects['waypoint3'], model.search_modifiers[0].given_params['?from'])
 
     def test_method_expansion(self):
-        """Action navigate is being called on rover waypoint 2 when the preconditions are not met"""
-        """Methods are being expanded with variables which do not satisfy parameters"""
         domain, problem, solver = RovEx.setup()
         solver._Solver__search(True)
         solver._Solver__search(True)
@@ -570,3 +568,84 @@ class SolvingTests(unittest.TestCase):
         solver._Solver__search(True)
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(0, len(search_models))
+
+    def test_duplicate_parameter_method(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        model = search_models[0]    # Parameters ?to and ?from are the same variable
+        self.assertEqual(1, len(search_models))
+
+    def test_finding_satisfying_parameters(self):
+        domain, problem, solver = RovEx.setup()
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        for i in range(8):
+            solver._Solver__search(True)
+
+        search_models = solver.search_models._SearchQueue__Q
+        search_model = search_models[0]
+        method = domain.methods['m_send_image_data_ordering_0']
+        self.assertEqual(1, len(search_model.search_modifiers))
+        subtask = search_model.search_modifiers[0]
+        parameters = {}
+        for k in subtask.given_params.keys():
+            parameters[k] = subtask.given_params[k]
+        found_params = solver._Solver__find_satisfying_parameters(search_model, method, parameters)
+        self.assertEqual(4, len(found_params))
+        i = 0
+        for d in found_params:
+            self.assertEqual(problem.objects['rover0'], d['?rover'])
+            self.assertEqual(problem.objects['objective1'], d['?objective'])
+            self.assertEqual(problem.objects['high_res'], d['?mode'])
+            self.assertEqual(problem.objects['general'], d['?l'])
+            self.assertEqual(problem.objects['waypoint' + str(i)], d['?x'])
+            self.assertIn('?y', list(d.keys()))
+            self.assertEqual(problem.objects['waypoint0'], d['?y'])
+            i += 1
+
+    def test_rover_execution_complete_guided(self):
+        domain, problem, solver = RovEx.setup()
+        for i in range(2):
+            solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        for i in range(2):
+            solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        for i in range(6):
+            solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(1, len(search_models))
+        self.assertEqual(domain.methods['m_navigate_abs_2_ordering_0'], search_models[0].search_modifiers[0].task)
+        for i in range(3):
+            solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        for i in range(2):
+            solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[2]]
+        search_models = solver.search_models._SearchQueue__Q
+        for i in range(2):
+            solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(1, 2)
