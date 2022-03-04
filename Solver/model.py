@@ -5,6 +5,7 @@ from Internal_Representation.action import Action
 from Internal_Representation.task import Task
 from Internal_Representation.state import State
 from Internal_Representation.subtasks import Subtasks
+from Solver.action_tracker import ActionTracker
 
 """The idea here is that this class will contain all information regarding the current state of the environment"""
 
@@ -39,9 +40,9 @@ class Model:
             (type(modifier) == Subtasks.Subtask and type(modifier.task) == Task)
         self.search_modifiers.insert(index, modifier)
 
-    def add_action_taken(self, action: Action):
+    def add_action_taken(self, action: Action, parameters_used):
         assert type(action) == Action
-        self.actions_taken.append(action)
+        self.actions_taken.append(ActionTracker(action, parameters_used))
 
     def populate_actions_taken(self, v):
         self.actions_taken = v

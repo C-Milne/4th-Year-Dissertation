@@ -640,12 +640,19 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(domain.methods['m_navigate_abs_2_ordering_0'], search_models[0].search_modifiers[0].task)
         for i in range(3):
             solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
-        for i in range(2):
-            solver._Solver__search(True)
+
+        # [m_send_image_data_ordering_0, m_send_image_data_ordering_0, m_send_image_data_ordering_0]
         solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[2]]
         search_models = solver.search_models._SearchQueue__Q
-        for i in range(2):
-            solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        # [m_navigate_abs_1_ordering_0, m_navigate_abs_3_ordering_0, m_navigate_abs_3_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[1]]
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(1, 2)

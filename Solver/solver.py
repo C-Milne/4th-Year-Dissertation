@@ -70,6 +70,8 @@ class Solver:
             if self.search_models.get_num_search_models() == 0:
                 if self.search_models.get_num_completed_models() == 1:
                     return self.search_models.get_sole_completed_model()
+                elif self.search_models.get_num_completed_models() > 1:
+                    raise RuntimeError("Multiple Solutions found")
                 break
             elif step_control:
                 break
@@ -147,8 +149,6 @@ class Solver:
 
         # Check preconditions
         if not subtask.task.preconditions.evaluate(search_model, subtask.given_params):
-            search_model.add_action_taken(subtask.task)
-            self.search_models.add(search_model)
             return
 
         for eff in subtask.task.effects.effects:
@@ -163,7 +163,7 @@ class Solver:
                 new_predicate = ProblemPredicate(eff.predicate, param_list)
                 search_model.current_state.add_element(new_predicate)
 
-        search_model.add_action_taken(subtask.task)
+        search_model.add_action_taken(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
 
     def __compare_parameters(self, method: Method, parameters: dict[Object]):
