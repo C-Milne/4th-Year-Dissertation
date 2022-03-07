@@ -19,6 +19,7 @@ class HDDLParsingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
 
     def test_load_unknown_domain(self):
         # Test loading unknown domain file
@@ -99,7 +100,6 @@ class HDDLParsingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain1.hddl")
         self.assertEqual(8, len(domain.types))
@@ -117,6 +117,19 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(None, domain.types['object'].parent)
         for k in keys[1:]:
             self.assertEqual(domain.types['object'], domain.types[k].parent)
+
+    def test_parsing_types_2(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        self.assertEqual(8, len(domain.types))
+        for t in domain.types:
+            if t == 'object':
+                continue
+            self.assertEqual(domain.types['object'], domain.types[t].parent)
 
     def test_parsing_predicates(self):
         # Rover Domain

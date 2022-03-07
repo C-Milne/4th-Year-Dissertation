@@ -44,6 +44,8 @@ class HDDLParser(Parser):
                     self._parse_type(group)
                 elif lead == ":constraints":
                     self._parse_constraint(group)
+                elif lead == ":constants":
+                    self._parse_constant(group)
                 else:
                     raise AttributeError("Unknown tag; {}".format(lead))
         self._post_domain_parsing_grounding()
@@ -72,24 +74,26 @@ class HDDLParser(Parser):
 
     """Methods for parsing domains"""
     def _parse_type(self, params):
+        def _add_types_to_domain(t=None):
+            for o in new_types:
+                self.domain.add_type(Type(o, t))
+
         i = 0
         l = len(params)
+        new_types = []
         while i < l:
-            if i + 1 < l:
-                if params[i + 1] == "-":
-                    super_type_name = params[i + 2]
-                    # Check if super type is already a registered type
-                    super_type = self.domain.get_type(super_type_name)
-                    if super_type is False:
-                        self.domain.add_type(Type(super_type_name))
-                        super_type = self.domain.get_type(super_type_name)
-                    self.domain.add_type(Type(params[i], super_type))
-                    i += 2
-                else:
-                    self.domain.add_type(Type(params[i]))
+            if params[i] != "-":
+                new_types.append(params[i])
+                i += 1
             else:
-                self.domain.add_type(Type(params[i]))
-            i += 1
+                parent_type = self.domain.get_type(params[i + 1])
+                if parent_type is False:
+                    self.domain.add_type(Type(params[i + 1]))
+                    parent_type = self.domain.get_type(params[i + 1])
+                _add_types_to_domain(parent_type)
+                new_types = []
+                i += 2
+        _add_types_to_domain()
 
     def _parse_predicates(self, params):
         for i in params:
@@ -283,6 +287,10 @@ class HDDLParser(Parser):
                         self._requires_grounding.append(subtasks.tasks[len(subtasks) - 1])
                 i += 1
         return subtasks
+
+    def _parse_constant(self, params):
+        if len(params) > 0:
+            raise NotImplementedError
 
     def _post_domain_parsing_grounding(self):
         for item in self._requires_grounding:
