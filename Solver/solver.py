@@ -20,10 +20,17 @@ class Solver:
         self.search_models = SearchQueue()
 
     def solve(self):
-        task_counter = 0
+        search_state_results = []
         search_result = None
-        for subT in self.problem.subtasks.get_tasks():
+
+        task_counter = 0
+        subtasks = self.problem.subtasks.get_tasks()
+        num_tasks = len(subtasks)
+        while task_counter < num_tasks:
+            subT = subtasks[task_counter]
             if subT == "and" or subT == "or":
+                del subtasks[task_counter]
+                num_tasks -= 1
                 continue
 
             print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
@@ -34,18 +41,33 @@ class Solver:
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
             subT.add_given_parameters(param_dict)
-            if search_result is None:
+
+            if search_state_results == [] and task_counter == 0:
                 initial_model = Model(State.reproduce(self.problem.initial_state), [subT], self.problem)
             else:
-                initial_model = Model(State.reproduce(search_result.current_state), [subT], self.problem)
+                base_selection = search_state_results[len(search_state_results) - 1]
+                if len(base_selection) == 0:
+                    del search_state_results[len(search_state_results) - 1]
+                    task_counter -= 1
+                    continue
+                base_model = base_selection.pop(0)
+                initial_model = Model(State.reproduce(base_model.current_state), [subT], self.problem)
+                initial_model.actions_taken = base_model.actions_taken
+                initial_model.operations_taken = base_model.operations_taken
             self.search_models.add(initial_model)
 
             search_result = self.__search()
-            if search_result is None:
+            if search_result is None and len(search_state_results) == 0:
                 print("No plan Found")
                 sys.exit()
-            task_counter += 1
-        return search_result
+            elif search_result is None:
+                continue
+            else:
+                if type(search_result) == list:
+                    search_state_results.append(search_result)
+
+                task_counter += 1
+        return search_state_results[-1][0]
 
     def __search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
@@ -68,11 +90,10 @@ class Solver:
 
             # Loop exit conditions
             if self.search_models.get_num_search_models() == 0:
-                if self.search_models.get_num_completed_models() == 1:
-                    return self.search_models.get_sole_completed_model()
-                elif self.search_models.get_num_completed_models() > 1:
-                    raise RuntimeError("Multiple Solutions found")
-                break
+                if self.search_models.get_num_completed_models() > 0:
+                    return self.search_models.get_completed_models()
+                else:
+                    return None
             elif step_control:
                 break
             # Also check goal conditions
@@ -357,7 +378,12 @@ class Solver:
         assert type(resulting_model) == Model
 
         print("\nActions Taken:")
-        print([a.name for a in resulting_model.actions_taken])
+        for a in resulting_model.actions_taken:
+            print(a)
 
-        print("Final State:")
+        print("\nOperations Taken:")
+        for a in resulting_model.operations_taken:
+            print(a)
+
+        print("\nFinal State:")
         print(resulting_model.current_state)

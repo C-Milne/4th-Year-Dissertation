@@ -8,6 +8,9 @@ from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.state import State
+from Internal_Representation.parameter import Parameter
+from Solver.action_tracker import ActionTracker
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 
 
@@ -168,22 +171,14 @@ class SolvingTests(unittest.TestCase):
     def test_action_execution_5(self):
         # Test Carrying out on action with one model and check the state of the others - Also check model state and _index
         domain, problem, solver = RovEx.setup()
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[3] = \
-            solver.search_models._SearchQueue__Q[3], solver.search_models._SearchQueue__Q[0]
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q = solver.search_models._SearchQueue__Q[::-1]
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[6] = \
-            solver.search_models._SearchQueue__Q[6], solver.search_models._SearchQueue__Q[0]
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[6] = \
-            solver.search_models._SearchQueue__Q[6], solver.search_models._SearchQueue__Q[0]
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q[0], solver.search_models._SearchQueue__Q[7] = \
-            solver.search_models._SearchQueue__Q[7], solver.search_models._SearchQueue__Q[0]
-        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem) for i in range(7)]
+        for m in solver.search_models._SearchQueue__Q:
+            m.ranking = 0
+
+        # Execute action on model[7]
+        subT = Subtasks.Subtask(domain.actions['visit'], [Parameter('?from')])
+        subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
+        solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(8, len(search_models))
@@ -623,36 +618,32 @@ class SolvingTests(unittest.TestCase):
             self.assertEqual(problem.objects['waypoint0'], d['?y'])
             i += 1
 
-    def test_rover_execution_complete_guided(self):
+    def test_rover_execution_complete(self):
         domain, problem, solver = RovEx.setup()
-        for i in range(2):
-            solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[3]]
-        solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
-        for i in range(2):
-            solver._Solver__search(True)
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
-        for i in range(6):
-            solver._Solver__search(True)
-        search_models = solver.search_models._SearchQueue__Q
-        self.assertEqual(1, len(search_models))
-        self.assertEqual(domain.methods['m_navigate_abs_2_ordering_0'], search_models[0].search_modifiers[0].task)
-        for i in range(3):
-            solver._Solver__search(True)
+        res = solver.solve()
+        image_data = ActionTracker(domain.actions['communicate_image_data'], {'?r': problem.objects['rover0'],
+                                                                              '?l': problem.objects['general'],
+                                                                              '?o': problem.objects['objective1'],
+                                                                              '?m': problem.objects['high_res'],
+                                                                              '?x': problem.objects['waypoint1'],
+                                                                              '?y': problem.objects['waypoint0']})
+        soil_data = ActionTracker(domain.actions['communicate_soil_data'], {'?r': problem.objects['rover0'],
+                                                                            '?l': problem.objects['general'],
+                                                                            '?p': problem.objects['waypoint2'],
+                                                                            '?x': problem.objects['waypoint1'],
+                                                                            '?y': problem.objects['waypoint0']})
+        rock_data = ActionTracker(domain.actions['communicate_rock_data'], {'?r': problem.objects['rover0'],
+                                                                            '?l': problem.objects['general'],
+                                                                            '?p': problem.objects['waypoint3'],
+                                                                            '?x': problem.objects['waypoint1'],
+                                                                            '?y': problem.objects['waypoint0']})
+        necessary_actions = [image_data, soil_data, rock_data]
+        for a in necessary_actions:
+            print("Testing {}".format(a.action))
+            found = False
+            for ac in res.actions_taken:
+                if a == ac:
+                    found = True
+                    break
+            self.assertEqual(True, found)
 
-        # [m_send_image_data_ordering_0, m_send_image_data_ordering_0, m_send_image_data_ordering_0]
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[2]]
-        search_models = solver.search_models._SearchQueue__Q
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        search_models = solver.search_models._SearchQueue__Q
-
-        # [m_navigate_abs_1_ordering_0, m_navigate_abs_3_ordering_0, m_navigate_abs_3_ordering_0]
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[1]]
-        search_models = solver.search_models._SearchQueue__Q
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        search_models = solver.search_models._SearchQueue__Q
-        self.assertEqual(1, 2)

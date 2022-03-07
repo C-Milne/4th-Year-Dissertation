@@ -5,13 +5,25 @@ from Internal_Representation.Object import Object
 
 
 class ActionTracker:
-    def __init__(self, action: Action, parameters_used: dict[Object]):
+    def __init__(self, action: Action, parameters_used: dict[str, Object]):
         assert type(action) == Action or type(action) == Method or type(action) == Task
         assert type(parameters_used) == dict
         for k in parameters_used:
             assert type(parameters_used[k]) == Object
         self.action = action
         self.parameters_used = parameters_used
+
+    def __eq__(self, other):
+        if self.action != other.action:
+            return False
+        if len(self.parameters_used) != len(other.parameters_used):
+            return False
+        for i in self.parameters_used:
+            if not i in other.parameters_used:
+                return False
+            elif self.parameters_used[i] != other.parameters_used[i]:
+                return False
+        return True
 
     def __str__(self):
         return_str = "{}".format(self.action.name)

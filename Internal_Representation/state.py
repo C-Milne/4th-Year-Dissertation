@@ -86,6 +86,28 @@ class State:
             returnState.add_element(e)
         return returnState
 
+    @staticmethod
+    def compare_states(state1, state2):
+        """:returns - True if state1 and state2 are equal
+        :returns    - False otherwise"""
+        # Check lengths
+        if len(state1) != len(state2):
+            return False
+
+        # Check state contents
+        for e in state1.elements:
+            validated = False
+            for i in state2.elements:
+                if e.predicate == i.predicate and e.objects == i.objects:
+                    validated = True
+                    break
+            if not validated:
+                return False
+        return True
+
+    def __len__(self):
+        return len(self.elements)
+
     def __str__(self):
         print_string = ""
         for e in self.elements[:-1]:
