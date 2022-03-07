@@ -23,6 +23,7 @@ class SolvingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
 
     # def test_action_execution(self):
     #     domain = Domain(None)
@@ -621,3 +622,13 @@ class SolvingTests(unittest.TestCase):
                     break
             self.assertEqual(True, found)
 
+    def test_goal_state_satisfaction(self):
+        # Some of the rover domains have goal states defined. Check that the returned plan satisfies the goal conditions
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+        self.assertEqual(1, 2)

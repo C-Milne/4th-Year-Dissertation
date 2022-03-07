@@ -365,6 +365,8 @@ class HDDLParser(Parser):
                 raise TypeError("Unknown keyword {}".format(lead))
 
     def _parse_goal_state(self, params):
+        if type(params) == list and len(params) == 1 and type(params[0]) == list and len(params[0]) > 1:
+            params = params[0]
         cons = self._parse_precondition(params)
         self.problem.add_goal_conditions(cons)
 

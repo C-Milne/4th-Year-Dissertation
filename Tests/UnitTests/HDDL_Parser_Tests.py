@@ -687,6 +687,18 @@ class HDDLParsingTests(unittest.TestCase):
         for o in problem.objects:
             self.assertEqual(domain.types['block'], problem.objects[o].type)
 
+    def test_parsing_goal_state(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+
+        self.assertEqual(['and', ['communicated_soil_data', 'waypoint0'], ['communicated_rock_data', 'waypoint0'],
+                          ['communicated_image_data', 'objective1', 'low_res']], problem.goal_conditions.conditions)
+
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)

@@ -17,6 +17,8 @@ class Solver:
         self.domain = domain
         self.problem = problem
 
+        self.has_goal_conditions = self.problem.has_goal_conditions()
+
         self.search_models = SearchQueue()
 
     def solve(self):
@@ -62,6 +64,11 @@ class Solver:
                 sys.exit()
             elif search_result is None:
                 continue
+            elif task_counter == num_tasks - 1 and self.has_goal_conditions:
+                # Check goal conditions
+                for model in search_result:
+                    if self.problem.evaluate_goal(model):
+                        return model
             else:
                 if type(search_result) == list:
                     search_state_results.append(search_result)
