@@ -317,21 +317,22 @@ class HDDLParser(Parser):
                             .format(self.problem_path, name, self.domain_path, self.domain_name))
 
     def _parse_objects(self, params):
+        def _add_objects_to_problem(t=None):
+            for o in new_obs:
+                self.problem.add_object(Object(o, t))
         i = 0
         l = len(params)
+        new_obs = []
         while i < l:
-            if i + 1 < l and params[i + 1] == "-":
-                # Object with a type
-                ob_type = self.domain.get_type(params[i + 2])
-                if type(ob_type) != Type:
-                    raise SyntaxError("Type {} is unknown".format(type(ob_type)))
-
-                self.problem.add_object(Object(params[i], ob_type))
-                i += 2
+            if params[i] != "-":
+                new_obs.append(params[i])
+                i += 1
             else:
-                # Object with no type
-                self.problem.add_object(Object(params[i]))
-            i += 1
+                obs_type = self.domain.get_type(params[i + 1])
+                _add_objects_to_problem(obs_type)
+                new_obs = []
+                i += 2
+        _add_objects_to_problem()
 
     def _parse_initial_state(self, params):
         for i in params:

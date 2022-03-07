@@ -662,6 +662,18 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(Object, type(problem.subtasks.tasks[2].parameters[0]))
         self.assertEqual(problem.subtasks.tasks[2], problem.subtasks.labelled_tasks['task1'])
 
+    def test_parsing_blocksworld_objects(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.blocksworld_path + "domain.hddl")
+        parser.parse_problem(self.blocksworld_path + "pb1.hddl")
+        self.assertEqual(5, len(problem.objects))
+        for o in problem.objects:
+            self.assertEqual(domain.types['block'], problem.objects[o].type)
+
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)

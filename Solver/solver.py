@@ -111,6 +111,8 @@ class Solver:
 
             if not comparison_result[0]:
                 found_params = self.__find_satisfying_parameters(search_model, method, parameters)
+                if found_params is False:
+                    found_params = []
             else:
                 found_params = [parameters]
 
@@ -126,7 +128,7 @@ class Solver:
                     result = not self.check_duplicate_values_dictionary(param_option)
 
                 if result:
-                    result = method.preconditions.evaluate(search_model, param_option)
+                    result = method.evaluate_preconditions(search_model, param_option)
 
                 if result:
                     subT = Subtasks.Subtask(method, method.parameters)

@@ -23,33 +23,7 @@ class SolvingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
-
-    def test_model_requirement_satisfier(self):
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_3.hddl")
-        parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-
-        model = Model(problem.initial_state, [domain.methods["unstack-block"]], problem)
-        self.assertEqual(1, len(model.search_modifiers))
-        self.assertEqual({'unstack-block':[{'?b': problem.objects['b3']}]}, model.search_modifiers)
-
-    # def test_model_requirement_satisfier_2(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     # Test preconditions
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_4.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     model = Model(problem, None, [domain.methods["pickup-ready-block"]])
-    #     self.assertEqual(0, len(model.ready_modifiers))
-    #
+    
     # def test_action_execution(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)
@@ -639,7 +613,7 @@ class SolvingTests(unittest.TestCase):
                                                                             '?y': problem.objects['waypoint0']})
         necessary_actions = [image_data, soil_data, rock_data]
         for a in necessary_actions:
-            print("Testing {}".format(a.action))
+            # print("Testing {}".format(a.action))
             found = False
             for ac in res.actions_taken:
                 if a == ac:
