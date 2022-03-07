@@ -24,19 +24,19 @@ class SolvingTests(unittest.TestCase):
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
 
-    # def test_model_requirement_satisfier(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_3.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     model = Model(problem, None, [domain.methods["unstack-block"]])
-    #     self.assertEqual(1, len(model.ready_modifiers))
-    #     self.assertEqual({'unstack-block':[{'?b': problem.objects['b3']}]}, model.ready_modifiers)
-    #
+    def test_model_requirement_satisfier(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_3.hddl")
+        parser.parse_problem(self.blocksworld_path + "pb1.hddl")
+
+        model = Model(problem.initial_state, [domain.methods["unstack-block"]], problem)
+        self.assertEqual(1, len(model.search_modifiers))
+        self.assertEqual({'unstack-block':[{'?b': problem.objects['b3']}]}, model.search_modifiers)
+
     # def test_model_requirement_satisfier_2(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)

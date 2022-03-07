@@ -43,7 +43,7 @@ class HDDLParser(Parser):
                 elif lead == ":types":
                     self._parse_type(group)
                 elif lead == ":constraints":
-                    self._parse_constraints(group)
+                    self._parse_constraint(group)
                 else:
                     raise AttributeError("Unknown tag; {}".format(lead))
         self._post_domain_parsing_grounding()
@@ -354,6 +354,10 @@ class HDDLParser(Parser):
                 self.problem.order_subtasks(params.pop(0))
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
+
+    def _parse_goal_state(self, params):
+        cons = self._parse_precondition(params)
+        self.problem.add_goal_conditions(cons)
 
     def _post_problem_parsing_grounding(self):
         for item in self._requires_grounding:
