@@ -23,7 +23,7 @@ class SolvingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
-    
+
     # def test_action_execution(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)
