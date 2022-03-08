@@ -56,7 +56,8 @@ class HDDLParsingTests(unittest.TestCase):
         # Test only passing in one file path
         with self.assertRaises(Exception) as error:
             Runner(self.basic_domain_path)
-        self.assertEqual("__init__() missing 1 required positional argument: 'problem_path'", str(error.exception))
+        self.assertTrue("__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception) or
+                        "Runner.__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception))
 
     def test_load_incompatible_files(self):
         # Test loading incompatible files

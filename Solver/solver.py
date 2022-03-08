@@ -389,6 +389,8 @@ class Solver:
         print("\nActions Taken:")
         for a in resulting_model.actions_taken:
             print(a)
+        if len(resulting_model.actions_taken) == 0:
+            print("No Actions")
 
         print("\nOperations Taken:")
         for a in resulting_model.operations_taken:

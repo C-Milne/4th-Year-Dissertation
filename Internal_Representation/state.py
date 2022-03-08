@@ -109,8 +109,11 @@ class State:
         return len(self.elements)
 
     def __str__(self):
-        print_string = ""
-        for e in self.elements[:-1]:
-            print_string += str(e) + "\n"
-        print_string += str(self.elements[-1])
+        if len(self.elements) > 0:
+            print_string = ""
+            for e in self.elements[:-1]:
+                print_string += str(e) + "\n"
+            print_string += str(self.elements[-1])
+        else:
+            print_string = "State is empty."
         return print_string
