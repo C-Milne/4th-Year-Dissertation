@@ -111,8 +111,10 @@ class Solver:
             # Check parameters for new_model
             # Is all the required parameters present or do some need to be chosen
             parameters = {}
+            i = 0
             for k in subtask.given_params.keys():
-                parameters[k] = subtask.given_params[k]
+                parameters[method.task['params'][i].name] = subtask.given_params[k]
+                i += 1
 
             comparison_result = self.__compare_parameters(method, parameters)
 

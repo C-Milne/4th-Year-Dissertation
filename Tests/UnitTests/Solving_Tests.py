@@ -12,6 +12,7 @@ from Internal_Representation.state import State
 from Internal_Representation.parameter import Parameter
 from Solver.action_tracker import ActionTracker
 import Tests.UnitTests.TestTools.rover_execution as RovEx
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class SolvingTests(unittest.TestCase):
@@ -24,6 +25,7 @@ class SolvingTests(unittest.TestCase):
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
         self.rover_col_path = "../Examples/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
     # def test_action_execution(self):
     #     domain = Domain(None)
@@ -639,3 +641,49 @@ class SolvingTests(unittest.TestCase):
         pred_obs = [problem.objects['waypoint0']]
         plan.current_state.remove_element(rock_comm_pred, pred_obs)
         self.assertEqual(False, problem.evaluate_goal(plan))
+
+    def test_parameter_expansion(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
+
+        task = problem.subtasks.get_tasks()[0]
+
+        # Initialise solver
+        solver = Solver(domain, problem)
+
+        # Create initial model
+        solver.search_models.clear()
+        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        task.add_given_parameters(param_dict)
+        initial_model = Model(problem.initial_state, [task], problem)
+        solver.search_models.add(initial_model)
+
+        # Expand
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        model = search_models[0]
+        self.assertEqual(4, len(model.search_modifiers[0].given_params))
+
+    def test_transport01_execution(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
+
+        task = problem.subtasks.get_tasks()[0]
+
+        # Initialise solver
+        solver = Solver(domain, problem)
+
+        # Create initial model
+        solver.search_models.clear()
+        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        task.add_given_parameters(param_dict)
+        initial_model = Model(problem.initial_state, [task], problem)
+        solver.search_models.add(initial_model)
+
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        self.assertEqual(1, 2)
