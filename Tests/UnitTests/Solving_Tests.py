@@ -639,4 +639,3 @@ class SolvingTests(unittest.TestCase):
         pred_obs = [problem.objects['waypoint0']]
         plan.current_state.remove_element(rock_comm_pred, pred_obs)
         self.assertEqual(False, problem.evaluate_goal(plan))
-    
