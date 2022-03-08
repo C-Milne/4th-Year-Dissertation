@@ -684,6 +684,38 @@ class SolvingTests(unittest.TestCase):
         solver.search_models.add(initial_model)
 
         solver._Solver__search(True)
+        # [m_deliver_ordering_0, m_deliver_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+
+        # [m_drive_to_ordering_0, m_drive_to_ordering_0, m_drive_to_via_ordering_0, m_drive_to_via_ordering_0,
+        # m_i_am_there_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[1]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+
+        # [m_load_ordering_0, m_load_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+
+        # [m_drive_to_ordering_0, m_drive_to_ordering_0, m_drive_to_via_ordering_0, m_drive_to_via_ordering_0,
+        # m_i_am_there_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+
+        # [m_unload_ordering_0, m_unload_ordering_0]
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+
         search_models = solver.search_models._SearchQueue__Q
 
         self.assertEqual(1, 2)
