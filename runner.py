@@ -4,10 +4,12 @@ from Parsers.HDDL_Parser import HDDLParser
 from Solver.solver import Solver
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+import importlib.util
 
 
 class Runner:
-    def __init__(self, domain_path, problem_path):
+    def __init__(self, domain_path, problem_path, heuristic_path="Solver/Heuristics/breadth_first_by_actions"):
+        """TODO : Check python version. 3.5+ required for importlib.util"""
         # Necessary variables
         self.parser = None
         self.suffix = None
@@ -22,6 +24,9 @@ class Runner:
         # Parse problem
         self.__check_file_exists(problem_path, "Problem")
         self.__parse_problem(problem_path)
+
+        # Load Heuristic
+        heuristic = self.__load_heuristic(heuristic_path)
 
         # Solve
         self.solver = Solver(self.domain, self.problem)
@@ -46,12 +51,18 @@ class Runner:
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
 
-    def __check_file_exists(self, file_path, file_purpose=None):
+    @staticmethod
+    def __check_file_exists(file_path, file_purpose=None):
         if not os.path.exists(file_path):
             if file_purpose is None:
                 raise FileNotFoundError("File {} could not be found".format(file_path))
             else:
                 raise FileNotFoundError("{} file entered could not be found. ({})".format(file_purpose, file_path))
+
+    def __load_heuristic(self, path):
+        self.__check_file_exists(path)
+
+        return None
 
     @staticmethod
     def __get_suffix(path):
