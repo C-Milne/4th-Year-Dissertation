@@ -13,7 +13,7 @@ from Internal_Representation.state import State
 
 
 class Solver:
-    def __init__(self, domain, problem, model=None):
+    def __init__(self, domain, problem):
         self.domain = domain
         self.problem = problem
 

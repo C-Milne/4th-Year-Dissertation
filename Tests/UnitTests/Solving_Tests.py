@@ -631,4 +631,12 @@ class SolvingTests(unittest.TestCase):
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
-        self.assertEqual(1, 2)
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        self.assertEqual(True, problem.evaluate_goal(plan))
+
+        rock_comm_pred = domain.predicates['communicated_rock_data']
+        pred_obs = [problem.objects['waypoint0']]
+        plan.current_state.remove_element(rock_comm_pred, pred_obs)
+        self.assertEqual(False, problem.evaluate_goal(plan))
+    
