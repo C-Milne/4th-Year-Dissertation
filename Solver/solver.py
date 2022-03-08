@@ -183,20 +183,21 @@ class Solver:
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
 
         # Check preconditions
-        if not subtask.task.preconditions.evaluate(search_model, subtask.given_params):
+        if not subtask.evaluate_preconditions(search_model, subtask.given_params):
             return
 
-        for eff in subtask.task.effects.effects:
-            param_list = []
-            for i in eff.parameters:
-                param_list.append(subtask.given_params[i])
-            if eff.negated:
-                # Predicate needs to be removed
-                search_model.current_state.remove_element(eff.predicate, param_list)
-            else:
-                # Predicate needs to be added
-                new_predicate = ProblemPredicate(eff.predicate, param_list)
-                search_model.current_state.add_element(new_predicate)
+        if not subtask.task.effects is None:
+            for eff in subtask.task.effects.effects:
+                param_list = []
+                for i in eff.parameters:
+                    param_list.append(subtask.given_params[i])
+                if eff.negated:
+                    # Predicate needs to be removed
+                    search_model.current_state.remove_element(eff.predicate, param_list)
+                else:
+                    # Predicate needs to be added
+                    new_predicate = ProblemPredicate(eff.predicate, param_list)
+                    search_model.current_state.add_element(new_predicate)
 
         search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)

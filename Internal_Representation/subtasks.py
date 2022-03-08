@@ -23,6 +23,12 @@ class Subtasks:
                 assert type(params[i]) == Object
             self.given_params = params
 
+        def evaluate_preconditions(self, model, params):
+            if self.task.preconditions is None:
+                return True
+            else:
+                return self.task.preconditions.evaluate(model, params)
+
     def __init__(self):
         self.tasks = []
         self.labelled_tasks = {}
