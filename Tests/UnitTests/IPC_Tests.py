@@ -87,3 +87,33 @@ class IPCTests(unittest.TestCase):
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, 2)
+
+    def test_satellite01(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertEqual(1, 2)
+
+    def test_transport01(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
+        solver = Solver(domain, problem)
+
+        # I think this one is not solvable
+        # plan = solver.solve()
+        # solver.output(plan)
+        self.assertEqual(1, 2)
+
+    def test_um_translog01(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertEqual(1, 2)
+
