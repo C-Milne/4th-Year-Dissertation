@@ -55,3 +55,35 @@ class IPCTests(unittest.TestCase):
         self.assertEqual(domain.actions['noop'], plan.operations_taken[0].action)
         self.assertEqual("State is empty.", str(plan.current_state))
         self.assertEqual(0, len(plan.search_modifiers))
+
+    def test_5_constants_in_domain(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test05_constants_in_domain/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "test05_constants_in_domain/problem.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertEqual(1, 2)
+
+    def test_6_synonymes(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test06_synonymes/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "test06_synonymes/problem.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertEqual(1, 2)
+
+    def test_7_arguments(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test07_arguments/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "test07_arguments/problem.hddl")
+        solver = Solver(domain, problem)
+
+        self.assertEqual(2, len(domain.actions['noop'].parameters))
+        for p in domain.actions['noop'].parameters:
+            self.assertEqual(domain.types['a'], p.type)
+
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertEqual(1, 2)
