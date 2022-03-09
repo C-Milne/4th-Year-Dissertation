@@ -118,11 +118,7 @@ class Solver:
                     if not k.name in param_option:
                         result = False
 
-                # Check for duplicate parameters
                 if result is None:
-                    result = not self.check_duplicate_values_dictionary(param_option)
-
-                if result:
                     result = method.evaluate_preconditions(search_model, param_option)
 
                 if result:
