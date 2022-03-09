@@ -30,7 +30,8 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+        self.assertIsNotNone(plan)
+        self.assertEqual(1, len(plan.actions_taken))
 
     def test_3_forall1(self):
         domain, problem, parser, solver = env_setup(True)
@@ -39,7 +40,9 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+        self.assertEqual(1, len(plan.actions_taken))
+        self.assertEqual(1, len(plan.actions_taken[0].parameters_used))
+        self.assertEqual(problem.objects['f'], plan.actions_taken[0].parameters_used['?b'])
 
     def test_4_no_abstracts(self):
         domain, problem, parser, solver = env_setup(True)
@@ -63,7 +66,10 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+        self.assertEqual(1, len(plan.actions_taken))
+        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].action)
+        self.assertEqual(1, len(plan.actions_taken[0].parameters_used))
+        self.assertEqual(problem.objects['a'], plan.actions_taken[0].parameters_used['?a'])
 
     def test_6_synonymes(self):
         domain, problem, parser, solver = env_setup(True)
@@ -72,7 +78,10 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+        self.assertEqual(8, len(plan.actions_taken))
+        for i in range(4):
+            self.assertEqual(domain.actions['noop1'], plan.actions_taken[i * 2].action)
+            self.assertEqual(domain.actions['noop2'], plan.actions_taken[(i * 2) + 1].action)
 
     def test_7_arguments(self):
         domain, problem, parser, solver = env_setup(True)
@@ -88,6 +97,7 @@ class IPCTests(unittest.TestCase):
         solver.output(plan)
         self.assertEqual(1, 2)
 
+    @unittest.skip
     def test_satellite01(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
@@ -97,6 +107,7 @@ class IPCTests(unittest.TestCase):
         solver.output(plan)
         self.assertEqual(1, 2)
 
+    @unittest.skip
     def test_transport01(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
@@ -108,6 +119,7 @@ class IPCTests(unittest.TestCase):
         # solver.output(plan)
         self.assertEqual(1, 2)
 
+    @unittest.skip
     def test_um_translog01(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
@@ -116,4 +128,3 @@ class IPCTests(unittest.TestCase):
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, 2)
-

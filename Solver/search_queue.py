@@ -1,11 +1,17 @@
 from Solver.model import Model
 from Internal_Representation.state import State
+from Solver.Heuristics.Heuristic import Heuristic
 
 
 class SearchQueue:
     def __init__(self):
         self.__Q = []
         self.__completed_models = []
+        self.heuristic = None
+
+    def add_heuristic(self, heuristic):
+        assert isinstance(heuristic, Heuristic)
+        self.heuristic = heuristic
 
     def add(self, model):
         if type(model) != Model:
@@ -13,7 +19,7 @@ class SearchQueue:
                             "Expected Model got {}".format(type(model)))
 
         # This is where the heuristic value would be calculated
-        ranking = len(model.actions_taken)
+        ranking = self.heuristic.ranking(model)
         model.set_ranking(ranking)
 
         if len(model.search_modifiers) > 0:
@@ -22,15 +28,7 @@ class SearchQueue:
             self.__add_completed_model(model)
 
     def __add_completed_model(self, model):
-        # Check if a model with the same state is already found
-        already_found = False
-        for m in self.__completed_models:
-            already_found = State.compare_states(m.current_state, model.current_state)
-            if already_found:
-                break
-
-        if not already_found:
-            self.__completed_models.append(model)
+        self.__completed_models.append(model)
 
     def __add_model(self, model, ranking):
         added = False
@@ -44,7 +42,12 @@ class SearchQueue:
         if not added:
             self.__Q.append(model)
 
+    def clear_completed_models(self):
+        self.__completed_models = []
+
     def pop(self):
+        if len(self.__Q) == 0:
+            return None
         return self.__Q.pop(0)
 
     def clear(self):

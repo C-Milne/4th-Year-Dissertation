@@ -1,4 +1,6 @@
 import unittest
+from unittest import mock
+from io import StringIO
 from Tests.UnitTests.HDDL_Parser_Tests import HDDLParsingTests
 from Tests.UnitTests.HDDL_Grounding_Tests import HDDLGroundingTests
 from Tests.UnitTests.Solving_Tests import SolvingTests
@@ -19,5 +21,6 @@ def suite():
 if __name__ == "__main__":
     test_suite = suite()
 
-    runner = unittest.TextTestRunner()
-    runner.run(test_suite)
+    with mock.patch('sys.stdout', new=StringIO()) as std_out:
+        runner = unittest.TextTestRunner()
+        runner.run(test_suite)

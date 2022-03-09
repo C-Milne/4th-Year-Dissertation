@@ -40,11 +40,12 @@ class Precondition:
                 # All instances of predicates need to hold
                 param_name = cons[1][0]
                 param_type = cons[1][2]
+
                 # get all objects of type param_type
                 obs = model.problem.get_objects_of_type(param_type)
 
                 for o in obs:
-                    response = self.evaluate(model, {param_name: o}, cons[2])
+                    response = self.evaluate(model, self.merge_dictionaries(param_dict, {param_name: o}), cons[2])
                     if response is False:
                         return False
                 return True
@@ -66,3 +67,9 @@ class Precondition:
                     if not broken:
                         return True
                 return False
+
+    @staticmethod
+    def merge_dictionaries(a, b):
+        c = a.copy()
+        c.update(b)
+        return c

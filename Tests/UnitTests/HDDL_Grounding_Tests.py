@@ -13,6 +13,7 @@ from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.Object import Object
+from TestTools.env_setup import env_setup
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -24,6 +25,7 @@ class HDDLGroundingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
     # def test_blocksworld_pb1_initial_state(self):
     #     domain = Domain(None)
@@ -142,6 +144,22 @@ class HDDLGroundingTests(unittest.TestCase):
         model = Model(problem.initial_state, [], problem)
         result = method.evaluate_preconditions(model, {})
         self.assertEqual(True, result)
+
+    def test_forall_preconditions_2(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test02_forall/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "test02_forall/problem.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertIsNotNone(plan)
+        self.assertEqual(1, len(plan.actions_taken))
+
+        problem.initial_state.remove_element(domain.predicates['foo'], [problem.objects['a']])
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertIsNone(plan)
 
     def test_precondition_and(self):
         # Test the 'and' functionality for preconditions

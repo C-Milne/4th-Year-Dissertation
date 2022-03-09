@@ -289,8 +289,28 @@ class HDDLParser(Parser):
         return subtasks
 
     def _parse_constant(self, params):
-        if len(params) > 0:
-            raise NotImplementedError
+        def __add_constants_to_problem(t=None):
+            for c in new_constants:
+                self.problem.add_object(Object(c, t))
+
+        i = 0
+        l = len(params)
+        new_constants = []
+        while i < l:
+            v = params[i]
+            if v == "-":
+                v = params[i + 1]
+                const_type = self.domain.get_type(v)
+                if const_type is None or const_type == False:
+                    raise TypeError("Type {} not found when parsing constants. Please check your domain file.".format(v))
+                __add_constants_to_problem(const_type)
+                new_constants = []
+                i += 1
+            else:
+                new_constants.append(v)
+            i += 1
+        __add_constants_to_problem()
+        new_constants = []
 
     def _post_domain_parsing_grounding(self):
         for item in self._requires_grounding:

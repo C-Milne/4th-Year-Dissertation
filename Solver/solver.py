@@ -1,4 +1,3 @@
-import copy
 import sys
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
@@ -10,6 +9,10 @@ from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.state import State
+"""Space for importing heuristic functions"""
+from Solver.Heuristics.Heuristic import Heuristic
+from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
+from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 
 
 class Solver:
@@ -20,13 +23,19 @@ class Solver:
         self.has_goal_conditions = self.problem.has_goal_conditions()
 
         self.search_models = SearchQueue()
+        heuristic = BreadthFirstOperations(self.domain, self.problem, self, self.search_models)
+        self.search_models.add_heuristic(heuristic)
+
+    def set_heuristic(self, heuristic):
+        if type(heuristic) == type:
+            heuristic = heuristic(self.domain, self.problem, self, self.search_models)
+        assert isinstance(heuristic, Heuristic)
+        self.search_models.add_heuristic(heuristic)
 
     def solve(self):
-        search_state_results = []
-        search_result = None
-
         task_counter = 0
         subtasks = self.problem.subtasks.get_tasks()
+        list_subT = []
         num_tasks = len(subtasks)
         while task_counter < num_tasks:
             subT = subtasks[task_counter]
@@ -37,50 +46,25 @@ class Solver:
 
             print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
-            # Prepare search_models
-            self.search_models.clear()
-
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
             subT.add_given_parameters(param_dict)
+            list_subT.append(subT)
+            task_counter += 1
 
-            if search_state_results == [] and task_counter == 0:
-                initial_model = Model(State.reproduce(self.problem.initial_state), [subT], self.problem)
-            else:
-                base_selection = search_state_results[len(search_state_results) - 1]
-                if len(base_selection) == 0:
-                    del search_state_results[len(search_state_results) - 1]
-                    task_counter -= 1
-                    continue
-                base_model = base_selection.pop(0)
-                initial_model = Model(State.reproduce(base_model.current_state), [subT], self.problem)
-                initial_model.actions_taken = base_model.actions_taken
-                initial_model.operations_taken = base_model.operations_taken
-            self.search_models.add(initial_model)
+        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem)
 
-            search_result = self.__search()
-            if search_result is None and len(search_state_results) == 0:
-                print("No plan Found")
-                sys.exit()
-            elif search_result is None:
-                continue
-            elif task_counter == num_tasks - 1 and self.has_goal_conditions:
-                # Check goal conditions
-                for model in search_result:
-                    if self.problem.evaluate_goal(model):
-                        return model
-            else:
-                if type(search_result) == list:
-                    search_state_results.append(search_result)
+        self.search_models.add(initial_model)
 
-                task_counter += 1
-        return search_state_results[-1][0]
+        return self.__search()
 
     def __search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
         while True:
             # New model to operate on
             search_model = self.search_models.pop()
+            if search_model is None:
+                return None
 
             # Check what needs to be done to this model
             next_modifier = search_model.get_next_modifier()
@@ -96,14 +80,16 @@ class Solver:
                 raise NotImplementedError
 
             # Loop exit conditions
-            if self.search_models.get_num_search_models() == 0:
-                if self.search_models.get_num_completed_models() > 0:
-                    return self.search_models.get_completed_models()
-                else:
-                    return None
+            if self.search_models.get_num_search_models() == 0 and self.search_models.get_num_completed_models() == 0:
+                return None
             elif step_control:
                 break
-            # Also check goal conditions
+            elif self.search_models.get_num_completed_models() > 0:
+                for m in self.search_models.get_completed_models():
+                    eval = self.problem.evaluate_goal(m)
+                    if eval is None or eval == True:
+                        return m
+                self.search_models.clear_completed_models()
 
     def __expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
         # For each method, create a new search model
@@ -387,17 +373,20 @@ class Solver:
         return return_dict
 
     def output(self, resulting_model: Model):
-        assert type(resulting_model) == Model
+        assert type(resulting_model) == Model or resulting_model is None
 
-        print("\nActions Taken:")
-        for a in resulting_model.actions_taken:
-            print(a)
-        if len(resulting_model.actions_taken) == 0:
-            print("No Actions")
+        if not resulting_model is None:
+            print("\nActions Taken:")
+            for a in resulting_model.actions_taken:
+                print(a)
+            if len(resulting_model.actions_taken) == 0:
+                print("No Actions")
 
-        print("\nOperations Taken:")
-        for a in resulting_model.operations_taken:
-            print(a)
+            print("\nOperations Taken:")
+            for a in resulting_model.operations_taken:
+                print(a)
 
-        print("\nFinal State:")
-        print(resulting_model.current_state)
+            print("\nFinal State:")
+            print(resulting_model.current_state)
+        else:
+            print("plan not found")

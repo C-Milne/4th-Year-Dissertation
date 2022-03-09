@@ -8,6 +8,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.Object import Object
+from TestTools.env_setup import env_setup
 
 
 class HDDLParsingTests(unittest.TestCase):
@@ -20,6 +21,7 @@ class HDDLParsingTests(unittest.TestCase):
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
         self.rover_col_path = "../Examples/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
     def test_load_unknown_domain(self):
         # Test loading unknown domain file
@@ -699,6 +701,44 @@ class HDDLParsingTests(unittest.TestCase):
 
         self.assertEqual(['and', ['communicated_soil_data', 'waypoint0'], ['communicated_rock_data', 'waypoint0'],
                           ['communicated_image_data', 'objective1', 'low_res']], problem.goal_conditions.conditions)
+
+    def test_parsing_constants(self):
+        # Use IPC Test domain
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test05_constants_in_domain/domain.hddl")
+        self.assertEqual(1, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+
+    def test_parsing_constants_2(self):
+        # Create a domain with 2 constants ( a b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_1.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['a'], problem.objects['b'].type)
+
+        # (a - A b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_2.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['a'], problem.objects['b'].type)
+
+    def test_parsing_constants_3(self):
+        # Create a domain with constants of differing types (a - A b - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_3.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['b'], problem.objects['b'].type)
+
+        # (a - A b c - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_4.hddl")
+        self.assertEqual(3, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['b'], problem.objects['b'].type)
+        self.assertEqual(domain.types['b'], problem.objects['c'].type)
 
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)
