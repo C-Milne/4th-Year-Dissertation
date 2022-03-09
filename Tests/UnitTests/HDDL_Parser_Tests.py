@@ -774,6 +774,102 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(domain.types['b'], problem.objects['b'].type)
         self.assertEqual(domain.types['b'], problem.objects['c'].type)
 
+    def test_parsing_constraint(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
+
+        # method0 - (and (not (= ?take_image_instance_4_argument_6 ?turn_to_instance_3_argument_4)))
+        method = domain.methods['method0']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?take_image_instance_4_argument_6", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_3_argument_4", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method1 - (and (not (= ?take_image_instance_3_argument_4 ?turn_to_instance_2_argument_2)))
+        method = domain.methods['method1']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?take_image_instance_3_argument_4", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method4 - (and (not (= ?switch_off_instance_2_argument_0 ?auto_calibrate_instance_4_argument_5)))
+        method = domain.methods['method4']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?switch_off_instance_2_argument_0", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?auto_calibrate_instance_4_argument_5", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method6 - (and (not (= ?calibrate_instance_3_argument_5 ?turn_to_instance_2_argument_2)))
+        method = domain.methods['method6']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?calibrate_instance_3_argument_5", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)

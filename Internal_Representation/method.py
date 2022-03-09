@@ -1,16 +1,18 @@
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.modifier import Modifier
-from Internal_Representation.task import Task
+from Internal_Representation.constraints import Constraints
 
 
 class Method(Modifier):
-    def __init__(self, name, parameters, preconditions, task, subtasks):
+    def __init__(self, name, parameters, preconditions, task, subtasks, constraints):
         super().__init__(name, parameters, preconditions)
         assert type(task) == dict and len(task.keys()) == 2 and "task" in task.keys() and "params" in task.keys()
         self.task = task
         assert type(subtasks) == Subtasks or subtasks is None
         self.subtasks = subtasks
+        assert type(constraints) == Constraints or constraints is None
+        self.constraints = constraints
 
         self.requirements = {}
         super(Method, self)._prepare_requirements()
@@ -39,3 +41,6 @@ class Method(Modifier):
         if self.name is None:
             return 'Unknown'
         return self.name
+
+    def get_constraints(self):
+        return self.constraints

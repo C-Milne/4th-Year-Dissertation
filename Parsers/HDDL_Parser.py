@@ -11,6 +11,7 @@ from Internal_Representation.effects import Effects
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.modifier import Modifier
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.constraints import Constraints
 
 
 class HDDLParser(Parser):
@@ -216,10 +217,43 @@ class HDDLParser(Parser):
             i += 1
         return Task(task_name, parameters)
 
+    def _parse_constraints(self, params):
+        def __parse_conditions(parameters, parent=None):
+            if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                parameters = parameters[0]
+
+            if type(parameters) == list:
+                i = 0
+                l = len(parameters)
+                while i < l:
+                    p = parameters[i]
+                    if type(p) == str:
+                        cons = constraints.add_condition(p, parent)
+                        if p == "and" or p == "or" or p == "not":
+                            __parse_conditions(parameters[i + 1:], cons)
+                            return
+                        elif p == "=":
+                            for v in parameters[i + 1:]:
+                                __parse_conditions(v, cons)
+                            return
+                        else:
+                            raise TypeError("Unexpected token {}".format(p))
+                    else:
+                        raise TypeError("Unexpected type {}".format(type(p)))
+                    i += 1
+            elif type(parameters) == str:
+                return constraints.add_condition(parameters, parent)
+            else:
+                raise TypeError("Unexpected type {}".format(type(parameters)))
+
+        constraints = Constraints()
+        __parse_conditions(params)
+        return constraints
+
     def _parse_method(self, params):
         i = 0
         l = len(params)
-        method_name, parameters, precon, task, subtasks = None, None, None, None, None
+        method_name, parameters, precon, task, subtasks, constraints = None, None, None, None, None, None
         while i < l:
             if i == 0:
                 if type(params[i]) != str or params[i][0] == ":":
@@ -231,6 +265,9 @@ class HDDLParser(Parser):
                 i += 1
             elif params[i] == ":precondition":
                 precon = self._parse_precondition(params[i + 1])
+                i += 1
+            elif params[i] == ":constraints":
+                constraints = self._parse_constraints(params[i + 1])
                 i += 1
             elif params[i] == ":task":
                 task_ob = self.domain.get_task(params[i + 1][0])
@@ -252,7 +289,7 @@ class HDDLParser(Parser):
             else:
                 raise SyntaxError("Unknown token {}".format(params[i]))
             i += 1
-        return Method(method_name, parameters, precon, task, subtasks)
+        return Method(method_name, parameters, precon, task, subtasks, constraints)
 
     def _parse_subtasks(self, params):
         """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]"""
