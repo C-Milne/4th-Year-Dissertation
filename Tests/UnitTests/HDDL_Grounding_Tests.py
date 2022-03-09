@@ -111,7 +111,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
         self.assertEqual(2, len(domain.methods['pickup-ready-block'].requirements))
-        self.assertEqual({'type': None, 'predicates': {'and': {'clear': 1, 'not': {'done': 1}, 'goal_on': 1}}},
+        self.assertEqual({'type': domain.types['block'], 'predicates': {'and': {'clear': 1, 'not': {'done': 1}, 'goal_on': 1}}},
                          domain.methods['pickup-ready-block'].requirements['?b'])
         self.assertEqual({'type': domain.types['block'],
                           'predicates': {'and': {'goal_on': 2, 'done': 1, 'clear': 1}}},

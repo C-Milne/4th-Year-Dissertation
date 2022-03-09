@@ -277,6 +277,40 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual("?m", action.parameters[4].name)
         self.assertEqual("mode", action.parameters[4].type.name)
 
+    def test_parameter_parsing_1(self):
+        # Create a domain with 2 parameters ( a b - A) (a - A b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "parameter_testing/domain1.hddl")
+        self.assertEqual(2, len(domain.methods['donothing'].parameters))
+        self.assertEqual("?a", domain.methods['donothing'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[0].type)
+        self.assertEqual("?b", domain.methods['donothing'].parameters[1].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[1].type)
+
+        self.assertEqual(2, len(domain.actions['noop'].parameters))
+        self.assertEqual("?a", domain.actions['noop'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[0].type)
+        self.assertEqual("?b", domain.actions['noop'].parameters[1].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[1].type)
+
+    def test_parameter_parsing_2(self):
+        # Create a domain with parameters of differing types (a - A b - B) (a - A b c - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "parameter_testing/domain2.hddl")
+        self.assertEqual(2, len(domain.methods['donothing'].parameters))
+        self.assertEqual("?a", domain.methods['donothing'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[0].type)
+        self.assertEqual("?b", domain.methods['donothing'].parameters[1].name)
+        self.assertEqual(domain.types['b'], domain.methods['donothing'].parameters[1].type)
+
+        self.assertEqual(3, len(domain.actions['noop'].parameters))
+        self.assertEqual("?a", domain.actions['noop'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[0].type)
+        self.assertEqual("?b", domain.actions['noop'].parameters[1].name)
+        self.assertEqual(domain.types['b'], domain.actions['noop'].parameters[1].type)
+        self.assertEqual("?c", domain.actions['noop'].parameters[2].name)
+        self.assertEqual(domain.types['b'], domain.actions['noop'].parameters[2].type)
+
     def test_parsing_tasks(self):
         domain = Domain(None)
         problem = Problem(domain)

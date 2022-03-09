@@ -106,25 +106,33 @@ class HDDLParser(Parser):
 
     def _parse_parameters(self, params):
         """TODO : test this - check parameter name not already in use"""
+        def __add_t_param_list(t=None):
+            for i in param_names:
+                param_list.append(Parameter(i, t))
         """Parses list of parameters and returns a list of parameters
         params  - params : ['?a', '-', 'ob1', '?b', '?c', '-', 'ob2' ...]"""
         i = 0
         l = len(params)
         param_list = []
+        param_names = []
         while i < l:
             p = params[i]
             if type(p) == list:
                 raise TypeError("This method does not accept a list within a list")
-            param_type = None
-            if i + 1 < l:
-                if params[i + 1] == "-":
-                    param_type = self.domain.get_type(params[i + 2])
-                    i += 2
-            if type(p) == str and (type(param_type) == Type or param_type is None):
-                param_list.append(Parameter(p, param_type))
+            elif p == "-":
+                param_type_name = params[i + 1]
+                param_type = self.domain.get_type(param_type_name)
+                if param_type is None or params == False:
+                    raise TypeError("Invalid type {}".format(param_type_name))
+                __add_t_param_list(param_type)
+                param_names = []
+                i += 1
+            elif type(p) == str:
+                param_names.append(p)
             else:
-                raise TypeError("Task Parameters Must be a String")
+                raise TypeError("Unexpected token {}".format(p))
             i += 1
+        __add_t_param_list()
         return param_list
 
     def _parse_action(self, params):

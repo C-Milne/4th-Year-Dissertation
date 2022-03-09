@@ -95,7 +95,11 @@ class IPCTests(unittest.TestCase):
 
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+        self.assertEqual(1, len(plan.actions_taken))
+        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].action)
+        self.assertEqual(2, len(plan.actions_taken[0].parameters_used))
+        self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used[0])
+        self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used[1])
 
     @unittest.skip
     def test_satellite01(self):
