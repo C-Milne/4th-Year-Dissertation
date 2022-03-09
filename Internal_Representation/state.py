@@ -39,7 +39,7 @@ class State:
                     - predicate_objects : [Object] - List of objects taken as parameters"""
         predicate_indexes = self.get_indexes(predicate.name)
         if predicate_indexes is None:
-            raise TypeError
+            return
         deletion = False
         for i in predicate_indexes:
             element_objects = self.elements[i].objects

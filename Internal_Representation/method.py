@@ -26,9 +26,12 @@ class Method(Modifier):
         if self.preconditions is None:
             return True
         assert type(self.preconditions) == Precondition
-        return self.preconditions.evaluate(model, param_dict)
+        result = self.preconditions.evaluate(model, param_dict)
+        if self.constraints is not None and result:
+            result = self._evaluate_constraints(param_dict)
+        return result
 
-    def evaluate_constraints(self, param_dict: dict):
+    def _evaluate_constraints(self, param_dict: dict):
         """:parameter param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}."""
         if self.constraints is None:
             return True

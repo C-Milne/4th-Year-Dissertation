@@ -384,10 +384,10 @@ class HDDLGroundingTests(unittest.TestCase):
             "?turn_to_instance_3_argument_2": problem.objects['satellite0'],
             "?turn_to_instance_3_argument_4": problem.objects['phenomenon6']
         }
-        self.assertEqual(True, method.evaluate_constraints(param_dict))
+        self.assertEqual(True, method._evaluate_constraints(param_dict))
 
         # Test for False
         param_dict['?turn_to_instance_3_argument_4'] = problem.objects['phenomenon4']
-        self.assertEqual(False, method.evaluate_constraints(param_dict))
+        self.assertEqual(False, method._evaluate_constraints(param_dict))
 
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()
