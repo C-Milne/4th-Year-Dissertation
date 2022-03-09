@@ -9,6 +9,7 @@ from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.state import State
+from Internal_Representation.Type import Type
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
@@ -204,7 +205,8 @@ class Solver:
             if not p.name in parameters:
                 missing_params.append(p.name)
                 continue
-            if p.type != parameters[p.name].type:
+            if not self.check_satisfies_type(p.type, parameters[p.name]):
+                m = "Parameter {} of type {} does not match required type {}".format(p.name, parameters[p.name].type.name, p.type)
                 raise TypeError("Parameter {} of type {} does not match required type {}"
                                 .format(p.name, parameters[p.name].type.name, p.type))
         if len(missing_params) == 0:
@@ -239,7 +241,16 @@ class Solver:
         # Convert param_dict into a form which can be used - [[?a, ?b, ?c], [?a, ?b, ?d], ... ]
         return self.__convert_parameter_options_execution_ready(param_dict)
 
-    def __check_object_satisfies_parameter(self, model, object, requirements: dict):
+    def check_satisfies_type(self, required_type: Type, object_to_check: Object):
+        if required_type is None:
+            return True
+        t = object_to_check.type
+        while required_type != t and t.parent is not None:
+            t = t.parent
+        res = required_type == t
+        return res
+
+    def __check_object_satisfies_parameter(self, model: Model, object: Object, requirements: dict):
         """
         :param model:
         :param object:
@@ -251,7 +262,7 @@ class Solver:
         required_predicates = requirements['predicates']
 
         # Check type
-        if required_type is not None and required_type.name != object.type.name:
+        if not self.check_satisfies_type(required_type, object):
             return False
 
         # If there is no requirements on predicates then the object satisfies

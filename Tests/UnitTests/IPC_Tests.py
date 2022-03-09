@@ -3,7 +3,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
 from Solver.solver import Solver
-from TestTools.env_setup import env_setup
+from TestTools.env_setup import env_setup, solver_setup
 
 
 class IPCTests(unittest.TestCase):
@@ -101,7 +101,6 @@ class IPCTests(unittest.TestCase):
         self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used['?a'])
         self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used['?b'])
 
-    @unittest.skip
     def test_satellite01(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
@@ -109,7 +108,39 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+
+        self.assertNotEqual(None, plan)
+        self.assertEqual(5, len(plan.actions_taken))
+
+        self.assertEqual(domain.actions['switch_on'], plan.actions_taken[0].action)
+        self.assertEqual(2, len(plan.actions_taken[0].parameters_used))
+        self.assertEqual(problem.objects['instrument0'], plan.actions_taken[0].parameters_used['?so_i'])
+        self.assertEqual(problem.objects['satellite0'], plan.actions_taken[0].parameters_used['?so_s'])
+
+        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[1].action)
+        self.assertEqual(3, len(plan.actions_taken[1].parameters_used))
+        self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[1].parameters_used['?t_d_new'])
+        self.assertEqual(problem.objects['satellite0'], plan.actions_taken[1].parameters_used['?t_s'])
+        self.assertEqual(problem.objects['phenomenon6'], plan.actions_taken[1].parameters_used['?t_d_prev'])
+
+        self.assertEqual(domain.actions['calibrate'], plan.actions_taken[2].action)
+        self.assertEqual(3, len(plan.actions_taken[2].parameters_used))
+        self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[2].parameters_used['?c_d'])
+        self.assertEqual(problem.objects['satellite0'], plan.actions_taken[2].parameters_used['?c_s'])
+        self.assertEqual(problem.objects['instrument0'], plan.actions_taken[2].parameters_used['?c_i'])
+
+        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[3].action)
+        self.assertEqual(3, len(plan.actions_taken[3].parameters_used))
+        self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[3].parameters_used['?t_d_prev'])
+        self.assertEqual(problem.objects['satellite0'], plan.actions_taken[3].parameters_used['?t_s'])
+        self.assertEqual(problem.objects['phenomenon4'], plan.actions_taken[3].parameters_used['?t_d_new'])
+
+        self.assertEqual(domain.actions['take_image'], plan.actions_taken[4].action)
+        self.assertEqual(4, len(plan.actions_taken[4].parameters_used))
+        self.assertEqual(problem.objects['instrument0'], plan.actions_taken[4].parameters_used['?ti_i'])
+        self.assertEqual(problem.objects['satellite0'], plan.actions_taken[4].parameters_used['?ti_s'])
+        self.assertEqual(problem.objects['phenomenon4'], plan.actions_taken[4].parameters_used['?ti_d'])
+        self.assertEqual(problem.objects['thermograph0'], plan.actions_taken[4].parameters_used['?ti_m'])
 
     @unittest.skip
     def test_transport01(self):
