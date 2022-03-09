@@ -8,4 +8,4 @@
 
 
 # Things to Test
-1. Type Hierarchy - Create a simple blocksworld
+1. Type Hierarchy - Create a simple blocksworld - or satellite01 IPC test

@@ -368,4 +368,26 @@ class HDDLGroundingTests(unittest.TestCase):
         self.assertEqual(Predicate, type(domain.actions['drop'].effects.effects[0].predicate))
         self.assertEqual(True, domain.actions['drop'].effects.effects[0].negated)
 
+    def test_constraint_evaluation(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
+
+        # method0 - (and (not (= ?take_image_instance_4_argument_6 ?turn_to_instance_3_argument_4)))
+        method = domain.methods['method0']
+
+        # Test for True
+        param_dict = {
+            "?take_image_instance_4_argument_6": problem.objects['phenomenon4'],
+            "?take_image_instance_4_argument_7": problem.objects['instrument0'],
+            "?take_image_instance_4_argument_8": problem.objects['thermograph0'],
+            "?turn_to_instance_3_argument_2": problem.objects['satellite0'],
+            "?turn_to_instance_3_argument_4": problem.objects['phenomenon6']
+        }
+        self.assertEqual(True, method.evaluate_constraints(param_dict))
+
+        # Test for False
+        param_dict['?turn_to_instance_3_argument_4'] = problem.objects['phenomenon4']
+        self.assertEqual(False, method.evaluate_constraints(param_dict))
+
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()

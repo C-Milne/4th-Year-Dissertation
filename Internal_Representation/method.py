@@ -19,7 +19,7 @@ class Method(Modifier):
 
     def evaluate_preconditions(self, model, param_dict):
         """:params  - model : proposed model
-                    - params : list of parameters
+                    - param_dict : dictionary of parameters
         :returns    - True : if method can be run on the given model with given parameters
                     - False : Otherwise"""
         # Evaluate preconditions
@@ -27,6 +27,13 @@ class Method(Modifier):
             return True
         assert type(self.preconditions) == Precondition
         return self.preconditions.evaluate(model, param_dict)
+
+    def evaluate_constraints(self, param_dict: dict):
+        """:parameter param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}."""
+        if self.constraints is None:
+            return True
+        result = self.constraints.evaluate(param_dict)
+        return result
 
     def get_parameters(self):
         return self.parameters
