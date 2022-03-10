@@ -5,7 +5,15 @@ from Internal_Representation.constraints import Constraints
 
 
 class Method(Modifier):
-    def __init__(self, name, parameters, preconditions, task, subtasks, constraints):
+    def __init__(self, name, parameters, preconditions: Precondition, task: dict, subtasks, constraints):
+        """
+        :param name:
+        :param parameters:
+        :param preconditions:
+        :param task: {'task': Task, 'params': }
+        :param subtasks:
+        :param constraints:
+        """
         super().__init__(name, parameters, preconditions)
         assert type(task) == dict and len(task.keys()) == 2 and "task" in task.keys() and "params" in task.keys()
         self.task = task

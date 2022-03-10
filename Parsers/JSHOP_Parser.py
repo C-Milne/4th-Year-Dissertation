@@ -122,7 +122,7 @@ class JSHOPParser(Parser):
             j = i * 2
             preconditions = self._parse_precondition(params[j])
             subtasks = self._parse_subtasks(params[j + 1])
-            self.domain.add_method(Method(name, parameters, preconditions, task, subtasks, constraints))
+            self.domain.add_method(Method(name, parameters, preconditions, {'task': task, 'params': parameters}, subtasks, constraints))
 
     def _parse_task(self, params) -> Task:
         """['swap', '?x', '?y']"""
@@ -139,6 +139,11 @@ class JSHOPParser(Parser):
         task = Task(task_name, parameters)
         self.domain.add_task(task)
         return task
+
+    def _parse_precondition(self, params: list):
+        if len(params) > 0:
+            params.insert(0, 'and')
+        return super(JSHOPParser, self)._parse_precondition(params)
 
     def _parse_predicates(self, *args):
         pass
