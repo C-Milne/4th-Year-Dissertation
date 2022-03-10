@@ -88,9 +88,11 @@ class HDDLParser(Parser):
                 i += 1
             else:
                 parent_type = self.domain.get_type(params[i + 1])
+
                 if parent_type is False:
                     self.domain.add_type(Type(params[i + 1]))
                     parent_type = self.domain.get_type(params[i + 1])
+
                 _add_types_to_domain(parent_type)
                 new_types = []
                 i += 2
@@ -238,6 +240,8 @@ class HDDLParser(Parser):
                             return
                         else:
                             raise TypeError("Unexpected token {}".format(p))
+                    elif type(p) == list:
+                        __parse_conditions(p, parent)
                     else:
                         raise TypeError("Unexpected type {}".format(type(p)))
                     i += 1

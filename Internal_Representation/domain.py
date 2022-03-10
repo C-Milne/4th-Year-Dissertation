@@ -35,7 +35,12 @@ class Domain:
 
     def add_type(self, t):
         assert type(t) == Type
-        self.types[t.name] = t
+        # Check type is not already defined
+        if t.name not in self.types.keys():
+            self.types[t.name] = t
+        else:
+            if self.types[t.name].parent is None and t.parent is not None:
+                self.types[t.name].parent = t.parent
 
     def get_action(self, action_name):
         """Return an actions object

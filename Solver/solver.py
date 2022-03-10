@@ -207,8 +207,7 @@ class Solver:
                 continue
             if not self.check_satisfies_type(p.type, parameters[p.name]):
                 m = "Parameter {} of type {} does not match required type {}".format(p.name, parameters[p.name].type.name, p.type)
-                raise TypeError("Parameter {} of type {} does not match required type {}"
-                                .format(p.name, parameters[p.name].type.name, p.type))
+                raise TypeError(m)
         if len(missing_params) == 0:
             return [True]
         return [False, missing_params]

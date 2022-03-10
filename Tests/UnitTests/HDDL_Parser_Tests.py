@@ -134,6 +134,18 @@ class HDDLParsingTests(unittest.TestCase):
                 continue
             self.assertEqual(domain.types['object'], domain.types[t].parent)
 
+    def test_parsing_types_3(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
+        self.assertEqual(domain.types['city_location'], domain.types['tcenter'].parent)
+
+        ob = problem.objects['flughafenstuttgart']
+        self.assertEqual(domain.types['airport'], ob.type)
+        self.assertEqual(domain.types['tcenter'], ob.type.parent)
+        self.assertEqual(domain.types['city_location'], ob.type.parent.parent)
+        self.assertEqual(domain.types['location'], ob.type.parent.parent.parent)
+
     def test_parsing_predicates(self):
         # Rover Domain
         domain = Domain(None)
