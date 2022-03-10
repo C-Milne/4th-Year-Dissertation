@@ -105,7 +105,9 @@ class Solver:
 
             comparison_result = self.__compare_parameters(method, parameters)
 
-            if not comparison_result[0]:
+            if not comparison_result[0] and not comparison_result[1]:
+                continue
+            elif not comparison_result[0]:
                 found_params = self.__find_satisfying_parameters(search_model, method, parameters)
                 if found_params is False:
                     found_params = []
@@ -206,8 +208,7 @@ class Solver:
                 missing_params.append(p.name)
                 continue
             if not self.check_satisfies_type(p.type, parameters[p.name]):
-                m = "Parameter {} of type {} does not match required type {}".format(p.name, parameters[p.name].type.name, p.type)
-                raise TypeError(m)
+                return [False, False]
         if len(missing_params) == 0:
             return [True]
         return [False, missing_params]

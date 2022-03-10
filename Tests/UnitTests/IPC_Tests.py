@@ -154,7 +154,7 @@ class IPCTests(unittest.TestCase):
         # solver.output(plan)
         self.assertEqual(1, 2)
 
-    @unittest.skip
+    # @unittest.skip
     def test_um_translog01(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
@@ -162,4 +162,6 @@ class IPCTests(unittest.TestCase):
         solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
-        self.assertEqual(1, 2)
+
+        self.assertNotEqual(None, plan)
+        self.assertNotEqual(0, len(plan.actions_taken))
