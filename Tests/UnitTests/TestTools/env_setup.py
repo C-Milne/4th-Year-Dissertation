@@ -1,6 +1,7 @@
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
+from Parsers.JSHOP_Parser import JSHOPParser
 from Solver.solver import Solver
 from Internal_Representation.state import State
 from Solver.model import Model
@@ -13,7 +14,7 @@ def env_setup(HDDL: bool):
     if HDDL:
         parser = HDDLParser(domain, problem)
     else:
-        raise NotImplementedError
+        parser = JSHOPParser(domain, problem)
     solver = Solver(domain, problem)
     return domain, problem, parser, solver
 

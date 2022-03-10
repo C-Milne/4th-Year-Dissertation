@@ -9,4 +9,5 @@
     ((have ?x) (not (have ?y)))
     ((!drop ?x) (!pickup ?y))
     ((have ?y) (not (have ?x)))
-    ((!drop ?y) (!pickup ?x)))))
+    ((!drop ?y) (!pickup ?x)))
+))

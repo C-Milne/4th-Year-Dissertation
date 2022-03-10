@@ -31,6 +31,7 @@ class Domain:
 
     def add_predicate(self, predicate):
         assert type(predicate) == Predicate
+        assert predicate.name not in self.predicates.keys()
         self.predicates[predicate.name] = predicate
 
     def add_type(self, t):
@@ -60,8 +61,7 @@ class Domain:
             return self.tasks[name]
         return None
 
-    def get_task_methods(self, task):
-        """TODO : implement for type Task"""
+    def get_task_methods(self, task: str):
         if type(task) == str:
             task = self.get_task(task)
         return task.methods
@@ -88,7 +88,7 @@ class Domain:
             return None
 
     def get_predicate(self, name):
-        if not name in self.predicates.keys():
+        if name not in self.predicates.keys():
             return None
         return self.predicates[name]
 

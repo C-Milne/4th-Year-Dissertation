@@ -61,11 +61,11 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertTrue("__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception) or
                         "Runner.__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception))
 
-    def test_load_incompatible_files(self):
-        # Test loading incompatible files
-        with self.assertRaises(TypeError) as error:
-            Runner(self.basic_domain_path, self.basic_pb1_path_SHOP)
-        self.assertEqual("Problem file type (shop) does not match domain file type (hddl)", str(error.exception))
+    # def test_load_incompatible_files(self):
+    #     # Test loading incompatible files
+    #     with self.assertRaises(TypeError) as error:
+    #         Runner(self.basic_domain_path, self.basic_pb1_path_SHOP)
+    #     self.assertEqual("Problem file type (shop) does not match domain file type (hddl)", str(error.exception))
 
     def test_load_unknown_file_type(self):
         # Test loading a txt file
@@ -73,10 +73,10 @@ class HDDLParsingTests(unittest.TestCase):
             Runner("TestTools/fakeDomain.txt", self.basic_pb1_path)
         self.assertEqual("Unknown descriptor type (txt)", str(error.exception))
 
-        # Load file with no suffix
-        with self.assertRaises(IOError) as error:
-            Runner("TestTools/fakeDomain2", self.basic_pb1_path)
-        self.assertEqual("File type not identified. (TestTools/fakeDomain2)", str(error.exception))
+        # # Load file with no suffix
+        # with self.assertRaises(IOError) as error:
+        #     Runner("TestTools/fakeDomain2", self.basic_pb1_path)
+        # self.assertEqual("File type not identified. (TestTools/fakeDomain2)", str(error.exception))
 
     def test_set_unknown_task_method(self):
         # Test again with task that is not defined at all

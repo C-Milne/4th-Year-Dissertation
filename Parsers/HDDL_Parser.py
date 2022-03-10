@@ -4,7 +4,6 @@ from Internal_Representation.predicate import Predicate
 from Internal_Representation.task import Task
 from Internal_Representation.Type import Type
 from Internal_Representation.Object import Object
-from Internal_Representation.precondition import Precondition
 from Parsers.parser import Parser
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.effects import Effects
@@ -107,37 +106,6 @@ class HDDLParser(Parser):
             else:
                 self.domain.add_predicate(Predicate(i[0]))
 
-    def _parse_parameters(self, params):
-        """TODO : test this - check parameter name not already in use"""
-        def __add_t_param_list(t=None):
-            for i in param_names:
-                param_list.append(Parameter(i, t))
-        """Parses list of parameters and returns a list of parameters
-        params  - params : ['?a', '-', 'ob1', '?b', '?c', '-', 'ob2' ...]"""
-        i = 0
-        l = len(params)
-        param_list = []
-        param_names = []
-        while i < l:
-            p = params[i]
-            if type(p) == list:
-                raise TypeError("This method does not accept a list within a list")
-            elif p == "-":
-                param_type_name = params[i + 1]
-                param_type = self.domain.get_type(param_type_name)
-                if param_type is None or params == False:
-                    raise TypeError("Invalid type {}".format(param_type_name))
-                __add_t_param_list(param_type)
-                param_names = []
-                i += 1
-            elif type(p) == str:
-                param_names.append(p)
-            else:
-                raise TypeError("Unexpected token {}".format(p))
-            i += 1
-        __add_t_param_list()
-        return param_list
-
     def _parse_action(self, params):
         i = 0
         l = len(params)
@@ -158,9 +126,6 @@ class HDDLParser(Parser):
                 raise TypeError("Unknown identifier {}".format(params[i]))
             i += 1
         return Action(action_name, parameters, precon, effects)
-
-    def _parse_precondition(self, params):
-        return Precondition(params)
 
     def _parse_effects(self, params):
         def __extract_effect_values(params):
@@ -294,48 +259,6 @@ class HDDLParser(Parser):
                 raise SyntaxError("Unknown token {}".format(params[i]))
             i += 1
         return Method(method_name, parameters, precon, task, subtasks, constraints)
-
-    def _parse_subtasks(self, params):
-        """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]"""
-        if len(params) == 0:
-            return None
-        else:
-            subtasks = Subtasks()
-            i = 0
-            l = len(params)
-            while i < l:
-                task_label, task_modifier, task_parameters = None, None, None
-                if params[i] == "and":
-                    pass
-                else:
-                    # Check if there is a list within a list
-                    if len(params[i]) > 1 and type(params[i][1]) == list:
-                        task_label = params[i][0]
-                        task_modifier = params[i][1][0]
-
-                        task_parameters = self._parse_parameters(params[i][1][1:])
-                    elif type(params[i]) == list:
-                        # No task Label
-                        task_modifier = params[i][0]
-                        task_parameters = self._parse_parameters(params[i][1:])
-
-                    elif all([type(x) == str for x in params]):
-                        task_modifier = params[0]
-                        task_parameters = self._parse_parameters(params[1:])
-                        i += len(params)
-                    else:
-                        raise SyntaxError("Unrecognised Format {}".format(params))
-
-                    task_modifier_ob = self.domain.get_modifier(task_modifier)
-                    if not task_modifier_ob is None:
-                        task_modifier = task_modifier_ob
-                    subtasks.add_subtask(task_label, task_modifier, task_parameters)
-
-                    if type(task_modifier) == str:
-                        # Mark this method for grounding after parsing has finished
-                        self._requires_grounding.append(subtasks.tasks[len(subtasks) - 1])
-                i += 1
-        return subtasks
 
     def _parse_constant(self, params):
         def __add_constants_to_problem(t=None):
