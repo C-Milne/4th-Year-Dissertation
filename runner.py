@@ -46,12 +46,14 @@ class Runner:
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
 
-    def __check_file_exists(self, file_path, file_purpose=None):
+    @staticmethod
+    def __check_file_exists(file_path, file_purpose=None):
         if not os.path.exists(file_path):
             if file_purpose is None:
                 raise FileNotFoundError("File {} could not be found".format(file_path))
             else:
                 raise FileNotFoundError("{} file entered could not be found. ({})".format(file_purpose, file_path))
+
 
     @staticmethod
     def __get_suffix(path):

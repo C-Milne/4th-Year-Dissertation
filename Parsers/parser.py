@@ -63,6 +63,9 @@ class Parser:
     def _parse_htn_tag(self, *args):
         raise NotImplementedError
 
+    def _parse_constant(self, *args):
+        raise NotImplementedError
+
     def _scan_tokens(self, file_path):
         """ Taken with permission from:
         https://github.com/pucrs-automated-planning/heuristic-planning/blob/master/pddl/pddl_parser.py"""

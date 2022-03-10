@@ -8,6 +8,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.Object import Object
+from TestTools.env_setup import env_setup
 
 
 class HDDLParsingTests(unittest.TestCase):
@@ -19,6 +20,8 @@ class HDDLParsingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
     def test_load_unknown_domain(self):
         # Test loading unknown domain file
@@ -55,8 +58,8 @@ class HDDLParsingTests(unittest.TestCase):
         # Test only passing in one file path
         with self.assertRaises(Exception) as error:
             Runner(self.basic_domain_path)
-        print(str(error.exception))
-        self.assertEqual("Runner.__init__() missing 1 required positional argument: 'problem_path'", str(error.exception))
+        self.assertTrue("__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception) or
+                        "Runner.__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception))
 
     def test_load_incompatible_files(self):
         # Test loading incompatible files
@@ -100,7 +103,6 @@ class HDDLParsingTests(unittest.TestCase):
         problem = Problem(domain)
         domain.add_problem(problem)
 
-        # Test preconditions
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain1.hddl")
         self.assertEqual(8, len(domain.types))
@@ -115,9 +117,51 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertIn('lander', keys)
         self.assertIn('objective', keys)
 
-        self.assertEqual(None, domain.types['object'].parent)
+        self.assertEqual([], domain.types['object'].parents)
         for k in keys[1:]:
-            self.assertEqual(domain.types['object'], domain.types[k].parent)
+            self.assertEqual(1, len(domain.types[k].parents))
+            self.assertIn(domain.types['object'], domain.types[k].parents)
+
+    def test_parsing_types_2(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        self.assertEqual(8, len(domain.types))
+        for t in domain.types:
+            if t == 'object':
+                continue
+            self.assertEqual(1, len(domain.types[t].parents))
+            self.assertIn(domain.types['object'], domain.types[t].parents)
+
+    def test_parsing_types_3(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
+        self.assertIn(domain.types['city_location'], domain.types['tcenter'].parents)
+
+        ob = problem.objects['flughafenstuttgart']
+        self.assertEqual(domain.types['airport'], ob.type)
+        self.assertIn(domain.types['tcenter'], ob.type.parents)
+        self.assertIn(domain.types['city_location'], domain.types['tcenter'].parents)
+        self.assertIn(domain.types['location'], domain.types['city_location'].parents)
+
+    def test_parsing_types_4(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+
+        # Check that objects with multiple parents have them both defined
+        t = domain.types['regular_package']
+        self.assertEqual(2, len(t.parents))
+        self.assertIn(domain.types['package'], t.parents)
+        self.assertIn(domain.types['regular'], t.parents)
+
+        t = domain.types['food']
+        self.assertEqual(2, len(t.parents))
+        self.assertIn(domain.types['regular_package'], t.parents)
+        self.assertIn(domain.types['perishable'], t.parents)
 
     def test_parsing_predicates(self):
         # Rover Domain
@@ -261,6 +305,40 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual("camera", action.parameters[3].type.name)
         self.assertEqual("?m", action.parameters[4].name)
         self.assertEqual("mode", action.parameters[4].type.name)
+
+    def test_parameter_parsing_1(self):
+        # Create a domain with 2 parameters ( a b - A) (a - A b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "parameter_testing/domain1.hddl")
+        self.assertEqual(2, len(domain.methods['donothing'].parameters))
+        self.assertEqual("?a", domain.methods['donothing'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[0].type)
+        self.assertEqual("?b", domain.methods['donothing'].parameters[1].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[1].type)
+
+        self.assertEqual(2, len(domain.actions['noop'].parameters))
+        self.assertEqual("?a", domain.actions['noop'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[0].type)
+        self.assertEqual("?b", domain.actions['noop'].parameters[1].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[1].type)
+
+    def test_parameter_parsing_2(self):
+        # Create a domain with parameters of differing types (a - A b - B) (a - A b c - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "parameter_testing/domain2.hddl")
+        self.assertEqual(2, len(domain.methods['donothing'].parameters))
+        self.assertEqual("?a", domain.methods['donothing'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.methods['donothing'].parameters[0].type)
+        self.assertEqual("?b", domain.methods['donothing'].parameters[1].name)
+        self.assertEqual(domain.types['b'], domain.methods['donothing'].parameters[1].type)
+
+        self.assertEqual(3, len(domain.actions['noop'].parameters))
+        self.assertEqual("?a", domain.actions['noop'].parameters[0].name)
+        self.assertEqual(domain.types['a'], domain.actions['noop'].parameters[0].type)
+        self.assertEqual("?b", domain.actions['noop'].parameters[1].name)
+        self.assertEqual(domain.types['b'], domain.actions['noop'].parameters[1].type)
+        self.assertEqual("?c", domain.actions['noop'].parameters[2].name)
+        self.assertEqual(domain.types['b'], domain.actions['noop'].parameters[2].type)
 
     def test_parsing_tasks(self):
         domain = Domain(None)
@@ -662,6 +740,164 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(domain.types['waypoint'], problem.subtasks.tasks[2].parameters[0].type)
         self.assertEqual(Object, type(problem.subtasks.tasks[2].parameters[0]))
         self.assertEqual(problem.subtasks.tasks[2], problem.subtasks.labelled_tasks['task1'])
+
+    def test_parsing_blocksworld_objects(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.blocksworld_path + "domain.hddl")
+        parser.parse_problem(self.blocksworld_path + "pb1.hddl")
+        self.assertEqual(5, len(problem.objects))
+        for o in problem.objects:
+            self.assertEqual(domain.types['block'], problem.objects[o].type)
+
+    def test_parsing_goal_state(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+
+        self.assertEqual(['and', ['communicated_soil_data', 'waypoint0'], ['communicated_rock_data', 'waypoint0'],
+                          ['communicated_image_data', 'objective1', 'low_res']], problem.goal_conditions.conditions)
+
+    def test_parsing_constants(self):
+        # Use IPC Test domain
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test05_constants_in_domain/domain.hddl")
+        self.assertEqual(1, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+
+    def test_parsing_constants_2(self):
+        # Create a domain with 2 constants ( a b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_1.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['a'], problem.objects['b'].type)
+
+        # (a - A b - A)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_2.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['a'], problem.objects['b'].type)
+
+    def test_parsing_constants_3(self):
+        # Create a domain with constants of differing types (a - A b - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_3.hddl")
+        self.assertEqual(2, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['b'], problem.objects['b'].type)
+
+        # (a - A b c - B)
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.test_tools_path + "constant_testing/constant_test_domain_4.hddl")
+        self.assertEqual(3, len(problem.objects))
+        self.assertEqual(domain.types['a'], problem.objects['a'].type)
+        self.assertEqual(domain.types['b'], problem.objects['b'].type)
+        self.assertEqual(domain.types['b'], problem.objects['c'].type)
+
+    def test_parsing_constraint(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
+
+        # method0 - (and (not (= ?take_image_instance_4_argument_6 ?turn_to_instance_3_argument_4)))
+        method = domain.methods['method0']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?take_image_instance_4_argument_6", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_3_argument_4", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method1 - (and (not (= ?take_image_instance_3_argument_4 ?turn_to_instance_2_argument_2)))
+        method = domain.methods['method1']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?take_image_instance_3_argument_4", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method4 - (and (not (= ?switch_off_instance_2_argument_0 ?auto_calibrate_instance_4_argument_5)))
+        method = domain.methods['method4']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?switch_off_instance_2_argument_0", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?auto_calibrate_instance_4_argument_5", op2.operator)
+        self.assertEqual(0, len(op1.children))
+
+        # method6 - (and (not (= ?calibrate_instance_3_argument_5 ?turn_to_instance_2_argument_2)))
+        method = domain.methods['method6']
+        consts = method.get_constraints()
+        op = consts.head
+        self.assertEqual("and", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("not", op.operator)
+        self.assertEqual(1, len(op.children))
+
+        op = op.children[0]
+        self.assertEqual("=", op.operator)
+        self.assertEqual(2, len(op.children))
+
+        op1 = op.children[0]
+        self.assertEqual("?calibrate_instance_3_argument_5", op1.operator)
+        self.assertEqual(0, len(op1.children))
+
+        op2 = op.children[1]
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
+        self.assertEqual(0, len(op1.children))
 
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)

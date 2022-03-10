@@ -2,6 +2,7 @@ from Solver.solver import Solver
 from Solver.model import Model
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+from Internal_Representation.state import State
 from Parsers.HDDL_Parser import HDDLParser
 
 
@@ -13,14 +14,29 @@ def setup():
     parser = HDDLParser(domain, problem)
     parser.parse_domain("../Examples/IPC_Tests/Rover/rover-domain.hddl")
     parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
-    task = problem.subtasks.get_tasks()[0]
 
     # Initialise solver
     solver = Solver(domain, problem)
-
-    # Create initial model
-    solver.search_models.clear()
-    param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
-    initial_model = Model(problem.initial_state, [task.task], param_dict, problem)
-    solver.search_models.add(initial_model)
     return domain, problem, solver
+
+
+def execution_prep(problem, solver):
+    task_counter = 0
+    subtasks = problem.subtasks.get_tasks()
+    list_subT = []
+    num_tasks = len(subtasks)
+    while task_counter < num_tasks:
+        subT = subtasks[task_counter]
+        if subT == "and" or subT == "or":
+            del subtasks[task_counter]
+            num_tasks -= 1
+            continue
+
+        # Create initial search model
+        param_dict = solver._Solver__generate_param_dict(subT.task, subT.parameters)
+        subT.add_given_parameters(param_dict)
+        list_subT.append(subT)
+        task_counter += 1
+
+    initial_model = Model(State.reproduce(problem.initial_state), list_subT, problem)
+    solver.search_models.add(initial_model)

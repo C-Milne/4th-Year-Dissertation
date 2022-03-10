@@ -55,6 +55,11 @@ class Problem:
 
         return returnObs
 
+    def get_subtasks(self):
+        if self.subtasks is None:
+            return None
+        return self.subtasks.get_tasks()
+
     def add_goal_conditions(self, cons):
         assert type(cons) == Precondition
         self.goal_conditions = cons
@@ -63,3 +68,8 @@ class Problem:
         if self.goal_conditions is None:
             return None
         return self.goal_conditions.evaluate(model, self.objects)
+
+    def has_goal_conditions(self):
+        if self.goal_conditions is None:
+            return False
+        return True

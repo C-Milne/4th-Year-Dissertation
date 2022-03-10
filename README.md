@@ -1,16 +1,10 @@
 # TODO
-1. Implement types
-2. Change implementation of executing method on model
-   1. Create a new class to handle the execution
-3. Implement domain and problem classes to store info instead of in parser
-4. Test with debugger for some example problems
-5. Create basic planner
-6. Get / Create SHOP parser
-7. Combine SHOP parser with established codebase
+1. Add compatability for constraints to tasks and actions
+2. Test with debugger for some example problems
+3. Get / Create SHOP parser
+4. Combine SHOP parser with established codebase
+5. Implement breadth first with pruning - If multiple subtasks are given in the beginning of search. Add them one at a time to the search_modifiers so duplicate states can be pruned
+6. Implement way for parameter selection to be done the same way as a heuristic
 
 
 # Things to Test
-1. Create example with action 'for all' effect
-2. methods / actions with the same name
-3. methods with the ":ordering" tag
-4. Test predicate types

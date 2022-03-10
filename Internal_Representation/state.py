@@ -38,13 +38,18 @@ class State:
         """Params:  - predicate : Predicate
                     - predicate_objects : [Object] - List of objects taken as parameters"""
         predicate_indexes = self.get_indexes(predicate.name)
+        if predicate_indexes is None:
+            return
+        deletion = False
         for i in predicate_indexes:
             element_objects = self.elements[i].objects
             if element_objects == predicate_objects:
                 del self.elements[i]
+                deletion = True
                 break
         # Adjust self._index
-        self.__adjust_index_remove_element(predicate.name, i)
+        if deletion:
+            self.__adjust_index_remove_element(predicate.name, i)
 
     def __remove_element_no_objects(self, predicate: Predicate):
         """Params:  - predicate : Predicate"""
@@ -74,9 +79,41 @@ class State:
                     self._index[k][i] -= 1
                 i += 1
 
+    @staticmethod
+    def reproduce(state):
+        returnState = State()
+        for e in state.elements:
+            returnState.add_element(e)
+        return returnState
+
+    @staticmethod
+    def compare_states(state1, state2):
+        """:returns - True if state1 and state2 are equal
+        :returns    - False otherwise"""
+        # Check lengths
+        if len(state1) != len(state2):
+            return False
+
+        # Check state contents
+        for e in state1.elements:
+            validated = False
+            for i in state2.elements:
+                if e.predicate == i.predicate and e.objects == i.objects:
+                    validated = True
+                    break
+            if not validated:
+                return False
+        return True
+
+    def __len__(self):
+        return len(self.elements)
+
     def __str__(self):
-        print_string = ""
-        for e in self.elements[:-1]:
-            print_string += str(e) + "\n"
-        print_string += str(self.elements[-1])
+        if len(self.elements) > 0:
+            print_string = ""
+            for e in self.elements[:-1]:
+                print_string += str(e) + "\n"
+            print_string += str(self.elements[-1])
+        else:
+            print_string = "State is empty."
         return print_string

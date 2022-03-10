@@ -7,7 +7,13 @@ from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.state import State
+from Internal_Representation.parameter import Parameter
+from Solver.action_tracker import ActionTracker
+from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 import Tests.UnitTests.TestTools.rover_execution as RovEx
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class SolvingTests(unittest.TestCase):
@@ -19,33 +25,9 @@ class SolvingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
-    # def test_model_requirement_satisfier(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_3.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     model = Model(problem, None, [domain.methods["unstack-block"]])
-    #     self.assertEqual(1, len(model.ready_modifiers))
-    #     self.assertEqual({'unstack-block':[{'?b': problem.objects['b3']}]}, model.ready_modifiers)
-    #
-    # def test_model_requirement_satisfier_2(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     # Test preconditions
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.test_tools_path + "Blocksworld_test_domain_4.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     model = Model(problem, None, [domain.methods["pickup-ready-block"]])
-    #     self.assertEqual(0, len(model.ready_modifiers))
-    #
     # def test_action_execution(self):
     #     domain = Domain(None)
     #     problem = Problem(domain)
@@ -164,6 +146,40 @@ class SolvingTests(unittest.TestCase):
     #     # Check _index dictionary
     #     self.assertEqual(expected_index, model.current_state._index)
 
+    def test_action_execution_5(self):
+        # Test Carrying out on action with one model and check the state of the others - Also check model state and _index
+        domain, problem, solver = RovEx.setup()
+        solver.search_models._SearchQueue__Q = [Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem) for i in range(7)]
+        for m in solver.search_models._SearchQueue__Q:
+            m.ranking = 0
+
+        # Execute action on model[7]
+        subT = Subtasks.Subtask(domain.actions['visit'], [Parameter('?from')])
+        subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
+        solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
+
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(8, len(search_models))
+        for i in range(len(search_models) - 1):
+            model = search_models[i]
+            self.assertEqual(45, len(model.current_state.elements))
+            self.assertEqual({'visible': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'at_soil_sample': [12, 14, 16],
+             'at_rock_sample': [13, 15, 17], 'at_lander': [18], 'channel_free': [19], 'at': [20], 'available': [21],
+             'store_of': [22], 'empty': [23], 'equipped_for_soil_analysis': [24], 'equipped_for_rock_analysis': [25],
+             'equipped_for_imaging': [26], 'can_traverse': [27, 28, 29, 30, 31, 32], 'on_board': [33],
+             'calibration_target': [34], 'supports': [35, 36], 'visible_from': [37, 38, 39, 40, 41, 42, 43, 44]},
+                             model.current_state._index)
+        model = search_models[7]
+        self.assertEqual(46, len(model.current_state.elements))
+        self.assertEqual({'visible': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'at_soil_sample': [12, 14, 16],
+                          'at_rock_sample': [13, 15, 17], 'at_lander': [18], 'channel_free': [19], 'at': [20],
+                          'available': [21], 'store_of': [22], 'empty': [23], 'equipped_for_soil_analysis': [24],
+                          'equipped_for_rock_analysis': [25],
+                          'equipped_for_imaging': [26], 'can_traverse': [27, 28, 29, 30, 31, 32], 'on_board': [33],
+                          'calibration_target': [34], 'supports': [35, 36],
+                          'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [45]},
+                         model.current_state._index)
+
     def test_basic_execution(self):
         domain = Domain(None)
         problem = Problem(domain)
@@ -183,7 +199,8 @@ class SolvingTests(unittest.TestCase):
         # Create initial model
         solver.search_models.clear()
         param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
-        initial_model = Model(problem.initial_state, [task.task], param_dict, problem)
+        task.add_given_parameters(param_dict)
+        initial_model = Model(problem.initial_state, [task], problem)
         solver.search_models.add(initial_model)
 
         # Execute Step 1
@@ -192,7 +209,9 @@ class SolvingTests(unittest.TestCase):
         # Expect task to be expanded
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].search_modifiers))
-        self.assertEqual(domain.methods['have_second'], solver.search_models._SearchQueue__Q[0].search_modifiers[0])
+
+        self.assertEqual(domain.methods['have_second'], solver.search_models._SearchQueue__Q[0].search_modifiers[0].task)
+
         self.assertEqual(domain.predicates['have'],
                          solver.search_models._SearchQueue__Q[0].current_state.elements[0].predicate)
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects))
@@ -206,15 +225,15 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
         self.assertEqual(2, len(solver.search_models._SearchQueue__Q[0].search_modifiers))
 
-        self.assertEqual(domain.actions['drop'], solver.search_models._SearchQueue__Q[0].search_modifiers[0].task)
-        self.assertEqual(domain.actions['pickup'], solver.search_models._SearchQueue__Q[0].search_modifiers[1].task)
+        model = solver.search_models._SearchQueue__Q[0]
+        self.assertEqual(domain.actions['drop'], model.search_modifiers[0].task)
+        self.assertEqual(domain.actions['pickup'], model.search_modifiers[1].task)
 
-        self.assertEqual(domain.predicates['have'],
-                         solver.search_models._SearchQueue__Q[0].current_state.elements[0].predicate)
-        self.assertEqual(1, len(solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects))
-        self.assertEqual(problem.objects['kiwi'], solver.search_models._SearchQueue__Q[0].current_state.elements[0].
+        self.assertEqual(domain.predicates['have'], model.current_state.elements[0].predicate)
+        self.assertEqual(1, len(model.current_state.elements[0].objects))
+        self.assertEqual(problem.objects['kiwi'], model.current_state.elements[0].
                          objects[0])
-        self.assertEqual(None, solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0].type)
+        self.assertEqual(None, model.current_state.elements[0].objects[0].type)
 
         # Execute step 3
         solver._Solver__search(True)
@@ -234,6 +253,8 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(1, len(solver.search_models._SearchQueue__completed_models))
         model = solver.search_models._SearchQueue__completed_models[0]
         self.assertEqual(0, len(model.search_modifiers))
+
+        # Check final state
         self.assertEqual(1, len(model.current_state.elements))
         self.assertEqual(domain.predicates['have'], model.current_state.elements[0].predicate)
         self.assertEqual(1, len(model.current_state.elements[0].objects))
@@ -241,9 +262,10 @@ class SolvingTests(unittest.TestCase):
 
     def test_compare_parameters(self):
         domain, problem, solver = RovEx.setup()
+        RovEx.execution_prep(problem, solver)
         model = solver.search_models._SearchQueue__Q[0]
 
-        response = solver._Solver__compare_parameters(domain.methods['m_get_image_data_ordering_0'], model.given_params)
+        response = solver._Solver__compare_parameters(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].given_params)
         self.assertEqual(list, type(response))
         self.assertEqual(2, len(response))
         self.assertEqual(bool, type(response[0]))
@@ -253,9 +275,10 @@ class SolvingTests(unittest.TestCase):
 
     def test_finding_parameters(self):
         domain, problem, solver = RovEx.setup()
+        RovEx.execution_prep(problem, solver)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver._Solver__find_satisfying_parameters(model, method, model.given_params)
+        found_params = solver._Solver__find_satisfying_parameters(model, method, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:
             self.assertEqual(problem.objects['objective1'], combo['?objective'])
@@ -269,21 +292,84 @@ class SolvingTests(unittest.TestCase):
 
     def test_rover_execution_beginning(self):
         domain, problem, solver = RovEx.setup()
+        RovEx.execution_prep(problem, solver)
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
         model = solver.search_models._SearchQueue__Q[0]
-        self.assertEqual(1, len(model.search_modifiers))
-        self.assertEqual(domain.tasks['get_image_data'], model.search_modifiers[0])
-        self.assertEqual(2, len(model.given_params))
-        self.assertEqual(problem.objects['objective1'], model.given_params['?objective'])
-        self.assertEqual(problem.objects['high_res'], model.given_params['?mode'])
+        self.assertEqual(3, len(model.search_modifiers))
+        self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
+        self.assertEqual(domain.tasks['get_image_data'], model.search_modifiers[0].task)
+        self.assertEqual(2, len(model.search_modifiers[0].given_params))
+        self.assertEqual(problem.objects['objective1'], model.search_modifiers[0].given_params['?objective'])
+        self.assertEqual(problem.objects['high_res'], model.search_modifiers[0].given_params['?mode'])
 
     def test_rover_execution_1(self):
         domain, problem, solver = RovEx.setup()
+        RovEx.execution_prep(problem, solver)
         solver._Solver__search(True)
         # Check searchModels has 4 search nodes each with a different ?waypoint parameter
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
         for i in range(4):
             model = solver.search_models._SearchQueue__Q[i]
-            self.assertEqual(1, len(model.search_modifiers))
-            self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0])
-            self.assertEqual(problem.objects["waypoint" + str(i)], model.given_params['?waypoint'])
+            self.assertEqual(3, len(model.search_modifiers))
+            self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
+            self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].task)
+            self.assertEqual(problem.objects["waypoint" + str(i)], model.search_modifiers[0].given_params['?waypoint'])
+
+    def test_rover_execution_complete(self):
+        domain, problem, solver = RovEx.setup()
+        solver.set_heuristic(BreadthFirstActions)
+        res = solver.solve()
+        image_data = domain.actions['communicate_image_data']
+        soil_data = domain.actions['communicate_soil_data']
+        rock_data = domain.actions['communicate_rock_data']
+        necessary_actions = [image_data, soil_data, rock_data]
+        for a in necessary_actions:
+            print("Testing {}".format(a))
+            found = False
+            for ac in res.actions_taken:
+                if a == ac.action:
+                    found = True
+                    break
+            self.assertEqual(True, found)
+
+    def test_goal_state_satisfaction(self):
+        # Some of the rover domains have goal states defined. Check that the returned plan satisfies the goal conditions
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        self.assertEqual(True, problem.evaluate_goal(plan))
+
+        rock_comm_pred = domain.predicates['communicated_rock_data']
+        pred_obs = [problem.objects['waypoint0']]
+        plan.current_state.remove_element(rock_comm_pred, pred_obs)
+        self.assertEqual(False, problem.evaluate_goal(plan))
+
+    def test_parameter_expansion(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
+
+        task = problem.subtasks.get_tasks()[0]
+
+        # Initialise solver
+        solver = Solver(domain, problem)
+
+        # Create initial model
+        solver.search_models.clear()
+        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        task.add_given_parameters(param_dict)
+        initial_model = Model(problem.initial_state, [task], problem)
+        solver.search_models.add(initial_model)
+
+        # Expand
+        solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+
+        model = search_models[0]
+        self.assertEqual(4, len(model.search_modifiers[0].given_params))

@@ -1,4 +1,3 @@
-import copy
 import sys
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
@@ -9,126 +8,185 @@ from Internal_Representation.parameter import Parameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.state import State
+from Internal_Representation.Type import Type
+"""Space for importing heuristic functions"""
+from Solver.Heuristics.Heuristic import Heuristic
+from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
+from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 
 
 class Solver:
-    def __init__(self, domain, problem, model=None):
+    def __init__(self, domain, problem):
         self.domain = domain
         self.problem = problem
 
+        self.has_goal_conditions = self.problem.has_goal_conditions()
+
         self.search_models = SearchQueue()
+        heuristic = BreadthFirstOperations(self.domain, self.problem, self, self.search_models)
+        self.search_models.add_heuristic(heuristic)
+
+    def set_heuristic(self, heuristic):
+        if type(heuristic) == type:
+            heuristic = heuristic(self.domain, self.problem, self, self.search_models)
+        assert isinstance(heuristic, Heuristic)
+        self.search_models.add_heuristic(heuristic)
 
     def solve(self):
         task_counter = 0
-        search_result = None
-        for subT in self.problem.subtasks.get_tasks():
+        subtasks = self.problem.subtasks.get_tasks()
+        list_subT = []
+        num_tasks = len(subtasks)
+        while task_counter < num_tasks:
+            subT = subtasks[task_counter]
             if subT == "and" or subT == "or":
+                del subtasks[task_counter]
+                num_tasks -= 1
                 continue
 
             print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
-            # Prepare search_models
-            self.search_models.clear()
-
             # Create initial search model
             param_dict = self.__generate_param_dict(subT.task, subT.parameters)
-            if search_result is None:
-                initial_model = Model(self.problem.initial_state, [subT.task], param_dict, self.problem)
-            else:
-                initial_model = Model(search_result.current_state, [subT.task], param_dict, self.problem)
-            self.search_models.add(initial_model)
-
-            search_result = self.__search()
-            if search_result is None:
-                print("No plan Found")
-                sys.exit()
+            subT.add_given_parameters(param_dict)
+            list_subT.append(subT)
             task_counter += 1
-        return search_result
+
+        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem)
+
+        self.search_models.add(initial_model)
+
+        return self.__search()
 
     def __search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
         while True:
             # New model to operate on
             search_model = self.search_models.pop()
+            if search_model is None:
+                return None
 
             # Check what needs to be done to this model
             next_modifier = search_model.get_next_modifier()
-            if type(next_modifier) == Task:
+            assert type(next_modifier) == Subtasks.Subtask
+
+            if type(next_modifier.task) == Task:
                 self.__expand_task(next_modifier, search_model)
-            elif type(next_modifier) == Method:
+            elif type(next_modifier.task) == Method:
                 self.__expand_method(next_modifier, search_model)
-            elif type(next_modifier) == Subtasks.Subtask and type(next_modifier.task) == Action:
-                i = 0
-                param_list = []
-                while i < len(next_modifier.parameters):
-                    # param_list.append[next_modifier.task.parameters[i].name] =
-                    # search_model.given_params[next_modifier.parameters[i].name]
-                    param_list.append(search_model.given_params[next_modifier.parameters[i].name])
-                    i += 1
-                self.__expand_action(next_modifier, search_model, param_list)
+            elif type(next_modifier.task) == Action:
+                self.__expand_action(next_modifier, search_model)
             else:
                 raise NotImplementedError
 
             # Loop exit conditions
-            if self.search_models.get_num_search_models() == 0:
-                if self.search_models.get_num_completed_models() == 1:
-                    return self.search_models.get_sole_completed_model()
-                break
+            if self.search_models.get_num_search_models() == 0 and self.search_models.get_num_completed_models() == 0:
+                return None
             elif step_control:
                 break
-            # Also check goal conditions
+            elif self.search_models.get_num_completed_models() > 0:
+                for m in self.search_models.get_completed_models():
+                    eval = self.problem.evaluate_goal(m)
+                    if eval is None or eval == True:
+                        return m
+                self.search_models.clear_completed_models()
 
-    def __expand_task(self, task: Task, search_model: Model):
+    def __expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
         # For each method, create a new search model
-        for method in task.methods:
+        for method in subtask.task.methods:
             # Check parameters for new_model
             # Is all the required parameters present or do some need to be chosen
-            parameters = search_model.given_params
+            parameters = {}
+            i = 0
+            for k in subtask.given_params.keys():
+                parameters[method.task['params'][i].name] = subtask.given_params[k]
+                i += 1
+
             comparison_result = self.__compare_parameters(method, parameters)
 
-            if not comparison_result[0]:
+            if not comparison_result[0] and not comparison_result[1]:
+                continue
+            elif not comparison_result[0]:
                 found_params = self.__find_satisfying_parameters(search_model, method, parameters)
+                if found_params is False:
+                    found_params = []
             else:
                 found_params = [parameters]
 
             for param_option in found_params:
                 # Check preconditions of new_model
-                result = method.preconditions.evaluate(search_model, param_option)
+                result = None
+                for k in method.parameters:
+                    if not k.name in param_option:
+                        result = False
+
+                if result is None:
+                    result = method.evaluate_preconditions(search_model, param_option)
 
                 if result:
+                    subT = Subtasks.Subtask(method, method.parameters)
+                    subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
-                    new_model = Model(search_model.current_state, [method] + search_model.search_modifiers, param_option,
-                                      self.problem)
+                    new_model = Model(State.reproduce(search_model.current_state),
+                                      [subT] + search_model.search_modifiers, self.problem)
+
+                    new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
+                    new_model.populate_operations_taken(Model.reproduce_operations_list(search_model))
+                    new_model.add_operation(subtask.task, subtask.given_params)
                     self.search_models.add(new_model)
 
-    def __expand_method(self, method: Method, search_model: Model):
+    def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
         i = 0
-        for action in method.subtasks.tasks:
-            assert type(action.task) == Action
+        if subtask.task.subtasks is None:
+            search_model.add_operation(subtask.task, subtask.given_params)
+            self.search_models.add(search_model)
+            return
+        for mod in subtask.task.subtasks.tasks:
+            assert type(mod.task) == Action or type(mod.task) == Task
+
+            mod = Subtasks.Subtask(mod.task, mod.parameters)
+
             # Check parameter count
-            assert len(search_model.given_params) >= len(action.parameters)
-            # Add action to search_model
-            search_model.insert_modifier(action, i)
+            parameters = {}
+            param_keys = [p.name for p in mod.parameters]
+            action_keys = [p.name for p in mod.task.parameters]
+            for j in range(len(action_keys)):
+                parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+
+            comparison_result = self.__compare_parameters(mod.task, parameters)
+            assert comparison_result[0] == True
+
+            mod.add_given_parameters(parameters)
+
+            # Add mod to search_model
+            search_model.insert_modifier(mod, i)
             i += 1
+        search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
 
-    def __expand_action(self, action: Action, search_model: Model, param_list: list[Object]):
-        assert type(action) == Subtasks.Subtask and type(action.task) == Action
-        assert type(param_list) == list
-        for l in param_list:
-            assert type(l) == Object
+    def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
+        assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
 
-        for eff in action.task.effects.effects:
-            if eff.negated:
-                # Predicate needs to be removed
-                search_model.current_state.remove_element(eff.predicate, param_list)
-            else:
-                # Predicate needs to be added
-                new_predicate = ProblemPredicate(eff.predicate, param_list)
-                search_model.current_state.add_element(new_predicate)
+        # Check preconditions
+        if not subtask.evaluate_preconditions(search_model, subtask.given_params):
+            return
 
-        search_model.add_action_taken(action.task)
+        if not subtask.task.effects is None:
+            for eff in subtask.task.effects.effects:
+                param_list = []
+                for i in eff.parameters:
+                    param_list.append(subtask.given_params[i])
+                if eff.negated:
+                    # Predicate needs to be removed
+                    search_model.current_state.remove_element(eff.predicate, param_list)
+                else:
+                    # Predicate needs to be added
+                    new_predicate = ProblemPredicate(eff.predicate, param_list)
+                    search_model.current_state.add_element(new_predicate)
+
+        search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
 
     def __compare_parameters(self, method: Method, parameters: dict[Object]):
@@ -138,7 +196,7 @@ class Solver:
         :returns    - [True] : if parameters match what is required by method
         :returns    - [False, missing_params] : otherwise. missing_params = ["name1", "name2" ... ]
         """
-        assert type(method) == Method
+        assert type(method) == Method or type(method) == Action or type(method) == Task
         assert type(parameters) == dict
         for p in parameters:
             assert type(parameters[p]) == Object
@@ -149,9 +207,8 @@ class Solver:
             if not p.name in parameters:
                 missing_params.append(p.name)
                 continue
-            if p.type != parameters[p.name].type:
-                raise TypeError("Parameter {} of type {} does not match required type {}"
-                                .format(p.name, parameters[p.name].type.name, p.type))
+            if not self.check_satisfies_type(p.type, parameters[p.name]):
+                return [False, False]
         if len(missing_params) == 0:
             return [True]
         return [False, missing_params]
@@ -184,7 +241,22 @@ class Solver:
         # Convert param_dict into a form which can be used - [[?a, ?b, ?c], [?a, ?b, ?d], ... ]
         return self.__convert_parameter_options_execution_ready(param_dict)
 
-    def __check_object_satisfies_parameter(self, model, object, requirements: dict):
+    def check_satisfies_type(self, required_type: Type, object_to_check: Object):
+        def __check_type(req_t, t):
+            if t == req_t:
+                return True
+            for i in t.parents:
+                if __check_type(req_t, i):
+                    return True
+            return False
+
+        if required_type is None:
+            return True
+        ob_t = object_to_check.type
+        res = __check_type(required_type, ob_t)
+        return res
+
+    def __check_object_satisfies_parameter(self, model: Model, object: Object, requirements: dict):
         """
         :param model:
         :param object:
@@ -196,7 +268,7 @@ class Solver:
         required_predicates = requirements['predicates']
 
         # Check type
-        if required_type is not None and required_type.name != object.type.name:
+        if not self.check_satisfies_type(required_type, object):
             return False
 
         # If there is no requirements on predicates then the object satisfies
@@ -252,6 +324,7 @@ class Solver:
         :return: list of dictionaries containing all possible combinations
         """
         combinations = []
+
         def __create_combinations(remaining_params, selected_params={}):
             if remaining_params == {}:
                 combinations.append(selected_params)
@@ -259,7 +332,7 @@ class Solver:
             k = list(remaining_params.keys())[0]
             popped = remaining_params.pop(k)
             for po in popped:
-                __create_combinations(remaining_params, Model.merge_dictionaries(selected_params, {k: po}))
+                __create_combinations(self.reproduce_dict(remaining_params), Model.merge_dictionaries(selected_params, {k: po}))
 
         # Check input format
         for p in param_dict:
@@ -272,7 +345,7 @@ class Solver:
             else:
                 raise TypeError("Unknown type {}".format(type(q)))
         # Create combinations
-        __create_combinations(param_dict)
+        __create_combinations(self.reproduce_dict(param_dict))
         return combinations
 
     def __generate_param_dict(self, modifier, params):
@@ -291,11 +364,42 @@ class Solver:
             i += 1
         return param_dict
 
+    @staticmethod
+    def check_duplicate_values_dictionary(d: dict):
+        """https://www.geeksforgeeks.org/python-find-keys-with-duplicate-values-in-dictionary/
+        :returns True if a duplicate is present
+        :returns False if there is no duplicates"""
+        flipped = {}
+        for key, value in d.items():
+            if value not in flipped:
+                flipped[value] = [key]
+            else:
+                return True
+        return False
+
+    @staticmethod
+    def reproduce_dict(d: dict):
+        return_dict = {}
+        keys = list(d.keys())
+        for k in keys:
+            return_dict[k] = d[k]
+        return return_dict
+
     def output(self, resulting_model: Model):
-        assert type(resulting_model) == Model
+        assert type(resulting_model) == Model or resulting_model is None
 
-        print("\nActions Taken:")
-        print([a.name for a in resulting_model.actions_taken])
+        if not resulting_model is None:
+            print("\nActions Taken:")
+            for a in resulting_model.actions_taken:
+                print(a)
+            if len(resulting_model.actions_taken) == 0:
+                print("No Actions")
 
-        print("Final State:")
-        print(resulting_model.current_state)
+            print("\nOperations Taken:")
+            for a in resulting_model.operations_taken:
+                print(a)
+
+            print("\nFinal State:")
+            print(resulting_model.current_state)
+        else:
+            print("plan not found")

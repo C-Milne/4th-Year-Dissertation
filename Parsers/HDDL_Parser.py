@@ -11,6 +11,7 @@ from Internal_Representation.effects import Effects
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.modifier import Modifier
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.constraints import Constraints
 
 
 class HDDLParser(Parser):
@@ -43,7 +44,9 @@ class HDDLParser(Parser):
                 elif lead == ":types":
                     self._parse_type(group)
                 elif lead == ":constraints":
-                    self._parse_constraints(group)
+                    self._parse_constraint(group)
+                elif lead == ":constants":
+                    self._parse_constant(group)
                 else:
                     raise AttributeError("Unknown tag; {}".format(lead))
         self._post_domain_parsing_grounding()
@@ -72,24 +75,28 @@ class HDDLParser(Parser):
 
     """Methods for parsing domains"""
     def _parse_type(self, params):
+        def _add_types_to_domain(t=None):
+            for o in new_types:
+                self.domain.add_type(Type(o, t))
+
         i = 0
         l = len(params)
+        new_types = []
         while i < l:
-            if i + 1 < l:
-                if params[i + 1] == "-":
-                    super_type_name = params[i + 2]
-                    # Check if super type is already a registered type
-                    super_type = self.domain.get_type(super_type_name)
-                    if super_type is False:
-                        self.domain.add_type(Type(super_type_name))
-                        super_type = self.domain.get_type(super_type_name)
-                    self.domain.add_type(Type(params[i], super_type))
-                    i += 2
-                else:
-                    self.domain.add_type(Type(params[i]))
+            if params[i] != "-":
+                new_types.append(params[i])
+                i += 1
             else:
-                self.domain.add_type(Type(params[i]))
-            i += 1
+                parent_type = self.domain.get_type(params[i + 1])
+
+                if parent_type is False:
+                    self.domain.add_type(Type(params[i + 1]))
+                    parent_type = self.domain.get_type(params[i + 1])
+
+                _add_types_to_domain(parent_type)
+                new_types = []
+                i += 2
+        _add_types_to_domain()
 
     def _parse_predicates(self, params):
         for i in params:
@@ -102,25 +109,33 @@ class HDDLParser(Parser):
 
     def _parse_parameters(self, params):
         """TODO : test this - check parameter name not already in use"""
+        def __add_t_param_list(t=None):
+            for i in param_names:
+                param_list.append(Parameter(i, t))
         """Parses list of parameters and returns a list of parameters
         params  - params : ['?a', '-', 'ob1', '?b', '?c', '-', 'ob2' ...]"""
         i = 0
         l = len(params)
         param_list = []
+        param_names = []
         while i < l:
             p = params[i]
             if type(p) == list:
                 raise TypeError("This method does not accept a list within a list")
-            param_type = None
-            if i + 1 < l:
-                if params[i + 1] == "-":
-                    param_type = self.domain.get_type(params[i + 2])
-                    i += 2
-            if type(p) == str and (type(param_type) == Type or param_type is None):
-                param_list.append(Parameter(p, param_type))
+            elif p == "-":
+                param_type_name = params[i + 1]
+                param_type = self.domain.get_type(param_type_name)
+                if param_type is None or params == False:
+                    raise TypeError("Invalid type {}".format(param_type_name))
+                __add_t_param_list(param_type)
+                param_names = []
+                i += 1
+            elif type(p) == str:
+                param_names.append(p)
             else:
-                raise TypeError("Task Parameters Must be a String")
+                raise TypeError("Unexpected token {}".format(p))
             i += 1
+        __add_t_param_list()
         return param_list
 
     def _parse_action(self, params):
@@ -204,10 +219,45 @@ class HDDLParser(Parser):
             i += 1
         return Task(task_name, parameters)
 
+    def _parse_constraints(self, params):
+        def __parse_conditions(parameters, parent=None):
+            if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                parameters = parameters[0]
+
+            if type(parameters) == list:
+                i = 0
+                l = len(parameters)
+                while i < l:
+                    p = parameters[i]
+                    if type(p) == str:
+                        cons = constraints.add_condition(p, parent)
+                        if p == "and" or p == "or" or p == "not":
+                            __parse_conditions(parameters[i + 1:], cons)
+                            return
+                        elif p == "=":
+                            for v in parameters[i + 1:]:
+                                __parse_conditions(v, cons)
+                            return
+                        else:
+                            raise TypeError("Unexpected token {}".format(p))
+                    elif type(p) == list:
+                        __parse_conditions(p, parent)
+                    else:
+                        raise TypeError("Unexpected type {}".format(type(p)))
+                    i += 1
+            elif type(parameters) == str:
+                return constraints.add_condition(parameters, parent)
+            else:
+                raise TypeError("Unexpected type {}".format(type(parameters)))
+
+        constraints = Constraints()
+        __parse_conditions(params)
+        return constraints
+
     def _parse_method(self, params):
         i = 0
         l = len(params)
-        method_name, parameters, precon, task, subtasks = None, None, None, None, None
+        method_name, parameters, precon, task, subtasks, constraints = None, None, None, None, None, None
         while i < l:
             if i == 0:
                 if type(params[i]) != str or params[i][0] == ":":
@@ -219,6 +269,9 @@ class HDDLParser(Parser):
                 i += 1
             elif params[i] == ":precondition":
                 precon = self._parse_precondition(params[i + 1])
+                i += 1
+            elif params[i] == ":constraints":
+                constraints = self._parse_constraints(params[i + 1])
                 i += 1
             elif params[i] == ":task":
                 task_ob = self.domain.get_task(params[i + 1][0])
@@ -240,7 +293,7 @@ class HDDLParser(Parser):
             else:
                 raise SyntaxError("Unknown token {}".format(params[i]))
             i += 1
-        return Method(method_name, parameters, precon, task, subtasks)
+        return Method(method_name, parameters, precon, task, subtasks, constraints)
 
     def _parse_subtasks(self, params):
         """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]"""
@@ -284,6 +337,30 @@ class HDDLParser(Parser):
                 i += 1
         return subtasks
 
+    def _parse_constant(self, params):
+        def __add_constants_to_problem(t=None):
+            for c in new_constants:
+                self.problem.add_object(Object(c, t))
+
+        i = 0
+        l = len(params)
+        new_constants = []
+        while i < l:
+            v = params[i]
+            if v == "-":
+                v = params[i + 1]
+                const_type = self.domain.get_type(v)
+                if const_type is None or const_type == False:
+                    raise TypeError("Type {} not found when parsing constants. Please check your domain file.".format(v))
+                __add_constants_to_problem(const_type)
+                new_constants = []
+                i += 1
+            else:
+                new_constants.append(v)
+            i += 1
+        __add_constants_to_problem()
+        new_constants = []
+
     def _post_domain_parsing_grounding(self):
         for item in self._requires_grounding:
             if type(item) == Subtasks.Subtask:
@@ -317,21 +394,22 @@ class HDDLParser(Parser):
                             .format(self.problem_path, name, self.domain_path, self.domain_name))
 
     def _parse_objects(self, params):
+        def _add_objects_to_problem(t=None):
+            for o in new_obs:
+                self.problem.add_object(Object(o, t))
         i = 0
         l = len(params)
+        new_obs = []
         while i < l:
-            if i + 1 < l and params[i + 1] == "-":
-                # Object with a type
-                ob_type = self.domain.get_type(params[i + 2])
-                if type(ob_type) != Type:
-                    raise SyntaxError("Type {} is unknown".format(type(ob_type)))
-
-                self.problem.add_object(Object(params[i], ob_type))
-                i += 2
+            if params[i] != "-":
+                new_obs.append(params[i])
+                i += 1
             else:
-                # Object with no type
-                self.problem.add_object(Object(params[i]))
-            i += 1
+                obs_type = self.domain.get_type(params[i + 1])
+                _add_objects_to_problem(obs_type)
+                new_obs = []
+                i += 2
+        _add_objects_to_problem()
 
     def _parse_initial_state(self, params):
         for i in params:
@@ -354,6 +432,12 @@ class HDDLParser(Parser):
                 self.problem.order_subtasks(params.pop(0))
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
+
+    def _parse_goal_state(self, params):
+        if type(params) == list and len(params) == 1 and type(params[0]) == list and len(params[0]) > 1:
+            params = params[0]
+        cons = self._parse_precondition(params)
+        self.problem.add_goal_conditions(cons)
 
     def _post_problem_parsing_grounding(self):
         for item in self._requires_grounding:

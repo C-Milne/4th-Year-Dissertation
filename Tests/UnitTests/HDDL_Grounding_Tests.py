@@ -13,6 +13,7 @@ from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.Object import Object
+from TestTools.env_setup import env_setup
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -24,6 +25,7 @@ class HDDLGroundingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
     # def test_blocksworld_pb1_initial_state(self):
     #     domain = Domain(None)
@@ -109,7 +111,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
         self.assertEqual(2, len(domain.methods['pickup-ready-block'].requirements))
-        self.assertEqual({'type': None, 'predicates': {'and': {'clear': 1, 'not': {'done': 1}, 'goal_on': 1}}},
+        self.assertEqual({'type': domain.types['block'], 'predicates': {'and': {'clear': 1, 'not': {'done': 1}, 'goal_on': 1}}},
                          domain.methods['pickup-ready-block'].requirements['?b'])
         self.assertEqual({'type': domain.types['block'],
                           'predicates': {'and': {'goal_on': 2, 'done': 1, 'clear': 1}}},
@@ -125,7 +127,7 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1.hddl")
         method = domain.methods['setdone']
-        model = Model(problem.initial_state, [], None, problem)
+        model = Model(problem.initial_state, [], problem)
         result = method.evaluate_preconditions(model, {})
         self.assertEqual(False, result)
 
@@ -139,9 +141,25 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_1.hddl")
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1_1.hddl")
         method = domain.methods['setdone']
-        model = Model(problem.initial_state, [], None, problem)
+        model = Model(problem.initial_state, [], problem)
         result = method.evaluate_preconditions(model, {})
         self.assertEqual(True, result)
+
+    def test_forall_preconditions_2(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "test02_forall/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "test02_forall/problem.hddl")
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertIsNotNone(plan)
+        self.assertEqual(1, len(plan.actions_taken))
+
+        problem.initial_state.remove_element(domain.predicates['foo'], [problem.objects['a']])
+        solver = Solver(domain, problem)
+        plan = solver.solve()
+        solver.output(plan)
+        self.assertIsNone(plan)
 
     def test_precondition_and(self):
         # Test the 'and' functionality for preconditions
@@ -349,5 +367,47 @@ class HDDLGroundingTests(unittest.TestCase):
         self.assertEqual(False, domain.actions['pickup'].effects.effects[0].negated)
         self.assertEqual(Predicate, type(domain.actions['drop'].effects.effects[0].predicate))
         self.assertEqual(True, domain.actions['drop'].effects.effects[0].negated)
+
+    def test_constraint_evaluation(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
+
+        # method0 - (and (not (= ?take_image_instance_4_argument_6 ?turn_to_instance_3_argument_4)))
+        method = domain.methods['method0']
+
+        # Test for True
+        param_dict = {
+            "?take_image_instance_4_argument_6": problem.objects['phenomenon4'],
+            "?take_image_instance_4_argument_7": problem.objects['instrument0'],
+            "?take_image_instance_4_argument_8": problem.objects['thermograph0'],
+            "?turn_to_instance_3_argument_2": problem.objects['satellite0'],
+            "?turn_to_instance_3_argument_4": problem.objects['phenomenon6']
+        }
+        self.assertEqual(True, method._evaluate_constraints(param_dict))
+
+        # Test for False
+        param_dict['?turn_to_instance_3_argument_4'] = problem.objects['phenomenon4']
+        self.assertEqual(False, method._evaluate_constraints(param_dict))
+
+    def test_type_satisfaction(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
+
+        # Check that type 'regular_package' satisfies both 'package' and 'regular'
+        reg_pack_ob = Object('test_package', domain.types['regular_package'])
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], reg_pack_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], reg_pack_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
+
+        # Check a child of regular_package also satisfies them both
+        food_ob = Object('test_food', domain.types['food'])
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], food_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], food_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['food'], food_ob))
+
+        # Test for false
+        self.assertEqual(False, solver.check_satisfies_type(domain.types['airport'], reg_pack_ob))
 
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()
