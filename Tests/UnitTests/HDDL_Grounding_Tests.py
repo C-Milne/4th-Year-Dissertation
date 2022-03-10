@@ -390,4 +390,24 @@ class HDDLGroundingTests(unittest.TestCase):
         param_dict['?turn_to_instance_3_argument_4'] = problem.objects['phenomenon4']
         self.assertEqual(False, method._evaluate_constraints(param_dict))
 
+    def test_type_satisfaction(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+        parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
+
+        # Check that type 'regular_package' satisfies both 'package' and 'regular'
+        reg_pack_ob = Object('test_package', domain.types['regular_package'])
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], reg_pack_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], reg_pack_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
+
+        # Check a child of regular_package also satisfies them both
+        food_ob = Object('test_food', domain.types['food'])
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], food_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], food_ob))
+        self.assertEqual(True, solver.check_satisfies_type(domain.types['food'], food_ob))
+
+        # Test for false
+        self.assertEqual(False, solver.check_satisfies_type(domain.types['airport'], reg_pack_ob))
+
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()

@@ -241,12 +241,18 @@ class Solver:
         return self.__convert_parameter_options_execution_ready(param_dict)
 
     def check_satisfies_type(self, required_type: Type, object_to_check: Object):
+        def __check_type(req_t, t):
+            if t == req_t:
+                return True
+            for i in t.parents:
+                if __check_type(req_t, i):
+                    return True
+            return False
+
         if required_type is None:
             return True
-        t = object_to_check.type
-        while required_type != t and t.parent is not None:
-            t = t.parent
-        res = required_type == t
+        ob_t = object_to_check.type
+        res = __check_type(required_type, ob_t)
         return res
 
     def __check_object_satisfies_parameter(self, model: Model, object: Object, requirements: dict):

@@ -117,9 +117,10 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertIn('lander', keys)
         self.assertIn('objective', keys)
 
-        self.assertEqual(None, domain.types['object'].parent)
+        self.assertEqual([], domain.types['object'].parents)
         for k in keys[1:]:
-            self.assertEqual(domain.types['object'], domain.types[k].parent)
+            self.assertEqual(1, len(domain.types[k].parents))
+            self.assertIn(domain.types['object'], domain.types[k].parents)
 
     def test_parsing_types_2(self):
         domain = Domain(None)
@@ -132,19 +133,35 @@ class HDDLParsingTests(unittest.TestCase):
         for t in domain.types:
             if t == 'object':
                 continue
-            self.assertEqual(domain.types['object'], domain.types[t].parent)
+            self.assertEqual(1, len(domain.types[t].parents))
+            self.assertIn(domain.types['object'], domain.types[t].parents)
 
     def test_parsing_types_3(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
-        self.assertEqual(domain.types['city_location'], domain.types['tcenter'].parent)
+        self.assertIn(domain.types['city_location'], domain.types['tcenter'].parents)
 
         ob = problem.objects['flughafenstuttgart']
         self.assertEqual(domain.types['airport'], ob.type)
-        self.assertEqual(domain.types['tcenter'], ob.type.parent)
-        self.assertEqual(domain.types['city_location'], ob.type.parent.parent)
-        self.assertEqual(domain.types['location'], ob.type.parent.parent.parent)
+        self.assertIn(domain.types['tcenter'], ob.type.parents)
+        self.assertIn(domain.types['city_location'], domain.types['tcenter'].parents)
+        self.assertIn(domain.types['location'], domain.types['city_location'].parents)
+
+    def test_parsing_types_4(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
+
+        # Check that objects with multiple parents have them both defined
+        t = domain.types['regular_package']
+        self.assertEqual(2, len(t.parents))
+        self.assertIn(domain.types['package'], t.parents)
+        self.assertIn(domain.types['regular'], t.parents)
+
+        t = domain.types['food']
+        self.assertEqual(2, len(t.parents))
+        self.assertIn(domain.types['regular_package'], t.parents)
+        self.assertIn(domain.types['perishable'], t.parents)
 
     def test_parsing_predicates(self):
         # Rover Domain

@@ -3,7 +3,14 @@ class Type:
         assert type(name) == str
         self.name = name
         assert type(parent) == Type or parent is None
-        self.parent = parent
+        if parent is None:
+            self.parents = []
+        else:
+            self.parents = [parent]
+
+    def add_parent(self, p):
+        if p not in self.parents:
+            self.parents.append(p)
 
     def __str__(self):
         return self.name

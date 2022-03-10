@@ -39,8 +39,8 @@ class Domain:
         if t.name not in self.types.keys():
             self.types[t.name] = t
         else:
-            if self.types[t.name].parent is None and t.parent is not None:
-                self.types[t.name].parent = t.parent
+            for p in t.parents:
+                self.types[t.name].add_parent(p)
 
     def get_action(self, action_name):
         """Return an actions object
