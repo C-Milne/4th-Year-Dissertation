@@ -49,8 +49,18 @@ class JSHOPParser(Parser):
                         else:
                             raise AttributeError("Unknown tag - {}".format(lead))
 
-    def parse_problem(self, *args):
-        pass
+    def parse_problem(self, problem_path):
+        self.problem_path = problem_path
+        tokens = self._scan_tokens(problem_path)
+        if type(tokens) is list:
+            while tokens:
+                group = tokens.pop(0)
+                if group == "defproblem":
+                    tokens.pop(0)
+                    self.problem_name = tokens.pop(0)
+                else:
+                    section = group.pop(0)
+                    print("here")
 
     def _parse_type(self, *args):
         pass

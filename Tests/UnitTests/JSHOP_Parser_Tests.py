@@ -54,3 +54,9 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(['and', ['have', '?x'], ['not', ['have', '?y']]], domain.methods['method0'].preconditions.conditions)
         self.assertIn('method1', domain.methods)
         self.assertEqual(['and', ['have', '?y'], ['not', ['have', '?x']]], domain.methods['method1'].preconditions.conditions)
+
+    def test_parsing_basic_problem(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.basic_path + "basic")
+        parser.parse_problem(self.basic_path + "problem")
+        self.assertEqual(1, 2)
