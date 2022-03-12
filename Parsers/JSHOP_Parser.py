@@ -4,6 +4,8 @@ from Internal_Representation.method import Method
 from Internal_Representation.action import Action
 from Internal_Representation.effects import Effects
 from Internal_Representation.predicate import Predicate
+from Internal_Representation.problem_predicate import ProblemPredicate
+from Internal_Representation.Object import Object
 
 
 class JSHOPParser(Parser):
@@ -52,15 +54,17 @@ class JSHOPParser(Parser):
     def parse_problem(self, problem_path):
         self.problem_path = problem_path
         tokens = self._scan_tokens(problem_path)
-        if type(tokens) is list:
-            while tokens:
-                group = tokens.pop(0)
-                if group == "defproblem":
-                    tokens.pop(0)
-                    self.problem_name = tokens.pop(0)
-                else:
-                    section = group.pop(0)
-                    print("here")
+
+        group = tokens.pop(0)
+        assert group == "defproblem"
+        tokens.pop(0)
+        self.problem_name = tokens.pop(0)
+
+        # Initial state
+        self._parse_initial_state(tokens.pop(0))
+
+        # Subtasks
+        self._parse_execution_subtasks(tokens.pop(0))
 
     def _parse_type(self, *args):
         pass
@@ -71,12 +75,22 @@ class JSHOPParser(Parser):
         for p in parameters:
             assert type(p) == str
         # Check if predicate already exists
-        if self.domain.get_predicate(pred_name) is None:
+        res = self.domain.get_predicate(pred_name)
+        if res is None:
             # Add predicate
             pred = Predicate(pred_name, self._parse_parameters(parameters))
             self.domain.add_predicate(pred)
             return pred
-        return self.domain.get_predicate(pred_name)
+        return res
+
+    def _log_object(self, ob_name: str) -> Object:
+        assert type(ob_name) == str
+        res = self.problem.get_object(ob_name)
+        if res is None:
+            ob = Object(ob_name)
+            self.problem.add_object(ob)
+            return ob
+        return res
 
     def _parse_effects(self, params: list[list[str]], negated: bool, effects: Effects):
         """
@@ -173,8 +187,29 @@ class JSHOPParser(Parser):
     def _parse_objects(self, *args):
         pass
 
-    def _parse_initial_state(self, *args):
-        pass
+    def _parse_initial_state(self, group):
+        while len(group) > 0:
+            section = group.pop(0)
+            if len(section) > 1:
+                obs = [self._log_object(x) for x in section[1:]]
+            else:
+                obs = []
+            self.problem.add_to_initial_state(ProblemPredicate(self.domain.get_predicate(section[0]), obs))
+
+    def _parse_execution_subtasks(self, group):
+        sub_tasks = None
+        while len(group) > 0:
+            section = group.pop(0)
+            subT = self._parse_subtasks(section)
+
+            for param in subT.tasks[0].parameters:
+                self._log_object(param.name)
+
+            if sub_tasks is None:
+                sub_tasks = subT
+            else:
+                sub_tasks.append(subT.tasks[0])
+        self.problem.add_subtasks(sub_tasks)
 
     def _parse_goal_state(self, *args):
         pass

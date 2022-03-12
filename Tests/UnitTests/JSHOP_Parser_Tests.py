@@ -59,4 +59,15 @@ class JSHOPParsingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.basic_path + "basic")
         parser.parse_problem(self.basic_path + "problem")
-        self.assertEqual(1, 2)
+
+        self.assertIn("kiwi", problem.objects)
+        self.assertIn("banjo", problem.objects)
+        self.assertEqual(2, len(problem.objects))
+
+        self.assertEqual(1, len(problem.initial_state.elements))
+        self.assertEqual(domain.predicates['have'], problem.initial_state.elements[0].predicate)
+        self.assertEqual(1, len(problem.initial_state.elements[0].objects))
+        self.assertEqual(problem.objects['kiwi'], problem.initial_state.elements[0].objects[0])
+
+        self.assertEqual(1, len(problem.subtasks.tasks))
+        self.assertEqual(domain.tasks['swap'], problem.subtasks.tasks[0].task)

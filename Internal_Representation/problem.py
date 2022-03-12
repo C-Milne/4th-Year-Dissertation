@@ -28,7 +28,7 @@ class Problem:
             assert type(ob) == Object
             self.objects[ob.name] = ob
 
-    def add_to_initial_state(self, v):
+    def add_to_initial_state(self, v: ProblemPredicate):
         assert type(v) == ProblemPredicate
         self.initial_state.add_element(v)
 
@@ -40,7 +40,9 @@ class Problem:
         self.subtasks.order_subtasks(orderings)
 
     def get_object(self, name):
-        return self.objects[name]
+        if name in self.objects:
+            return self.objects[name]
+        return None
 
     def get_objects_of_type(self, param_type):
         if type(param_type) == str:

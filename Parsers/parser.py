@@ -77,7 +77,8 @@ class Parser:
         return Precondition(params)
 
     def _parse_subtasks(self, params):
-        """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]"""
+        """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]
+                            : ['swap', 'banjo', 'kiwi']"""
         if len(params) == 0:
             return None
         else:
