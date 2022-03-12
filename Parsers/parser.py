@@ -4,6 +4,8 @@ from Internal_Representation.problem import Problem
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.task import Task
+from Internal_Representation.Object import Object
 
 
 class Parser:
@@ -179,3 +181,40 @@ class Parser:
         if len(sections) != 1:
             raise Exception('Malformed expression')
         return sections[0]
+
+    def _post_problem_parsing_grounding(self):
+        for item in self._requires_grounding:
+            if type(item) == Subtasks:
+                # Subtask parameter type should be object
+                for t in item.tasks:
+                    i = 0
+                    l = len(t.parameters)
+                    while i < l:
+                        if type(t.parameters[i]) == Parameter:
+                            t.parameters[i] = self.problem.get_object(t.parameters[i].name)
+                        elif type(t.parameters[i]) == Object:
+                            pass
+                        else:
+                            raise AttributeError("Grounding process for subtask with type {} unknown".format(type(t.parameters[i])))
+                        i += 1
+            elif type(item) == Subtasks.Subtask:
+                # Parameters must be objects
+                i = 0
+                l = len(item.parameters)
+                while i < l:
+                    if type(item.parameters[i]) == Parameter:
+                        item.parameters[i] = self.problem.get_object(item.parameters[i].name)
+                    elif type(item.parameters[i]) == Object:
+                        pass
+                    else:
+                        raise AttributeError(
+                            "Grounding process for subtask with type {} unknown".format(type(item.parameters[i])))
+                    i += 1
+
+                # Task must be a task instance not a string
+                if type(item.task) != Task:
+                    assert type(item.task) == str
+                    item.task = self.domain.get_task(item.task)
+            else:
+                raise NotImplementedError("Functionality for post problem grounding of {} is not implemented".format(type(item)))
+        self._requires_grounding = []

@@ -71,3 +71,6 @@ class JSHOPParsingTests(unittest.TestCase):
 
         self.assertEqual(1, len(problem.subtasks.tasks))
         self.assertEqual(domain.tasks['swap'], problem.subtasks.tasks[0].task)
+        self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
+        self.assertEqual(problem.objects['banjo'], problem.subtasks.tasks[0].parameters[0])
+        self.assertEqual(problem.objects['kiwi'], problem.subtasks.tasks[0].parameters[1])

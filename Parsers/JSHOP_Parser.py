@@ -66,6 +66,9 @@ class JSHOPParser(Parser):
         # Subtasks
         self._parse_execution_subtasks(tokens.pop(0))
 
+        # Grounding
+        self._post_problem_parsing_grounding()
+
     def _parse_type(self, *args):
         pass
 
@@ -210,6 +213,7 @@ class JSHOPParser(Parser):
             else:
                 sub_tasks.append(subT.tasks[0])
         self.problem.add_subtasks(sub_tasks)
+        self._requires_grounding.append(sub_tasks)
 
     def _parse_goal_state(self, *args):
         pass

@@ -13,7 +13,10 @@ class Parameter:
             raise SyntaxError("Type {} is not recognised as a parameter type".format(type(param_type)))
 
     def __eq__(self, other):
-        if self.param_type == other.param_type:
-            return True
-        else:
+        try:
+            if self.param_type == other.param_type:
+                return True
+            else:
+                return False
+        except AttributeError:
             return False
