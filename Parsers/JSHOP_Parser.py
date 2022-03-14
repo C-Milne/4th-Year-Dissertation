@@ -8,6 +8,7 @@ from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.Object import Object
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.list_parameter import ListParameter
+from Internal_Representation.subtasks import Subtasks
 
 
 class JSHOPParser(Parser):
@@ -114,7 +115,7 @@ class JSHOPParser(Parser):
                 pred = self._log_predicate(pred_name, parameters)
                 effects.add_effect(pred, parameters, negated)
             elif type(p) == str and p[0] == '?':
-                print("Not Implemented: (JSHOP Parser _parse_effects) Effect {} of type {}".format(p, type(p)))
+                effects.add_runtime_effect(p)
             else:
                 raise NotImplementedError("Effect {} of type {}".format(p, type(p)))
 
@@ -240,6 +241,73 @@ class JSHOPParser(Parser):
 
     def _check_domain_name(self, *args):
         pass
+
+    def _parse_subtasks(self, params):
+        """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]
+                            : ['swap', 'banjo', 'kiwi']"""
+        if len(params) == 0:
+            return None
+        else:
+            subtasks = Subtasks()
+            i = 0
+            l = len(params)
+            while i < l:
+                task_label, task_modifier, task_parameters, decorator = None, None, None, None
+                if params[i] == "and":
+                    pass
+                else:
+                    if type(params[i]) == list and type(params[i][0]) == str and params[i][0].startswith('!!'):
+                        # ['!!assert', ['goal', '?goal']]
+                        section = params[i]
+                        task_modifier = self.domain.get_modifier(section[0])
+                        parameters = section[1:]
+
+                        if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                            parameters = parameters[0]
+
+                        if len(parameters) == 2 and parameters[0] == 'goal':
+                            decorator = parameters[0]
+                            parameters = parameters[1]
+
+                        try:
+                            assert all([type(x) == str for x in parameters])
+                        except:
+                            raise TypeError
+
+                        if parameters[0] == "goal":
+                            decorator = parameters[0]
+                            parameters = parameters[1:]
+                        task_parameters = self._parse_parameters(parameters)
+
+                    # Check if there is a list within a list
+                    elif len(params[i]) > 1 and type(params[i][1]) == list:
+                        task_label = params[i][0]
+                        task_modifier = params[i][1][0]
+                        parameters = params[i][1][1:]
+
+                        task_parameters = self._parse_parameters(parameters)
+                    elif type(params[i]) == list:
+                        # No task Label
+                        task_modifier = params[i][0]
+                        task_parameters = self._parse_parameters(params[i][1:])
+
+                    elif all([type(x) == str for x in params]):
+                        task_modifier = params[0]
+                        task_parameters = self._parse_parameters(params[1:])
+                        i += len(params)
+                    else:
+                        raise SyntaxError("Unrecognised Format {}".format(params))
+
+                    task_modifier_ob = self.domain.get_modifier(task_modifier)
+                    if not task_modifier_ob is None:
+                        task_modifier = task_modifier_ob
+                    subtasks.add_subtask(task_label, task_modifier, task_parameters, decorator)
+
+                    if type(task_modifier) == str:
+                        # Mark this method for grounding after parsing has finished
+                        self._requires_grounding.append(subtasks.tasks[len(subtasks) - 1])
+                i += 1
+        return subtasks
 
     def _parse_objects(self, *args):
         pass

@@ -33,7 +33,7 @@ class Subtasks:
         self.tasks = []
         self.labelled_tasks = {}
 
-    def add_subtask(self, label, modifier, parameters):
+    def add_subtask(self, label:str, modifier, parameters: list, decorator: str = None):
         assert type(label) == str or label is None
         assert isinstance(modifier, Modifier) or type(modifier) == str
         assert type(parameters) == list

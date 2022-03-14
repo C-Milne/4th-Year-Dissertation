@@ -145,7 +145,7 @@
     ;; the shared preconditions for several times. Here, the stack-on-block
     ;; is the shared precondition in the move-block method
     (:method (move-block1 ?x ?z)
-             method-for-moving-x-from-y-to-z
+             ;method-for-moving-x-from-y-to-z
              ((on ?x ?y))
              ;Decomposition
              ((!unstack ?x ?y) (!stack ?x ?z)
@@ -153,7 +153,7 @@
              (!!remove (stack-on-block ?x ?z))
              (check ?x) (check2 ?y) (check3 ?y))
 
-             method-for-moving-x-from-table-to-z
+             ;method-for-moving-x-from-table-to-z
              nil
              ; Decomposition
              ((!pickup ?x) (!stack ?x ?z)
@@ -172,7 +172,7 @@
              ((stack-on-block ?x ?y))
              ((move-block1 ?x ?y) (move-block))
 
-             method-for-moving-x-from-y-to-table
+             ;method-for-moving-x-from-y-to-table
              ((put-on-table ?x) (on ?x ?y))
              ;Decomposition
              ((!unstack ?x ?y) (!putdown ?x)
@@ -180,13 +180,13 @@
              (!!remove (put-on-table ?x))
              (check ?x) (check2 ?y) (check3 ?y) (move-block))
 
-             method-for-moving-x-out-of-the-way
+             ;method-for-moving-x-out-of-the-way
              ((clear ?x) (not (dont-move ?x)) (on ?x ?y))
              ;Decomposition
              ((!unstack ?x ?y) (!putdown ?x)
              (check2 ?y) (check3 ?y) (move-block))
 
-             termination-method-branch
+             ;termination-method-branch
              nil
              nil)
 

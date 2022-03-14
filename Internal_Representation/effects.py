@@ -8,6 +8,10 @@ class Effects:
             self.parameters = parameters
             self.negated = negated
 
+    class RunTimeEffect:
+        def __init__(self, parameter):
+            self.parameter = parameter
+
     def __init__(self):
         self.effects = []
 
@@ -22,3 +26,13 @@ class Effects:
             assert type(p) == str
         assert type(negated) == bool
         self.effects.append(self.Effect(predicate, parameters, negated))
+
+    def add_runtime_effect(self, parameter: str):
+        """(:operator (!!assert ?g)
+               ()
+               ()
+               (?g)
+        :param parameter = '?g'
+        """
+        assert type(parameter) == str
+        self.effects.append(self.RunTimeEffect(parameter))

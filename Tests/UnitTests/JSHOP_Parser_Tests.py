@@ -7,7 +7,8 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.basic_path = "../Examples/JShop/basic/"
-        self.block_path = "Tests/Examples/JShop/blocks/"
+        self.block_path = "../Examples/JShop/blocks/"
+        # self.block_path = "Tests/Examples/JShop/blocks/"
 
     def test_parsing_basic_domain(self):
         domain, problem, parser, solver = env_setup(False)
