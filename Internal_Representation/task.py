@@ -6,9 +6,13 @@ class Task(Modifier):
     def __init__(self, name, parameters=[]):
         super().__init__(name, parameters)
         self.methods = []
+        self.tasks = []
 
     def add_method(self, method):
         self.methods.append(method)
+
+    def add_task(self, t):
+        self.tasks.append(t)
 
     def compare_params_soft(self, params):
         """Check the parameter names given with the ones on record
@@ -34,14 +38,6 @@ class Task(Modifier):
             if not found:
                 return False
         return True
-
-    def compare_params(self):
-        """TODO : Implement this"""
-        """Check the parameter names given with the ones on record
-                This method checks name and type. For method that only checks name, see compare_params_soft()
-                :returns    - True : if all parameters match
-                            - False : otherwise"""
-        pass
 
     def get_parameter_names(self):
         if len(self.parameters) != len(self.parameter_names):

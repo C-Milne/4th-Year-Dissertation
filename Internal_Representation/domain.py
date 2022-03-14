@@ -1,9 +1,9 @@
-from Internal_Representation.modifier import Modifier
 from Internal_Representation.action import Action
 from Internal_Representation.method import Method
 from Internal_Representation.task import Task
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.Type import Type
+from Internal_Representation.derived_predicate import DerivedPredicate
 
 
 class Domain:
@@ -13,6 +13,7 @@ class Domain:
         self.tasks = {}
         self.types = {}
         self.predicates = {}
+        self.derived_predicates = {}
         self.problem = problem
 
     def add_action(self, action):
@@ -25,14 +26,19 @@ class Domain:
         if not method.task is None:
             self._add_method_to_task(method, method.task['task'])
 
-    def add_task(self, task):
+    def add_task(self, task: Task):
         assert type(task) == Task
         self.tasks[task.name] = task
 
-    def add_predicate(self, predicate):
+    def add_predicate(self, predicate: Predicate):
         assert type(predicate) == Predicate
         assert predicate.name not in self.predicates.keys()
         self.predicates[predicate.name] = predicate
+
+    def add_derived_predicate(self, derived_predicate: DerivedPredicate):
+        assert type(derived_predicate) == DerivedPredicate
+        assert derived_predicate.name not in self.derived_predicates.keys()
+        self.derived_predicates[derived_predicate.name] = derived_predicate
 
     def add_type(self, t):
         assert type(t) == Type

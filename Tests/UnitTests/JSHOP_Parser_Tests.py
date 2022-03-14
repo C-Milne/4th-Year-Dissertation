@@ -1,6 +1,7 @@
 import unittest
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Parsers.JSHOP_Parser import JSHOPParser
+from Internal_Representation.list_parameter import ListParameter
 
 
 class JSHOPParsingTests(unittest.TestCase):
@@ -81,5 +82,21 @@ class JSHOPParsingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.block_path + "blocks")
 
-        self.assertEqual(11, len(domain.tasks))
-        self.assertEqual(1, 2)
+        self.assertEqual(10, len(domain.tasks))
+        assertGoalTask = domain.tasks['assert-goals']
+        self.assertEqual([], assertGoalTask.methods)
+        self.assertEqual([], assertGoalTask.parameters)
+        self.assertEqual(None, assertGoalTask.preconditions)
+        self.assertEqual(2, len(assertGoalTask.tasks))
+
+        self.assertEqual(1, len(assertGoalTask.tasks[0].parameters))
+        self.assertEqual(ListParameter, type(assertGoalTask.tasks[0].parameters[0]))
+        self.assertEqual('?goal', assertGoalTask.tasks[0].parameters[0].internal_param_name)
+        self.assertEqual('?goals', assertGoalTask.tasks[0].parameters[0].param_list_name)
+        self.assertEqual([], assertGoalTask.tasks[0].tasks)
+
+        self.assertEqual([], assertGoalTask.tasks[1].parameters)
+        self.assertEqual(1, len(assertGoalTask.tasks[1].methods))
+        self.assertEqual([], assertGoalTask.tasks[1].methods[0].parameters)
+        self.assertEqual([], assertGoalTask.tasks[1].methods[0].preconditions.conditions)
+        self.assertEqual([], assertGoalTask.tasks[1].tasks)

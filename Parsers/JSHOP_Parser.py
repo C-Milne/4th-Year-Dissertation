@@ -9,6 +9,7 @@ from Internal_Representation.Object import Object
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.subtasks import Subtasks
+from Internal_Representation.derived_predicate import DerivedPredicate
 
 
 class JSHOPParser(Parser):
@@ -51,6 +52,16 @@ class JSHOPParser(Parser):
                             ((!drop ?y) (!pickup ?x)))  - this is subtasks for method2
                             """
                             self._parse_method(section)
+                        elif lead == ":-":
+                            """State axioms
+                            (need-to-move ?x) - This is true if any of the following are true
+                            ((on ?x ?y) (goal (on ?x ?z)) (not (same ?y ?z)))
+                            ((on-table ?x) (goal (on ?x ?z)))
+                            ((on ?x ?y) (goal (on-table ?x)))
+                            ((on ?x ?y) (goal (clear ?y)))
+                            ((on ?x ?z) (goal (on ?y ?z)) (not (same ?x ?y)))
+                            ((on ?x ?w) (need-to-move ?w))"""
+                            self._parse_state_axiom(section)
                         else:
                             raise AttributeError("Unknown tag - {}".format(lead))
 
@@ -177,7 +188,20 @@ class JSHOPParser(Parser):
                 break
             i += 1
         task = Task(task_name, parameters)
-        self.domain.add_task(task)
+
+        # Check if task already exists with other parameters
+        res = self.domain.get_task(task_name)
+        if res is None:
+            self.domain.add_task(task)
+        else:
+            assert type(res) == Task
+            if res.tasks == []:
+                new_task = Task(res.name)
+                new_task.add_task(res)
+                new_task.add_task(task)
+                self.domain.add_task(new_task)
+            else:
+                res.add_task(task)
         return task
 
     def _parse_precondition(self, params: list):
@@ -189,6 +213,17 @@ class JSHOPParser(Parser):
             except:
                 raise TypeError
         return super(JSHOPParser, self)._parse_precondition(params)
+
+    def _parse_state_axiom(self, params):
+        pred_name = params[0][0]
+        pred_params = params[0][1:]
+        conditions = params[1:]
+
+        derived_pred = DerivedPredicate(pred_name, self._parse_parameters(pred_params))
+
+        for c in conditions:
+            derived_pred.add_condition(self._parse_precondition(c))
+        self.domain.add_derived_predicate(derived_pred)
 
     def _parse_parameters(self, params) -> list[RegParameter]:
         def __add_t_param_list(t=None):
@@ -220,7 +255,8 @@ class JSHOPParser(Parser):
                 param_names = []
                 i += 1
             elif type(p) == str:
-                param_names.append(p)
+                if p != 'nil':
+                    param_names.append(p)
             else:
                 raise TypeError("Unexpected token {}".format(p))
             i += 1
