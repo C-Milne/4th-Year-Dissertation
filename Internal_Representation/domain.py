@@ -33,11 +33,14 @@ class Domain:
     def add_predicate(self, predicate: Predicate):
         assert type(predicate) == Predicate
         assert predicate.name not in self.predicates.keys()
-        self.predicates[predicate.name] = predicate
+        if predicate.name not in self.derived_predicates:
+            self.predicates[predicate.name] = predicate
 
     def add_derived_predicate(self, derived_predicate: DerivedPredicate):
         assert type(derived_predicate) == DerivedPredicate
         assert derived_predicate.name not in self.derived_predicates.keys()
+        if derived_predicate.name in self.predicates:
+            del self.predicates[derived_predicate.name]
         self.derived_predicates[derived_predicate.name] = derived_predicate
 
     def add_type(self, t):

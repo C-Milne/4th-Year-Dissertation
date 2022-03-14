@@ -90,7 +90,10 @@ class JSHOPParser(Parser):
         assert type(pred_name) == str
         assert type(parameters) == list
         for p in parameters:
-            assert type(p) == str
+            try:
+                assert type(p) == str
+            except:
+                raise TypeError
         # Check if predicate already exists
         res = self.domain.get_predicate(pred_name)
         if res is None:
@@ -207,6 +210,20 @@ class JSHOPParser(Parser):
     def _parse_precondition(self, params: list):
         if params == 'nil':
             return super(JSHOPParser, self)._parse_precondition([])
+        # Check for predicates which are not yet discovered
+        for p in params:
+            if type(p) == list:
+                if type(p) == list and len(p) == 1 and type(p[0]) == list:
+                    p = p[0]
+
+                while len(p) == 2 and type(p[1]) == list:
+                    p = p[1]
+
+                if len(p) > 1:
+                    self._log_predicate(p[0], p[1:])
+                else:
+                    self._log_predicate(p[0], [])
+
         if len(params) > 0:
             try:
                 params.insert(0, 'and')

@@ -100,3 +100,33 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual([], assertGoalTask.tasks[1].methods[0].parameters)
         self.assertEqual([], assertGoalTask.tasks[1].methods[0].preconditions.conditions)
         self.assertEqual([], assertGoalTask.tasks[1].tasks)
+
+        # Check predicates
+        self.assertEqual(8, len(domain.predicates))
+        self.assertIn('clear', domain.predicates)
+        self.assertIn('on-table', domain.predicates)
+        self.assertIn('holding', domain.predicates)
+        self.assertIn('on', domain.predicates)
+        self.assertIn('block', domain.predicates)
+        self.assertIn('dont-move', domain.predicates)
+        self.assertIn('put-on-table', domain.predicates)
+        self.assertIn('stack-on-block', domain.predicates)
+
+
+        # Check axioms
+        self.assertEqual(2, len(domain.derived_predicates))
+        self.assertIn('same', domain.derived_predicates)
+        self.assertIn('need-to-move', domain.derived_predicates)
+        self.assertEqual(2, len(domain.derived_predicates['same'].parameters))
+        self.assertEqual('?x', domain.derived_predicates['same'].parameters[0].name)
+        self.assertEqual('?x', domain.derived_predicates['same'].parameters[1].name)
+
+        self.assertEqual(1, len(domain.derived_predicates['need-to-move'].parameters))
+        self.assertEqual('?x', domain.derived_predicates['need-to-move'].parameters[0].name)
+
+    def test_parsing_blocks_problem(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.block_path + "blocks")
+        parser.parse_problem(self.block_path + "problem")
+
+        self.assertEqual(300, len(problem.objects))
