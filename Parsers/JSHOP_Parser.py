@@ -6,6 +6,8 @@ from Internal_Representation.effects import Effects
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.Object import Object
+from Internal_Representation.reg_parameter import RegParameter
+from Internal_Representation.list_parameter import ListParameter
 
 
 class JSHOPParser(Parser):
@@ -103,19 +105,29 @@ class JSHOPParser(Parser):
         :return:
         """
         for p in params:
-            pred_name = p[0]
-            if len(p) > 1:
-                parameters = p[1:]
+            if type(p) == list:
+                pred_name = p[0]
+                if len(p) > 1:
+                    parameters = p[1:]
+                else:
+                    parameters = []
+                pred = self._log_predicate(pred_name, parameters)
+                effects.add_effect(pred, parameters, negated)
+            elif type(p) == str and p[0] == '?':
+                print("Not Implemented: (JSHOP Parser _parse_effects) Effect {} of type {}".format(p, type(p)))
             else:
-                parameters = []
-            pred = self._log_predicate(pred_name, parameters)
-            effects.add_effect(pred, parameters, negated)
+                raise NotImplementedError("Effect {} of type {}".format(p, type(p)))
 
     def _parse_action(self, params):
         """[['!pickup', '?a'], [], [], [['have', '?a']]]
         [['!drop', '?a'], [['have', '?a']], [['have', '?a']], []]
         (name and params) (preconditions) (deletions) (additions)
         """
+        assert len(params) == 4 or len(params) == 5
+        if len(params) == 5:
+            cost = params[4]
+            params = params[:4]
+
         assert len(params) == 4
         for p in params:
             assert type(p) == list
@@ -168,9 +180,51 @@ class JSHOPParser(Parser):
         return task
 
     def _parse_precondition(self, params: list):
+        if params == 'nil':
+            return super(JSHOPParser, self)._parse_precondition([])
         if len(params) > 0:
-            params.insert(0, 'and')
+            try:
+                params.insert(0, 'and')
+            except:
+                raise TypeError
         return super(JSHOPParser, self)._parse_precondition(params)
+
+    def _parse_parameters(self, params) -> list[RegParameter]:
+        def __add_t_param_list(t=None):
+            for i in param_names:
+                param_list.append(RegParameter(i, t))
+
+        """Parses list of parameters and returns a list of parameters
+        params  - params : ['?a', '-', 'ob1', '?b', '?c', '-', 'ob2' ...]"""
+        i = 0
+        l = len(params)
+        param_list = []
+        param_names = []
+        while i < l:
+            p = params[i]
+            if type(p) == list:
+                if len(p) == 3 and all([type(x) == str for x in p]) and p[0][0] == '?' and p[2][0] == '?' and p[1] == '.':
+                    assert param_names == []
+                    """['?goal', '.', '?goals']
+                    At solve time we need to check ?goals is a list and pop the leading value and store it in ?goal"""
+                    param_list.append(ListParameter(p[2], p[0]))
+                else:
+                    raise TypeError("This method does not accept a list within a list")
+            elif p == "-":
+                param_type_name = params[i + 1]
+                param_type = self.domain.get_type(param_type_name)
+                if param_type is None or params == False:
+                    raise TypeError("Invalid type {}".format(param_type_name))
+                __add_t_param_list(param_type)
+                param_names = []
+                i += 1
+            elif type(p) == str:
+                param_names.append(p)
+            else:
+                raise TypeError("Unexpected token {}".format(p))
+            i += 1
+        __add_t_param_list()
+        return param_list
 
     def _parse_predicates(self, *args):
         pass

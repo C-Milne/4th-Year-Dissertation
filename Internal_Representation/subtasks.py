@@ -1,5 +1,5 @@
 from Internal_Representation.modifier import Modifier
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
 
 
@@ -10,7 +10,7 @@ class Subtasks:
             self.task = task
             assert type(parameters) == list
             for p in parameters:
-                assert type(p) == Parameter
+                assert type(p) == RegParameter
             self.parameters = parameters
             self.given_params = {}
 
@@ -38,7 +38,7 @@ class Subtasks:
         assert isinstance(modifier, Modifier) or type(modifier) == str
         assert type(parameters) == list
         for p in parameters:
-            assert type(p) == Parameter
+            assert type(p) == RegParameter
         subtask_to_add = self.Subtask(modifier, parameters)
         if label is not None:
             self.labelled_tasks[label] = subtask_to_add

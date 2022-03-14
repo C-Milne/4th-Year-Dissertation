@@ -9,7 +9,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.state import State
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 import Tests.UnitTests.TestTools.rover_execution as RovEx
@@ -154,7 +154,7 @@ class SolvingTests(unittest.TestCase):
             m.ranking = 0
 
         # Execute action on model[7]
-        subT = Subtasks.Subtask(domain.actions['visit'], [Parameter('?from')])
+        subT = Subtasks.Subtask(domain.actions['visit'], [RegParameter('?from')])
         subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
         solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
 

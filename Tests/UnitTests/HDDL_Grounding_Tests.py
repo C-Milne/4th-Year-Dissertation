@@ -11,9 +11,9 @@ from Solver.solver import Solver
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
-from TestTools.env_setup import env_setup
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -70,8 +70,8 @@ class HDDLGroundingTests(unittest.TestCase):
         precons = Precondition(precon_list)
 
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
-        hate_pred = Predicate('hate', [Parameter('?a')])
+        have_pred = Predicate('have', [RegParameter('?x')])
+        hate_pred = Predicate('hate', [RegParameter('?a')])
 
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
@@ -164,7 +164,7 @@ class HDDLGroundingTests(unittest.TestCase):
     def test_precondition_and(self):
         # Test the 'and' functionality for preconditions
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')
@@ -200,7 +200,7 @@ class HDDLGroundingTests(unittest.TestCase):
         precons = Precondition(precon_list)
 
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')
@@ -245,7 +245,7 @@ class HDDLGroundingTests(unittest.TestCase):
         precons = Precondition(precon_list)
 
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')

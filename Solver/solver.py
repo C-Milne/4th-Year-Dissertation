@@ -4,7 +4,7 @@ from Solver.search_queue import SearchQueue
 from Internal_Representation.method import Method
 from Internal_Representation.action import Action
 from Internal_Representation.task import Task
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
@@ -358,7 +358,7 @@ class Solver:
         param_dict = {}
         while i < len(modifier.parameters):
             param_name = modifier.parameters[i]
-            if type(param_name) == Parameter:
+            if type(param_name) == RegParameter:
                 param_name = param_name.name
             param_dict[param_name] = params[i]
             i += 1

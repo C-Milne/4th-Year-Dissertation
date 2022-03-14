@@ -6,9 +6,9 @@ from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
-from TestTools.env_setup import env_setup
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class HDDLParsingTests(unittest.TestCase):

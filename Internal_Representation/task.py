@@ -1,4 +1,4 @@
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.modifier import Modifier
 
 

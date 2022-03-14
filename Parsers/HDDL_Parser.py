@@ -5,7 +5,7 @@ from Internal_Representation.task import Task
 from Internal_Representation.Type import Type
 from Internal_Representation.Object import Object
 from Parsers.parser import Parser
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.effects import Effects
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.modifier import Modifier

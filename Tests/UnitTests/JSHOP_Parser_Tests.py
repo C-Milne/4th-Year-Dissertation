@@ -7,6 +7,7 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.basic_path = "../Examples/JShop/basic/"
+        self.block_path = "Tests/Examples/JShop/blocks/"
 
     def test_parsing_basic_domain(self):
         domain, problem, parser, solver = env_setup(False)
@@ -74,3 +75,10 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
         self.assertEqual(problem.objects['banjo'], problem.subtasks.tasks[0].parameters[0])
         self.assertEqual(problem.objects['kiwi'], problem.subtasks.tasks[0].parameters[1])
+
+    def test_parsing_blocks_domain(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.block_path + "blocks")
+
+        self.assertEqual(11, len(domain.tasks))
+        self.assertEqual(1, 2)

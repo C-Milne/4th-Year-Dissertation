@@ -1,5 +1,6 @@
-from Internal_Representation.parameter import Parameter
 from Internal_Representation.precondition import Precondition
+from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 
 
 class Modifier:
@@ -8,14 +9,15 @@ class Modifier:
         self.name = name
         assert type(parameters) == list
         for p in parameters:
-            assert type(p) == Parameter
+            assert isinstance(p, Parameter)
         self.parameters = parameters
         assert type(preconditions) == Precondition or preconditions is None
         self.preconditions = preconditions
 
     def _prepare_requirements(self):
         for p in self.parameters:
-            self.requirements[p.name] = {"type": p.type, "predicates": {}}
+            if type(p) == RegParameter:
+                self.requirements[p.name] = {"type": p.type, "predicates": {}}
         if self.preconditions is not None:
             self.__prepare_prelayer = []
             self.__prepare_requirements_precons()
@@ -52,6 +54,9 @@ class Modifier:
                         if k.startswith("forall") and self.requirements[k] == {}:
                             self.requirements[k] = {pred_name: p}
             else:
+                if p not in self.requirements:
+                    self.requirements[p] = {"type": None, "predicates": {}}
+                
                 dict = self.requirements[p]["predicates"]
                 for l in self.__prepare_prelayer:
                     if l not in dict.keys():

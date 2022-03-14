@@ -1,7 +1,7 @@
 import re
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.task import Task
@@ -44,10 +44,10 @@ class Parser:
     def _parse_task(self, *args):
         raise NotImplementedError
 
-    def _parse_parameters(self, params) -> list[Parameter]:
+    def _parse_parameters(self, params) -> list[RegParameter]:
         def __add_t_param_list(t=None):
             for i in param_names:
-                param_list.append(Parameter(i, t))
+                param_list.append(RegParameter(i, t))
 
         """Parses list of parameters and returns a list of parameters
         params  - params : ['?a', '-', 'ob1', '?b', '?c', '-', 'ob2' ...]"""
@@ -190,7 +190,7 @@ class Parser:
                     i = 0
                     l = len(t.parameters)
                     while i < l:
-                        if type(t.parameters[i]) == Parameter:
+                        if type(t.parameters[i]) == RegParameter:
                             t.parameters[i] = self.problem.get_object(t.parameters[i].name)
                         elif type(t.parameters[i]) == Object:
                             pass
@@ -202,7 +202,7 @@ class Parser:
                 i = 0
                 l = len(item.parameters)
                 while i < l:
-                    if type(item.parameters[i]) == Parameter:
+                    if type(item.parameters[i]) == RegParameter:
                         item.parameters[i] = self.problem.get_object(item.parameters[i].name)
                     elif type(item.parameters[i]) == Object:
                         pass
