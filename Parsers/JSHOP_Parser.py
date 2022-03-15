@@ -10,6 +10,7 @@ from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.derived_predicate import DerivedPredicate
+from Internal_Representation.requirements import Requirements
 
 
 class JSHOPParser(Parser):
@@ -239,7 +240,11 @@ class JSHOPParser(Parser):
         derived_pred = DerivedPredicate(pred_name, self._parse_parameters(pred_params))
 
         for c in conditions:
-            derived_pred.add_condition(self._parse_precondition(c))
+            cons = self._parse_precondition(c)
+            derived_pred.add_condition(cons)
+            req = Requirements(derived_pred.parameters, cons)
+            derived_pred.add_condition_requirements(req.prepare_requirements())
+
         self.domain.add_derived_predicate(derived_pred)
 
     def _parse_parameters(self, params) -> list[RegParameter]:

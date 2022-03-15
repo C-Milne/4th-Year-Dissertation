@@ -278,7 +278,7 @@ class SolvingTests(unittest.TestCase):
         RovEx.execution_prep(problem, solver)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver._Solver__find_satisfying_parameters(model, method, model.search_modifiers[0].given_params)
+        found_params = solver._Solver__find_satisfying_parameters(model, method.requirements, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:
             self.assertEqual(problem.objects['objective1'], combo['?objective'])

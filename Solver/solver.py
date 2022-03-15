@@ -10,6 +10,7 @@ from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.state import State
 from Internal_Representation.Type import Type
+from Internal_Representation.list_parameter import ListParameter
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
@@ -108,7 +109,7 @@ class Solver:
             if not comparison_result[0] and not comparison_result[1]:
                 continue
             elif not comparison_result[0]:
-                found_params = self.__find_satisfying_parameters(search_model, method, parameters)
+                found_params = self.__find_satisfying_parameters(search_model, method.requirements, parameters)
                 if found_params is False:
                     found_params = []
             else:
@@ -213,21 +214,21 @@ class Solver:
             return [True]
         return [False, missing_params]
 
-    def __find_satisfying_parameters(self, model: Model, method: Method, param_dict: dict[Object] = {}):
+    def __find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict[Object] = {}):
         """Find parameters to satisfy a modifier
         :parameter model:
-        :parameter method:
+        :parameter requirements: {'type': Type/None, 'predicates': {}}
         :parameter param_dict:    : parameters already set - {'?objective': Object, '?mode': Object}
         :return: list of possible combinations of parameters
         """
-        assert type(model) == Model and type(method) == Method and type(param_dict) == dict
-        for required_param_name in method.requirements:
+        assert type(model) == Model and type(given_requirements) == dict and type(param_dict) == dict
+        for required_param_name in given_requirements:
             if required_param_name.startswith('forall-'):
                 raise NotImplementedError
             elif required_param_name in param_dict:
                 continue
             else:
-                requirements = method.requirements[required_param_name]
+                requirements = given_requirements[required_param_name]
                 for i in self.problem.objects:
                     i = self.problem.objects[i]
                     match = self.__check_object_satisfies_parameter(model, i, requirements)
@@ -239,7 +240,7 @@ class Solver:
         if param_dict == {}:
             return False
         # Convert param_dict into a form which can be used - [[?a, ?b, ?c], [?a, ?b, ?d], ... ]
-        return self.__convert_parameter_options_execution_ready(param_dict)
+        return self.__convert_parameter_options_execution_ready(param_dict, len(given_requirements.keys()))
 
     def check_satisfies_type(self, required_type: Type, object_to_check: Object):
         def __check_type(req_t, t):
@@ -316,7 +317,7 @@ class Solver:
                         continue
                 return False
 
-    def __convert_parameter_options_execution_ready(self, param_dict):
+    def __convert_parameter_options_execution_ready(self, param_dict, num_params):
         """The aim of this method is to return a list with all possible combinations of values from param_dict.
         This method is called from self.__find_satisfying_parameters()
         :parameter param_dict: {'?objective': Object, '?mode': Object, '?camera': [Object], '?rover': [Object],
@@ -346,23 +347,55 @@ class Solver:
                 raise TypeError("Unknown type {}".format(type(q)))
         # Create combinations
         __create_combinations(self.reproduce_dict(param_dict))
-        return combinations
+        return_list = []
+        for i in combinations:
+            if len(i) == num_params:
+                return_list.append(i)
+        return return_list
 
     def __generate_param_dict(self, modifier, params):
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task
         # Check number of params is the amount expected
-        if len(params) != len(modifier.parameters):
+        if type(params) == ListParameter:
+            len_params = 1
+        else:
+            len_params = len(params)
+        if len_params != len(modifier.parameters):
             return False
-        # Map params to self.parameters
-        i = 0
-        param_dict = {}
-        while i < len(modifier.parameters):
-            param_name = modifier.parameters[i]
-            if type(param_name) == RegParameter:
-                param_name = param_name.name
-            param_dict[param_name] = params[i]
-            i += 1
+
+        if type(params) == ListParameter:
+            param_dict = {modifier.parameters[0].name: params}
+        else:
+            # Map params to self.parameters
+            i = 0
+            param_dict = {}
+            while i < len(modifier.parameters):
+                param_name = modifier.parameters[i]
+                if type(param_name) == RegParameter:
+                    param_name = param_name.name
+                param_dict[param_name] = params[i]
+                i += 1
         return param_dict
+
+    def compute_derived_predicates(self, search_model: Model):
+        # Remove derived predicates from search model state
+
+        # Check derived predicates
+        for i in self.domain.derived_predicates:
+            pred = self.domain.derived_predicates[i]
+            assert len(pred.conditions) == len(pred.cond_requirements)
+            found_predicates = []   # Used to make sure only one of each combination of variables is selected
+
+            for j in range(len(pred.conditions)):
+                # Choose variables
+                found_params = self.__find_satisfying_parameters(search_model, pred.cond_requirements[j])
+                for param_option in found_params:
+                    # Evaluate predicate
+                    result = pred.conditions[j].evaluate(search_model, param_option)
+                    if result and param_option not in found_predicates:
+                        found_predicates.append(param_option)
+                        obs = self.convert_param_dict_to_list(param_option, pred.parameters)
+                        search_model.current_state.add_element(ProblemPredicate(pred, obs))
 
     @staticmethod
     def check_duplicate_values_dictionary(d: dict):
@@ -384,6 +417,13 @@ class Solver:
         for k in keys:
             return_dict[k] = d[k]
         return return_dict
+
+    @staticmethod
+    def convert_param_dict_to_list(param_dict, parameters: list[RegParameter]):
+        return_list = []
+        for i in parameters:
+            return_list.append(param_dict[i.name])
+        return return_list
 
     def output(self, resulting_model: Model):
         assert type(resulting_model) == Model or resulting_model is None

@@ -60,9 +60,12 @@ class Precondition:
                     index = 0
                     broken = False
                     for p in cons[1:]:
-                        if param_dict[p] != model.current_state.elements[j].objects[index]:
-                            broken = True
-                            break
+                        try:
+                            if param_dict[p] != model.current_state.elements[j].objects[index]:
+                                broken = True
+                                break
+                        except:
+                            raise TypeError
                         index += 1
                     if not broken:
                         return True

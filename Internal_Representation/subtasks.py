@@ -21,8 +21,9 @@ class Subtasks:
 
         def add_given_parameters(self, params: dict[Object]):
             assert type(params) == dict
-            for i in params:
-                assert type(params[i]) == Object
+            if not (len(params.keys()) == 1 and type(params[list(params.keys())[0]]) == ListParameter):
+                for i in params:
+                    assert type(params[i]) == Object
             self.given_params = params
 
         def evaluate_preconditions(self, model, params):
