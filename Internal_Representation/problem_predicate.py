@@ -7,7 +7,10 @@ class ProblemPredicate:
         """:Params  - predicate : Predicate
                     - objects   : List of objects that belong to this predicate in ONE instance
                                 [object[waypoint1], object[waypoint0]]"""
-        assert isinstance(predicate, Predicate)
+        try:
+            assert isinstance(predicate, Predicate)
+        except:
+            raise TypeError
         assert type(objects) == list
         for o in objects:
             assert type(o) == Object

@@ -220,10 +220,11 @@ class JSHOPParser(Parser):
                 while len(p) == 2 and type(p[1]) == list:
                     p = p[1]
 
-                if len(p) > 1:
-                    self._log_predicate(p[0], p[1:])
-                else:
-                    self._log_predicate(p[0], [])
+                if p[0] != 'forall':
+                    if len(p) > 1:
+                        self._log_predicate(p[0], p[1:])
+                    else:
+                        self._log_predicate(p[0], [])
 
         if len(params) > 0:
             try:
@@ -391,7 +392,11 @@ class JSHOPParser(Parser):
                 obs = [self._log_object(x) for x in section[1:]]
             else:
                 obs = []
-            self.problem.add_to_initial_state(ProblemPredicate(self.domain.get_predicate(section[0]), obs))
+            if len(section) > 1:
+                pred_params = section[1:]
+            else:
+                pred_params = []
+            self.problem.add_to_initial_state(ProblemPredicate(self._log_predicate(section[0], section[1:]), obs))
 
     def _parse_execution_subtasks(self, group):
         sub_tasks = None

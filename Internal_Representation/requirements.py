@@ -24,6 +24,7 @@ class Requirements:
         i = 0
         if predicates is None:
             predicates = self.preconditions.conditions
+
         pred_name = None
         add_prelayer = False
         while i < len(predicates):
@@ -40,12 +41,22 @@ class Requirements:
             elif len(self.__prepare_prelayer) > 0 and self.__prepare_prelayer[-1] == "forall":
                 if type(predicates) == list and predicates[0][0] == "?":
                     # Create new forall clause in requirements
-                    req_name = "forall-{}-".format(predicates[2])
-                    num = 1
-                    while req_name + str(num) in self.requirements.keys():
-                        num += 1
-                    self.requirements[req_name + str(num)] = {}
-                    i += 3
+                    if len(predicates) == 3:    # [?a - a]
+                        req_name = "forall-{}-".format(predicates[2])
+                        num = 1
+                        while req_name + str(num) in self.requirements.keys():
+                            num += 1
+                        self.requirements[req_name + str(num)] = {}
+                        i += 3
+                    elif len(predicates) == 1:
+                        req_name = "forall-{}-".format(predicates[0])
+                        num = 1
+                        while req_name + str(num) in self.requirements.keys():
+                            num += 1
+                        self.requirements[req_name + str(num)] = {}
+                        i += 3
+                    else:
+                        raise SyntaxError("Unexpected Token {}".format(predicates))
                 else:
                     for k in self.requirements.keys():
                         if k.startswith("forall") and self.requirements[k] == {}:

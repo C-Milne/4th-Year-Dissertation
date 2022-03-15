@@ -18,6 +18,9 @@ class Precondition:
         if cons is None:
             cons = self.conditions
 
+        if type(cons) == list and len(cons) == 1 and type(cons[0]) == list:
+            cons = cons[0]
+
         for i in range(len(cons)):
             if cons[i] == "and":
                 # All the following statements need to be True
@@ -39,7 +42,10 @@ class Precondition:
             elif cons[i] == "forall":
                 # All instances of predicates need to hold
                 param_name = cons[1][0]
-                param_type = cons[1][2]
+                try:
+                    param_type = cons[1][2]
+                except IndexError:
+                    param_type = None
 
                 # get all objects of type param_type
                 obs = model.problem.get_objects_of_type(param_type)

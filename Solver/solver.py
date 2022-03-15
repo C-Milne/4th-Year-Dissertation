@@ -389,6 +389,7 @@ class Solver:
             for j in range(len(pred.conditions)):
                 # Choose variables
                 found_params = self.__find_satisfying_parameters(search_model, pred.cond_requirements[j])
+                print("here")
                 for param_option in found_params:
                     # Evaluate predicate
                     result = pred.conditions[j].evaluate(search_model, param_option)
