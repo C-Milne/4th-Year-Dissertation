@@ -1,10 +1,12 @@
+from typing import List
+
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
 from Internal_Representation.reg_parameter import RegParameter
 
 
 class Modifier:
-    def __init__(self, name, parameters: list[Parameter], preconditions=None):
+    def __init__(self, name, parameters: List[Parameter], preconditions=None):
         assert type(name) == str
         self.name = name
         assert type(parameters) == list

@@ -1,6 +1,7 @@
 from Internal_Representation.modifier import Modifier
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
+from Internal_Representation.list_parameter import ListParameter
 
 
 class Subtasks:
@@ -8,9 +9,10 @@ class Subtasks:
         def __init__(self, task, parameters=[]):
             assert isinstance(task, Modifier) or type(task) == str
             self.task = task
-            assert type(parameters) == list
-            for p in parameters:
-                assert type(p) == RegParameter
+            assert type(parameters) == list or type(parameters) == ListParameter
+            if type(parameters) == list:
+                for p in parameters:
+                    assert type(p) == RegParameter
             self.parameters = parameters
             self.given_params = {}
 
@@ -33,12 +35,13 @@ class Subtasks:
         self.tasks = []
         self.labelled_tasks = {}
 
-    def add_subtask(self, label:str, modifier, parameters: list, decorator: str = None):
+    def add_subtask(self, label: str, modifier, parameters: list, decorator: str = None):
         assert type(label) == str or label is None
         assert isinstance(modifier, Modifier) or type(modifier) == str
-        assert type(parameters) == list
-        for p in parameters:
-            assert type(p) == RegParameter
+        assert type(parameters) == list or type(parameters) == ListParameter
+        if type(parameters) == list:
+            for p in parameters:
+                assert type(p) == RegParameter
         subtask_to_add = self.Subtask(modifier, parameters)
         if label is not None:
             self.labelled_tasks[label] = subtask_to_add

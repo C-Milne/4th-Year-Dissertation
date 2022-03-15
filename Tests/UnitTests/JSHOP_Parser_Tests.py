@@ -130,3 +130,9 @@ class JSHOPParsingTests(unittest.TestCase):
         parser.parse_problem(self.block_path + "problem")
 
         self.assertEqual(300, len(problem.objects))
+        for i in range(1, 301):
+            self.assertIn("b" + str(i), problem.objects)
+
+        self.assertEqual(1, len(problem.subtasks.tasks))
+        self.assertEqual(domain.tasks['achieve-goals'], problem.subtasks.tasks[0].task)
+        self.assertEqual(ListParameter, type(problem.subtasks.tasks[0].parameters))

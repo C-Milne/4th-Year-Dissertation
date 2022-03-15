@@ -280,6 +280,16 @@ class JSHOPParser(Parser):
         __add_t_param_list()
         return param_list
 
+    def _parse_list_parameter(self, params) -> ListParameter:
+        list_param = ListParameter(None, None)
+        for p in params:
+            if len(p) > 1:
+                obs = [self.problem.get_object(x) for x in p[1:]]
+            else:
+                obs = []
+            list_param.add_to_list([self.domain.get_predicate(p[0]), obs])
+        return list_param
+
     def _parse_predicates(self, *args):
         pass
 
@@ -322,10 +332,7 @@ class JSHOPParser(Parser):
                             decorator = parameters[0]
                             parameters = parameters[1]
 
-                        try:
-                            assert all([type(x) == str for x in parameters])
-                        except:
-                            raise TypeError
+                        assert all([type(x) == str for x in parameters])
 
                         if parameters[0] == "goal":
                             decorator = parameters[0]
@@ -343,6 +350,13 @@ class JSHOPParser(Parser):
                         # No task Label
                         task_modifier = params[i][0]
                         task_parameters = self._parse_parameters(params[i][1:])
+
+                    elif len(params) == 2 and type(params[0]) == str and type(params[1]) == list and \
+                            all([type(x) == list for x in params[1]]):
+                        # ['achieve-goals', [['on-table', 'b1'], [...], ... ]]
+                        task_modifier = params[0]
+                        task_parameters = self._parse_list_parameter(params[1])
+                        i += 2
 
                     elif all([type(x) == str for x in params]):
                         task_modifier = params[0]
@@ -380,8 +394,9 @@ class JSHOPParser(Parser):
             section = group.pop(0)
             subT = self._parse_subtasks(section)
 
-            for param in subT.tasks[0].parameters:
-                self._log_object(param.name)
+            if type(subT.tasks[0].parameters) != ListParameter:
+                for param in subT.tasks[0].parameters:
+                    self._log_object(param.name)
 
             if sub_tasks is None:
                 sub_tasks = subT

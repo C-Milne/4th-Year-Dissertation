@@ -6,6 +6,7 @@ from Internal_Representation.precondition import Precondition
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.task import Task
 from Internal_Representation.Object import Object
+from Internal_Representation.list_parameter import ListParameter
 
 
 class Parser:
@@ -188,6 +189,8 @@ class Parser:
                 # Subtask parameter type should be object
                 for t in item.tasks:
                     i = 0
+                    if type(t.parameters) == ListParameter:
+                        continue
                     l = len(t.parameters)
                     while i < l:
                         if type(t.parameters[i]) == RegParameter:
