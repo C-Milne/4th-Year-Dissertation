@@ -360,8 +360,6 @@ class Solver:
             len_params = 1
         else:
             len_params = len(params)
-        if len_params != len(modifier.parameters):
-            return False
 
         if type(params) == ListParameter:
             param_dict = {modifier.parameters[0].name: params}
@@ -373,7 +371,10 @@ class Solver:
                 param_name = modifier.parameters[i]
                 if type(param_name) == RegParameter:
                     param_name = param_name.name
-                param_dict[param_name] = params[i]
+                try:
+                    param_dict[param_name] = params[i]
+                except:
+                    pass
                 i += 1
         return param_dict
 
