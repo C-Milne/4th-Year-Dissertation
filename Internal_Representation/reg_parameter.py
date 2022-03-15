@@ -16,7 +16,7 @@ class RegParameter(Parameter):
 
     def __eq__(self, other):
         try:
-            if self.param_type == other.param_type:
+            if self.type == other.type:
                 return True
             else:
                 return False

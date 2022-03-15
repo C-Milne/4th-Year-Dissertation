@@ -2,6 +2,7 @@ import unittest
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Parsers.JSHOP_Parser import JSHOPParser
 from Internal_Representation.list_parameter import ListParameter
+from Internal_Representation.reg_parameter import RegParameter
 
 
 class JSHOPParsingTests(unittest.TestCase):
@@ -113,7 +114,6 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertIn('put-on-table', domain.predicates)
         self.assertIn('stack-on-block', domain.predicates)
 
-
         # Check axioms
         self.assertEqual(2, len(domain.derived_predicates))
         self.assertIn('same', domain.derived_predicates)
@@ -149,3 +149,14 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertIn('?y', [p.name for p in method.parameters])
         self.assertIn('?t', [p.name for p in method.parameters])
         self.assertEqual(3, len(method.parameters))
+
+    def test_parsing_method_subtask(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.forall_path + "forall")
+
+        self.assertEqual([RegParameter('?x'), RegParameter('?t')], domain.methods['method0'].subtasks.tasks[0].parameters)
+
+        parser.parse_problem(self.forall_path + "problem")
+
+        self.assertEqual([RegParameter('?x'), RegParameter('?t')],
+                         domain.methods['method0'].subtasks.tasks[0].parameters)

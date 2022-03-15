@@ -66,8 +66,6 @@ class JSHOPSolvingTests(unittest.TestCase):
         self.assertIn(ProblemPredicate(domain.predicates['in'], [problem.objects['p3'], problem.objects['t2']]),
                       model.current_state.elements)
 
-        """For some reason somewhere here the subtask for method0 is changing its parameters to [None, None]"""
-
         subT = model.search_modifiers.pop(0)
         solver._Solver__expand_task(subT, model)
 

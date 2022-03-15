@@ -318,9 +318,6 @@ class JSHOPParser(Parser):
     def _parse_constraint(self, *args):
         pass
 
-    def _post_domain_parsing_grounding(self, *args):
-        pass
-
     def _set_problem_name(self, *args):
         pass
 

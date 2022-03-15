@@ -206,7 +206,9 @@ class Parser:
                 l = len(item.parameters)
                 while i < l:
                     if type(item.parameters[i]) == RegParameter:
-                        item.parameters[i] = self.problem.get_object(item.parameters[i].name)
+                        ob = self.problem.get_object(item.parameters[i].name)
+                        if ob is not None:
+                            item.parameters[i] = ob
                     elif type(item.parameters[i]) == Object:
                         pass
                     else:
