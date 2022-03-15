@@ -127,8 +127,24 @@ class JSHOPParser(Parser):
                     parameters = p[1:]
                 else:
                     parameters = []
-                pred = self._log_predicate(pred_name, parameters)
-                effects.add_effect(pred, parameters, negated)
+                if pred_name != 'forall':
+                    pred = self._log_predicate(pred_name, parameters)
+                    effects.add_effect(pred, parameters, negated)
+                else:
+                    # Process forall effect
+                    param = self._parse_parameters(parameters[0])
+                    cons = self._parse_precondition(parameters[1])
+                    processed_effects = []
+                    for e in parameters[2]:
+                        if len(e) > 1:
+                            effect_params = e[1:]
+                        else:
+                            effect_params = []
+                        processed_effects.append(Effects.Effect(self._log_predicate(e[0], effect_params),
+                                                                self._parse_parameters(effect_params), negated))
+
+                    effects.add_forall_effect(param, cons, processed_effects, negated)
+
             elif type(p) == str and p[0] == '?':
                 effects.add_runtime_effect(p)
             else:

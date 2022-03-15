@@ -10,6 +10,7 @@ class JSHOPParsingTests(unittest.TestCase):
         self.basic_path = "../Examples/JShop/basic/"
         self.block_path = "../Examples/JShop/blocks/"
         # self.block_path = "Tests/Examples/JShop/blocks/"
+        self.forall_path = "../Examples/JShop/forall/"
 
     def test_parsing_basic_domain(self):
         domain, problem, parser, solver = env_setup(False)
@@ -136,3 +137,15 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(1, len(problem.subtasks.tasks))
         self.assertEqual(domain.tasks['achieve-goals'], problem.subtasks.tasks[0].task)
         self.assertEqual(ListParameter, type(problem.subtasks.tasks[0].parameters))
+
+    def test_parsing_task_finding_parameters(self):
+        # When parsing a task with methods, check that parameters not defined in the heading but found in the
+        # preconditions/effects are found
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.forall_path + "forall")
+
+        method = domain.methods['method0']
+        self.assertIn('?x', [p.name for p in method.parameters])
+        self.assertIn('?y', [p.name for p in method.parameters])
+        self.assertIn('?t', [p.name for p in method.parameters])
+        self.assertEqual(3, len(method.parameters))
