@@ -104,38 +104,19 @@ class Solver:
                 parameters[method.task['params'][i].name] = subtask.given_params[k]
                 i += 1
 
-            comparison_result = self.__compare_parameters(method, parameters)
+            param_options = self._get_potential_parameters(method, parameters, search_model)
 
-            if not comparison_result[0] and not comparison_result[1]:
-                continue
-            elif not comparison_result[0]:
-                found_params = self.__find_satisfying_parameters(search_model, method.requirements, parameters)
-                if found_params is False:
-                    found_params = []
-            else:
-                found_params = [parameters]
+            for param_option in param_options:
+                subT = Subtasks.Subtask(method, method.parameters)
+                subT.add_given_parameters(param_option)
+                # Create new model and add to search_models
+                new_model = Model(State.reproduce(search_model.current_state),
+                                  [subT] + search_model.search_modifiers, self.problem)
 
-            for param_option in found_params:
-                # Check preconditions of new_model
-                result = None
-                for k in method.parameters:
-                    if not k.name in param_option:
-                        result = False
-
-                if result is None:
-                    result = method.evaluate_preconditions(search_model, param_option)
-
-                if result:
-                    subT = Subtasks.Subtask(method, method.parameters)
-                    subT.add_given_parameters(param_option)
-                    # Create new model and add to search_models
-                    new_model = Model(State.reproduce(search_model.current_state),
-                                      [subT] + search_model.search_modifiers, self.problem)
-
-                    new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
-                    new_model.populate_operations_taken(Model.reproduce_operations_list(search_model))
-                    new_model.add_operation(subtask.task, subtask.given_params)
-                    self.search_models.add(new_model)
+                new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
+                new_model.populate_operations_taken(Model.reproduce_operations_list(search_model))
+                new_model.add_operation(subtask.task, subtask.given_params)
+                self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
@@ -154,10 +135,10 @@ class Solver:
             param_keys = [p.name for p in mod.parameters]
             action_keys = [p.name for p in mod.task.parameters]
             for j in range(len(action_keys)):
-                parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
-
-            comparison_result = self.__compare_parameters(mod.task, parameters)
-            assert comparison_result[0] == True
+                try:
+                    parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+                except IndexError:
+                    pass
 
             mod.add_given_parameters(parameters)
 
@@ -169,6 +150,18 @@ class Solver:
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
+
+
+        # Check if all the required parameters are given
+        comparison_result = self.__compare_parameters(subtask.task, subtask.given_params)
+        try:
+            assert comparison_result[0] == True
+        except:
+            raise TypeError
+
+        # If all are not given select variables and create new search models with the found variables
+        # Add the search models to the search Queue
+        # Do not progress further in this method
 
         # Check preconditions
         if not subtask.evaluate_preconditions(search_model, subtask.given_params):
@@ -189,6 +182,33 @@ class Solver:
 
         search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
+
+    def _get_potential_parameters(self, modifier, parameters, search_model):
+        comparison_result = self.__compare_parameters(modifier, parameters)
+
+        if not comparison_result[0] and not comparison_result[1]:
+            return []
+        elif not comparison_result[0]:
+            found_params = self.__find_satisfying_parameters(search_model, modifier.requirements, parameters)
+            if found_params is False:
+                found_params = []
+        else:
+            found_params = [parameters]
+
+        return_list = []
+        for param_option in found_params:
+            # Check preconditions of new_model
+            result = None
+            for k in modifier.parameters:
+                if not k.name in param_option:
+                    result = False
+
+            if result is None:
+                result = modifier.evaluate_preconditions(search_model, param_option)
+
+            if result:
+                return_list.append(param_option)
+        return return_list
 
     def __compare_parameters(self, method: Method, parameters: dict[Object]):
         """ Compares if all the parameters required for a method are given

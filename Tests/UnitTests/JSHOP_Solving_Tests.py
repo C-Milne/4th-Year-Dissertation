@@ -39,6 +39,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver.compute_derived_predicates(model)
         self.assertEqual(1, 2)
 
+    @unittest.skip
     def test_forall_1(self):
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.forall_test_path + "forall")
@@ -72,6 +73,10 @@ class JSHOPSolvingTests(unittest.TestCase):
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
         solver._Solver__expand_method(subT, model)
+
+        model = solver.search_models._SearchQueue__Q.pop(0)
+        subT = model.search_modifiers.pop(0)
+        solver._Solver__expand_task(subT, model)
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(1, 2)
