@@ -76,8 +76,57 @@ class Parser:
         __add_t_param_list()
         return param_list
 
-    def _parse_precondition(self, params):
-        return Precondition(params)
+    def _parse_precondition(self, params) -> Precondition:
+        def __parse_conditions(parameters, parent=None):
+            if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                parameters = parameters[0]
+
+            if type(parameters) == list:
+                i = 0
+                l = len(parameters)
+                while i < l:
+                    p = parameters[i]
+                    if type(p) == str:
+                        if p == "and" or p == "or" or p == "not":
+                            cons = constraints.add_operator_condition(p, parent)
+                            __parse_conditions(parameters[i + 1:], cons)
+                            return
+                        elif p == "=":
+                            cons = constraints.add_operator_condition(p, parent)
+                            for v in parameters[i + 1:]:
+                                __parse_conditions(v, cons)
+                            return
+                        elif len(parameters) > 1 and all([type(x) == str for x in parameters]):
+                            # Here a type is given
+                            # ['valuableorhazardous', '?collect_fees_instance_2_argument_0']
+                            constraints.add_predicate_condition(self.domain.get_predicate(p), parameters[1:], parent)
+                            i = l
+                        elif len(parameters) == 1 and type(p) == str:
+                            constraints.add_predicate_condition(self.domain.get_predicate(p), [], parent)
+                            i = l
+                        elif p == "forall":
+                            if len(parameters) == 3:
+                                selector = parameters[1]
+                                satisfier = self._parse_precondition(parameters[2])
+                            else:
+                                raise NotImplementedError
+                            constraints.add_forall_condition(selector, satisfier.head, parent)
+                            i += l
+                        else:
+                            raise TypeError("Unexpected token {}".format(p))
+                    elif type(p) == list:
+                        __parse_conditions(p, parent)
+                    else:
+                        raise TypeError("Unexpected type {}".format(type(p)))
+                    i += 1
+            elif type(parameters) == str:
+                return constraints.add_variable_condition(parameters, parent)
+            else:
+                raise TypeError("Unexpected type {}".format(type(parameters)))
+
+        constraints = Precondition(params)
+        __parse_conditions(params)
+        return constraints
 
     def _parse_subtasks(self, params):
         """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]

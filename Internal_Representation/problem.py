@@ -71,7 +71,7 @@ class Problem:
     def evaluate_goal(self, model: Model):
         if self.goal_conditions is None:
             return None
-        return self.goal_conditions.evaluate(model, self.objects)
+        return self.goal_conditions.evaluate(self.objects, model, self)
 
     def has_goal_conditions(self):
         if self.goal_conditions is None:

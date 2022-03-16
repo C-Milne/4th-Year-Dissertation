@@ -1,11 +1,9 @@
-from Internal_Representation.precondition import Precondition
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.modifier import Modifier
-from Internal_Representation.constraints import Constraints
 
 
 class Method(Modifier):
-    def __init__(self, name, parameters, preconditions: Precondition, task: dict, subtasks, constraints):
+    def __init__(self, name, parameters, preconditions: Modifier.Precondition, task: dict, subtasks, constraints):
         """
         :param name:
         :param parameters:
@@ -19,13 +17,13 @@ class Method(Modifier):
         self.task = task
         assert type(subtasks) == Subtasks or subtasks is None
         self.subtasks = subtasks
-        assert type(constraints) == Constraints or constraints is None
+        assert type(constraints) == Modifier.Precondition or constraints is None
         self.constraints = constraints
 
         self.requirements = {}
         super(Method, self)._prepare_requirements()
 
-    def evaluate_preconditions(self, model, param_dict):
+    def evaluate_preconditions(self, model, param_dict, problem):
         """:params  - model : proposed model
                     - param_dict : dictionary of parameters
         :returns    - True : if method can be run on the given model with given parameters
@@ -33,17 +31,17 @@ class Method(Modifier):
         # Evaluate preconditions
         if self.preconditions is None:
             return True
-        assert type(self.preconditions) == Precondition
-        result = self.preconditions.evaluate(model, param_dict)
+        assert type(self.preconditions) == super().Precondition
+        result = self.preconditions.evaluate(param_dict, model, problem)
         if self.constraints is not None and result:
-            result = self._evaluate_constraints(param_dict)
+            result = self._evaluate_constraints(param_dict, model, problem)
         return result
 
-    def _evaluate_constraints(self, param_dict: dict):
+    def _evaluate_constraints(self, param_dict: dict, model, problem):
         """:parameter param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}."""
         if self.constraints is None:
             return True
-        result = self.constraints.evaluate(param_dict)
+        result = self.constraints.evaluate(param_dict, model, problem)
         return result
 
     def get_parameters(self):

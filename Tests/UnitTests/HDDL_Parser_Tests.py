@@ -823,12 +823,10 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(2, len(op.children))
 
         op1 = op.children[0]
-        self.assertEqual("?take_image_instance_4_argument_6", op1.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?take_image_instance_4_argument_6", op1.variable_name)
 
         op2 = op.children[1]
-        self.assertEqual("?turn_to_instance_3_argument_4", op2.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?turn_to_instance_3_argument_4", op2.variable_name)
 
         # method1 - (and (not (= ?take_image_instance_3_argument_4 ?turn_to_instance_2_argument_2)))
         method = domain.methods['method1']
@@ -846,12 +844,10 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(2, len(op.children))
 
         op1 = op.children[0]
-        self.assertEqual("?take_image_instance_3_argument_4", op1.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?take_image_instance_3_argument_4", op1.variable_name)
 
         op2 = op.children[1]
-        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.variable_name)
 
         # method4 - (and (not (= ?switch_off_instance_2_argument_0 ?auto_calibrate_instance_4_argument_5)))
         method = domain.methods['method4']
@@ -869,12 +865,10 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(2, len(op.children))
 
         op1 = op.children[0]
-        self.assertEqual("?switch_off_instance_2_argument_0", op1.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?switch_off_instance_2_argument_0", op1.variable_name)
 
         op2 = op.children[1]
-        self.assertEqual("?auto_calibrate_instance_4_argument_5", op2.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?auto_calibrate_instance_4_argument_5", op2.variable_name)
 
         # method6 - (and (not (= ?calibrate_instance_3_argument_5 ?turn_to_instance_2_argument_2)))
         method = domain.methods['method6']
@@ -892,12 +886,10 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(2, len(op.children))
 
         op1 = op.children[0]
-        self.assertEqual("?calibrate_instance_3_argument_5", op1.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?calibrate_instance_3_argument_5", op1.variable_name)
 
         op2 = op.children[1]
-        self.assertEqual("?turn_to_instance_2_argument_2", op2.operator)
-        self.assertEqual(0, len(op1.children))
+        self.assertEqual("?turn_to_instance_2_argument_2", op2.variable_name)
 
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)

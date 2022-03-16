@@ -164,7 +164,7 @@ class Solver:
         # Do not progress further in this method
 
         # Check preconditions
-        if not subtask.evaluate_preconditions(search_model, subtask.given_params):
+        if not subtask.evaluate_preconditions(search_model, subtask.given_params, self.problem):
             return
 
         if not subtask.task.effects is None:
@@ -204,7 +204,7 @@ class Solver:
                     result = False
 
             if result is None:
-                result = modifier.evaluate_preconditions(search_model, param_option)
+                result = modifier.evaluate_preconditions(search_model, param_option, self.problem)
 
             if result:
                 return_list.append(param_option)

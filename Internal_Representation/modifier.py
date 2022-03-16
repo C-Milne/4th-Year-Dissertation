@@ -7,6 +7,8 @@ from Internal_Representation.requirements import Requirements
 
 
 class Modifier:
+    Precondition = Precondition
+
     def __init__(self, name, parameters: List[Parameter], preconditions=None):
         assert type(name) == str
         self.name = name
