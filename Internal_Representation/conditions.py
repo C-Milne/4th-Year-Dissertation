@@ -1,3 +1,4 @@
+import sys
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.Object import Object
 
@@ -13,10 +14,7 @@ class Condition:
 class PredicateCondition(Condition):
     def __init__(self, pred: Predicate, parameter_names: list[str]):
         super().__init__()
-        try:
-            assert type(pred) == Predicate
-        except:
-            raise TypeError
+        assert type(pred) == Predicate
         self.pred = pred
         assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
         self.parameter_name = parameter_names
@@ -83,17 +81,26 @@ class ForallCondition(Condition):
         self.satisfier = satisfier
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
-        obs = self._collect_objects(problem)
+        obs = self._collect_objects(param_dict, search_model, problem)
         for o in obs:
             res = self.satisfier.evaluate(merge_dictionaries(param_dict, {self.selected_variable: o}), search_model, problem)
             if not res:
                 return False
         return True
 
-    def _collect_objects(self, problem) -> list[Object]:
+    def _collect_objects(self, param_dict, search_model, problem) -> list[Object]:
         if type(self.selector) == tuple and self.selector[0] == "type":
             return problem.get_objects_of_type(self.selector[1])
-        raise NotImplementedError
+        elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):
+            obs = problem.get_all_objects()
+            return_list = []
+            for k in obs:
+                # if self.selector.evaluate(None, search_dict, problem)
+                pass
+            print("here")
+            return return_list
+        else:
+            raise NotImplementedError
 
 
 def merge_dictionaries(a, b):

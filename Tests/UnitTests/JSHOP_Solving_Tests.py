@@ -39,18 +39,17 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver.compute_derived_predicates(model)
         self.assertEqual(1, 2)
 
-    @unittest.skip
     def test_forall_1(self):
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.forall_test_path + "forall")
         parser.parse_problem(self.forall_test_path + "problem")
         execution_prep(problem, solver)
 
-        self.assertEqual(['and', ['forall', ['?v'], [['p', '?v']], [['q', '?v'], ['q', '?v'], ['not', ['w', '?v']]]]],
+        self.assertEqual(['forall', ['?v'], [['p', '?v']], [['q', '?v'], ['q', '?v'], ['not', ['w', '?v']]]],
                          domain.methods['method0'].preconditions.conditions)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
-        res = domain.methods['method0'].preconditions.evaluate(model, {})
+        res = domain.methods['method0'].preconditions.evaluate({}, model, problem)
 
         # Test Running this example
         self.assertEqual(1, 2)
@@ -107,4 +106,9 @@ class JSHOPSolvingTests(unittest.TestCase):
     @unittest.skip
     def test_runtime_lists(self):
         # Test popping from a list at run time
+        pass
+
+    @unittest.skip
+    def test_forall_effects(self):
+        # Test for all effects
         pass

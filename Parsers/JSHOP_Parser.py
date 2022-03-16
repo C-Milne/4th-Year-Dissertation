@@ -88,7 +88,10 @@ class JSHOPParser(Parser):
         pass
 
     def _log_predicate(self, pred_name: str, parameters: list[str]) -> Predicate:
-        assert type(pred_name) == str
+        try:
+            assert type(pred_name) == str
+        except:
+            raise TypeError
         assert type(parameters) == list
         for p in parameters:
             try:
@@ -133,7 +136,7 @@ class JSHOPParser(Parser):
                 else:
                     # Process forall effect
                     param = self._parse_parameters(parameters[0])
-                    cons = self._parse_precondition(parameters[1])
+                    cons = self._parse_precondition_JSHOP(parameters[1])
                     processed_effects = []
                     for e in parameters[2]:
                         if len(e) > 1:
@@ -170,7 +173,7 @@ class JSHOPParser(Parser):
         else:
             parameters = []
 
-        precons = self._parse_precondition(params[1])
+        precons = self._parse_precondition_JSHOP(params[1])
 
         effects = Effects()
         self._parse_effects(params[2], True, effects)
@@ -191,7 +194,7 @@ class JSHOPParser(Parser):
             self.method_counter += 1
 
             j = i * 2
-            preconditions = self._parse_precondition(params[j])
+            preconditions = self._parse_precondition_JSHOP(params[j])
             subtasks = self._parse_subtasks(params[j + 1])
             self.domain.add_method(Method(name, parameters, preconditions, {'task': task, 'params': parameters}, subtasks, constraints))
 
@@ -224,9 +227,21 @@ class JSHOPParser(Parser):
                 res.add_task(task)
         return task
 
-    def _parse_precondition(self, params: list):
+    def _parse_precondition_JSHOP(self, params: list):
+        def __log_precon_preds(params):
+            while type(params) == list and len(params) == 2 and type(params[1]) == list:
+                params = params[1]
+            if len(params) > 1:
+                self._log_predicate(params[0], params[1:])
+            else:
+                self._log_predicate(params[0], [])
+
         if params == 'nil':
             return super(JSHOPParser, self)._parse_precondition([])
+
+        if type(params) == list and len(params) == 1 and type(params[0]) == list:
+            params = params[0]
+
         # Check for predicates which are not yet discovered
         for p in params:
             if type(p) == list:
@@ -237,16 +252,15 @@ class JSHOPParser(Parser):
                     p = p[1]
 
                 if p[0] != 'forall':
-                    if len(p) > 1:
-                        self._log_predicate(p[0], p[1:])
+                    if type(p) == list and len(p) > 1 and all([type(x) == list for x in p]):
+                        for j in p:
+                            __log_precon_preds(j)
                     else:
-                        self._log_predicate(p[0], [])
+                        __log_precon_preds(p)
 
         if len(params) > 0:
-            try:
+            if params[0] != "forall":
                 params.insert(0, 'and')
-            except:
-                raise TypeError
         return super(JSHOPParser, self)._parse_precondition(params)
 
     def _parse_state_axiom(self, params):
@@ -257,7 +271,7 @@ class JSHOPParser(Parser):
         derived_pred = DerivedPredicate(pred_name, self._parse_parameters(pred_params))
 
         for c in conditions:
-            cons = self._parse_precondition(c)
+            cons = self._parse_precondition_JSHOP(c)
             derived_pred.add_condition(cons)
             req = Requirements(derived_pred.parameters, cons)
             derived_pred.add_condition_requirements(req.prepare_requirements())

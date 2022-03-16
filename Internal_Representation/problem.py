@@ -59,6 +59,9 @@ class Problem:
         else:
             raise TypeError("Unexpected type {}".format(type(param_type)))
 
+    def get_all_objects(self):
+        return self.objects
+
     def get_subtasks(self):
         if self.subtasks is None:
             return None

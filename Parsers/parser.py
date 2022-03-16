@@ -109,7 +109,7 @@ class Parser:
                                 selector = parameters[1]
                                 satisfier = self._parse_precondition(parameters[2])
                             else:
-                                selector = parameters[1] + [self._parse_precondition(parameters[3])]
+                                selector = parameters[1] + [self._parse_precondition(parameters[2])]
                                 satisfier = self._parse_precondition(parameters[3])
                             constraints.add_forall_condition(selector, satisfier.head, parent)
                             i += l
