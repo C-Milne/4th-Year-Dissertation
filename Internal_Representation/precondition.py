@@ -28,17 +28,20 @@ class Precondition:
 
     def add_forall_condition(self, selector, satisfier: Condition, parent):
         """
-        :param selector: ['?b', '-', 'block']
+        :param selector: ['?b', '-', 'block'] OR ['?z', ['package', '?z'], ['at', '?z', '?x']]
         :param satisfier: ['done', '?b']
         :return:
         """
         if len(selector) == 3 and all([type(x) == str for x in selector]):
             assert len(selector) == 3
             selected_variable = selector[0]
-            selected_type = ("type", selector[2])
+            selected_cons = ("type", selector[2])
         else:
-            raise NotImplementedError
-        con = ForallCondition(selected_variable, selected_type, satisfier)
+            assert len(selector) == 2
+            selected_variable = selector[0]
+            selected_cons = selector[1]
+
+        con = ForallCondition(selected_variable, selected_cons, satisfier)
         self.__final_condition_addition_checks(con, parent)
         return con
 

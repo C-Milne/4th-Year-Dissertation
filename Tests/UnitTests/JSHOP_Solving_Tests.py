@@ -79,7 +79,30 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver._Solver__expand_task(subT, model)
 
         search_models = solver.search_models._SearchQueue__Q
-        self.assertEqual(1, 2)
+        self.assertEqual(2, len(search_models))
+
+        model = search_models[0]
+        self.assertEqual(2, len(model.search_modifiers))
+        mod = model.search_modifiers[0]
+        self.assertEqual(domain.methods['method2'], mod.task)
+        self.assertEqual({'?x': problem.objects['city2'], '?t': problem.objects['t2'], '?z': problem.objects['p1']}, mod.given_params)
+
+        mod = model.search_modifiers[1]
+        self.assertEqual(domain.actions['!drive'], mod.task)
+        self.assertEqual({'?x': problem.objects['city2'], '?y': problem.objects['city1'], '?t': problem.objects['t2']},
+                         mod.given_params)
+
+        model = search_models[1]
+        self.assertEqual(2, len(model.search_modifiers))
+        mod = model.search_modifiers[0]
+        self.assertEqual(domain.methods['method2'], mod.task)
+        self.assertEqual({'?x': problem.objects['city2'], '?t': problem.objects['t2'], '?z': problem.objects['p4']},
+                         mod.given_params)
+
+        mod = model.search_modifiers[1]
+        self.assertEqual(domain.actions['!drive'], mod.task)
+        self.assertEqual({'?x': problem.objects['city2'], '?y': problem.objects['city1'], '?t': problem.objects['t2']},
+                         mod.given_params)
 
     @unittest.skip
     def test_runtime_lists(self):

@@ -1,4 +1,4 @@
-import sys
+import re
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
 from Internal_Representation.method import Method
@@ -244,7 +244,22 @@ class Solver:
         assert type(model) == Model and type(given_requirements) == dict and type(param_dict) == dict
         for required_param_name in given_requirements:
             if required_param_name.startswith('forall-'):
-                raise NotImplementedError
+                inner = given_requirements[required_param_name]
+                k = list(inner.keys())[0]
+                inner[k] = 1
+                requirements = {'type': None, 'predicates': inner}
+
+                inds = [m.start() for m in re.finditer('-', required_param_name)]
+                required_param_name = required_param_name[inds[0]+1:inds[-1]]
+
+                for i in self.problem.objects:
+                    i = self.problem.objects[i]
+                    match = self.__check_object_satisfies_parameter(model, i, requirements)
+                    if match:
+                        if required_param_name not in param_dict.keys():
+                            param_dict[required_param_name] = [i]
+                        else:
+                            param_dict[required_param_name].append(i)
             elif required_param_name in param_dict:
                 continue
             else:
@@ -335,6 +350,8 @@ class Solver:
                             return True
                     except IndexError:
                         continue
+                    except:
+                        raise TypeError
                 return False
 
     def __convert_parameter_options_execution_ready(self, param_dict, num_params):
