@@ -257,7 +257,10 @@ class JSHOPParser(Parser):
 
         if len(params) > 0:
             if params[0] != "forall":
-                params.insert(0, 'and')
+                if all([type(p) == list for p in params]):
+                    params.insert(0, 'and')
+                else:
+                    params = ['and', params]
         return super(JSHOPParser, self)._parse_precondition(params)
 
     def _parse_state_axiom(self, params):
