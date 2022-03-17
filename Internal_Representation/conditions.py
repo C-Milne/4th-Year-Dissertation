@@ -89,15 +89,32 @@ class ForallCondition(Condition):
         return True
 
     def _collect_objects(self, param_dict, search_model, problem) -> list[Object]:
+        """TODO: Make this use parameter selection module when implemented"""
         if type(self.selector) == tuple and self.selector[0] == "type":
             return problem.get_objects_of_type(self.selector[1])
         elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):
             obs = problem.get_all_objects()
+
+            if self.selector.requirements is None:
+                self.selector.load_requirements()
+
+            # Check there is only one unknown variable
+            req_keys = list(self.selector.requirements.requirements.keys())
+            given_keys = list(param_dict.keys())
+            i = 0
+            while i < len(req_keys):
+                if req_keys[i] in given_keys:
+                    del req_keys[i]
+                else:
+                    i += 1
+            assert len(req_keys) == 1
+
+            req_var_name = req_keys[0]
+
             return_list = []
             for k in obs:
-                # if self.selector.evaluate(None, search_dict, problem)
-                pass
-            print("here")
+                if self.selector.evaluate(merge_dictionaries(param_dict, {req_var_name: obs[k]}), search_model, problem):
+                    return_list.append(obs[k])
             return return_list
         else:
             raise NotImplementedError

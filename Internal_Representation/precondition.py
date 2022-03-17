@@ -1,3 +1,4 @@
+import sys
 from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, ForallCondition
 
 
@@ -5,6 +6,7 @@ class Precondition:
     def __init__(self, conditions: str):
         self.head = None
         self.conditions = conditions
+        self.requirements = None
 
     def add_operator_condition(self, operator: str, parent: Condition) -> Condition:
         assert type(operator) == str
@@ -57,6 +59,10 @@ class Precondition:
 
         result = self.head.evaluate(param_dict, search_model, problem)
         return result
+
+    def load_requirements(self):
+        self.requirements = sys.modules['Internal_Representation.requirements'].Requirements([], self)
+        self.requirements.prepare_requirements()
 
     @staticmethod
     def merge_dictionaries(a, b):

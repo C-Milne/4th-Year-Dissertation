@@ -31,7 +31,16 @@ class Modifier:
             if p.startswith('forall'):
                 continue
             if p not in [x.name for x in self.parameters]:
-                self.parameters.append(RegParameter(p, self.requirements[p]['type']))
+                self.add_parameter(RegParameter(p, self.requirements[p]['type']))
+
+    def add_parameter(self, parameter):
+        self.parameters.append(parameter)
+
+    def get_parameters(self):
+        return self.parameters
+
+    def get_number_parameters(self):
+        return len(self.parameters)
 
     def __str__(self):
         return self.name

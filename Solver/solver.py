@@ -399,12 +399,12 @@ class Solver:
             len_params = len(params)
 
         if type(params) == ListParameter:
-            param_dict = {modifier.parameters[0].name: params}
+            param_dict = {modifier.get_parameters()[0].name: params}
         else:
             # Map params to self.parameters
             i = 0
             param_dict = {}
-            while i < len(modifier.parameters):
+            while i < modifier.get_number_parameters():
                 param_name = modifier.parameters[i]
                 if type(param_name) == RegParameter:
                     param_name = param_name.name

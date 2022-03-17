@@ -44,12 +44,6 @@ class Method(Modifier):
         result = self.constraints.evaluate(param_dict, model, problem)
         return result
 
-    def get_parameters(self):
-        return self.parameters
-
-    def get_number_parameters(self):
-        return len(self.parameters)
-
     def get_precondition(self):
         return self.preconditions
 

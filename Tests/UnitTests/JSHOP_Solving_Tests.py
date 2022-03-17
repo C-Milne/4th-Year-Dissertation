@@ -52,7 +52,22 @@ class JSHOPSolvingTests(unittest.TestCase):
         res = domain.methods['method0'].preconditions.evaluate({}, model, problem)
 
         # Test Running this example
-        self.assertEqual(1, 2)
+        self.assertEqual(False, res)
+
+    def test_forall_satisfier_selection(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.forall_test_path + "forall")
+        parser.parse_problem(self.forall_test_path + "problem")
+        execution_prep(problem, solver)
+
+        model = solver.search_models._SearchQueue__Q.pop(0)
+
+        method = domain.methods['method0']
+        cons = method.preconditions.head
+        satisfying_obs = cons._collect_objects({}, model, problem)
+        self.assertEqual(1, len(satisfying_obs))
+        self.assertEqual('y', satisfying_obs[0].name)
+        self.assertEqual(problem.objects['y'], satisfying_obs[0])
 
     def test_forall_2(self):
         domain, problem, parser, solver = env_setup(False)

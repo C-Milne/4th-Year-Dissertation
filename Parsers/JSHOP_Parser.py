@@ -88,16 +88,10 @@ class JSHOPParser(Parser):
         pass
 
     def _log_predicate(self, pred_name: str, parameters: list[str]) -> Predicate:
-        try:
-            assert type(pred_name) == str
-        except:
-            raise TypeError
+        assert type(pred_name) == str
         assert type(parameters) == list
         for p in parameters:
-            try:
-                assert type(p) == str
-            except:
-                raise TypeError
+            assert type(p) == str
         # Check if predicate already exists
         res = self.domain.get_predicate(pred_name)
         if res is None:
@@ -186,9 +180,12 @@ class JSHOPParser(Parser):
         task_def = params.pop(0)
         assert len(params) % 2 == 0
         task = self._parse_task(task_def)
-        parameters = task.parameters
 
         for i in range(int(len(params) / 2)):
+            parameters = []
+            for p in task.get_parameters():
+                parameters.append(p)
+
             name, preconditions, subtasks, constraints = None, None, None, None
             name = "method" + str(self.method_counter)
             self.method_counter += 1
