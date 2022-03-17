@@ -1,4 +1,5 @@
 import re
+import sys
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
 from Internal_Representation.method import Method
@@ -11,6 +12,10 @@ from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.state import State
 from Internal_Representation.Type import Type
 from Internal_Representation.list_parameter import ListParameter
+from Internal_Representation.effects import Effects
+"""Importing from sys modules"""
+Precondition = sys.modules['Internal_Representation.precondition'].Precondition
+ForallCondition = sys.modules['Internal_Representation.conditions'].ForallCondition
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
@@ -126,7 +131,11 @@ class Solver:
             self.search_models.add(search_model)
             return
         for mod in subtask.task.subtasks.tasks:
-            assert type(mod.task) == Action or type(mod.task) == Task
+            try:
+                assert type(mod.task) == Action or type(mod.task) == Task
+            except:
+                if mod.task is None:
+                    continue
 
             mod = Subtasks.Subtask(mod.task, mod.parameters)
 
@@ -154,10 +163,8 @@ class Solver:
 
         # Check if all the required parameters are given
         comparison_result = self.__compare_parameters(subtask.task, subtask.given_params)
-        try:
-            assert comparison_result[0] == True
-        except:
-            raise TypeError
+
+        assert comparison_result[0] == True
 
         # If all are not given select variables and create new search models with the found variables
         # Add the search models to the search Queue
@@ -169,16 +176,43 @@ class Solver:
 
         if not subtask.task.effects is None:
             for eff in subtask.task.effects.effects:
-                param_list = []
-                for i in eff.parameters:
-                    param_list.append(subtask.given_params[i])
-                if eff.negated:
-                    # Predicate needs to be removed
-                    search_model.current_state.remove_element(eff.predicate, param_list)
+
+                if type(eff) == Effects.Effect:
+                    param_list = []
+                    for i in eff.parameters:
+                        param_list.append(subtask.given_params[i])
+
+                    if eff.negated:
+                        # Predicate needs to be removed
+                        search_model.current_state.remove_element(eff.predicate, param_list)
+                    else:
+                        # Predicate needs to be added
+                        new_predicate = ProblemPredicate(eff.predicate, param_list)
+                        search_model.current_state.add_element(new_predicate)
+                elif type(eff) == Effects.ForAllEffect:
+                    # Get parameters
+                    assert type(eff.precondition.head) == ForallCondition
+                    obs = eff.precondition.head.get_satisfying_objects(subtask.given_params, search_model, self.problem)
+                    forall_var_name = eff.precondition.head.selected_variable
+                    # Iterate over found parameters
+                    for o in obs:
+                        for e in eff.effects:
+                            param_list = []
+                            for i in e.parameters:
+                                if i.name == forall_var_name:
+                                    param_list.append(o)
+                                else:
+                                    param_list.append(subtask.given_params[i.name])
+
+                            if eff.negated:
+                                # Predicate needs to be removed
+                                search_model.current_state.remove_element(e.predicate, param_list)
+                            else:
+                                # Predicate needs to be added
+                                new_predicate = ProblemPredicate(e.predicate, param_list)
+                                search_model.current_state.add_element(new_predicate)
                 else:
-                    # Predicate needs to be added
-                    new_predicate = ProblemPredicate(eff.predicate, param_list)
-                    search_model.current_state.add_element(new_predicate)
+                    raise NotImplementedError
 
         search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)

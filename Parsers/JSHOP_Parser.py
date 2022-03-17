@@ -135,7 +135,7 @@ class JSHOPParser(Parser):
                 else:
                     # Process forall effect
                     param = self._parse_parameters(parameters[0])
-                    cons = self._parse_precondition_JSHOP(parameters[1])
+                    cons = self._parse_precondition_JSHOP(p)
                     processed_effects = []
                     for e in parameters[2]:
                         if len(e) > 1:

@@ -7,7 +7,10 @@ from Internal_Representation.list_parameter import ListParameter
 class Subtasks:
     class Subtask:
         def __init__(self, task, parameters=[]):
-            assert isinstance(task, Modifier) or type(task) == str
+            try:
+                assert isinstance(task, Modifier) or type(task) == str
+            except:
+                raise TypeError
             self.task = task
             assert type(parameters) == list or type(parameters) == ListParameter
             if type(parameters) == list:

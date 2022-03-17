@@ -2,6 +2,7 @@ import unittest
 from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Internal_Representation.problem_predicate import ProblemPredicate
+from Solver.action_tracker import ActionTracker
 
 
 class JSHOPSolvingTests(unittest.TestCase):
@@ -9,7 +10,6 @@ class JSHOPSolvingTests(unittest.TestCase):
         self.basic_path = "../Examples/JShop/basic/"
         self.block_path = "../Examples/JShop/blocks/"
         # self.block_path = "Tests/Examples/JShop/blocks/"
-        self.freecell_path = "../Examples/JShop/freecell/"
         self.forall_test_path = "../Examples/JShop/foralltest/"
         self.forall_path = "../Examples/JShop/forall/"
 
@@ -105,6 +105,49 @@ class JSHOPSolvingTests(unittest.TestCase):
         self.assertEqual(domain.actions['!drive'], mod.task)
         self.assertEqual({'?x': problem.objects['city2'], '?y': problem.objects['city1'], '?t': problem.objects['t2']},
                          mod.given_params)
+
+    def test_forall_example_execution(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.forall_path + "forall")
+        parser.parse_problem(self.forall_path + "problem")
+        res = solver.solve()
+
+        self.assertNotEqual(None, res)
+        self.assertIn(ActionTracker(domain.actions['!load'], {'?z': problem.objects['p1'], '?t': problem.objects['t2']}),
+                      res.actions_taken)
+        self.assertIn(
+            ActionTracker(domain.actions['!load'], {'?z': problem.objects['p4'], '?t': problem.objects['t2']}),
+            res.actions_taken)
+        self.assertIn(
+            ActionTracker(domain.actions['!drive'], {'?t': problem.objects['t2'], '?x': problem.objects['city2'],
+                                                     '?y': problem.objects['city1']}), res.actions_taken)
+        self.assertIn(ProblemPredicate(domain.predicates['at'], [problem.objects['p1'], problem.objects['city1']]),
+                      res.current_state.elements)
+        self.assertIn(ProblemPredicate(domain.predicates['at'], [problem.objects['p3'], problem.objects['city1']]),
+                      res.current_state.elements)
+        self.assertIn(ProblemPredicate(domain.predicates['at'], [problem.objects['p4'], problem.objects['city1']]),
+                      res.current_state.elements)
+        self.assertIn(ProblemPredicate(domain.predicates['at'], [problem.objects['p2'], problem.objects['city1']]),
+                      res.current_state.elements)
+
+    @unittest.skip
+    def test_forall_example_execution_2(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.forall_test_path + "forall")
+        parser.parse_problem(self.forall_test_path + "problem")
+        res = solver.solve()
+
+        self.assertEqual(1, 2)
+
+    def test_basic_execution(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.basic_path + "basic")
+        parser.parse_problem(self.basic_path + "problem")
+        res = solver.solve()
+
+        self.assertNotEqual(None, res)
+        self.assertIn(ActionTracker(domain.actions['!drop'], {'?a': problem.objects['kiwi']}), res.actions_taken)
+        self.assertIn(ActionTracker(domain.actions['!pickup'], {'?a': problem.objects['banjo']}), res.actions_taken)
 
     @unittest.skip
     def test_evaluating_goal_precondition(self):

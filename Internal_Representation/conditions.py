@@ -137,6 +137,9 @@ class ForallCondition(Condition):
         else:
             raise NotImplementedError
 
+    def get_satisfying_objects(self, param_dict, search_model, problem):
+        return self._collect_objects(param_dict, search_model, problem)
+
 
 def merge_dictionaries(a, b):
     c = a.copy()

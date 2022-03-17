@@ -12,11 +12,11 @@ class Effects:
 
     class RunTimeEffect:
         def __init__(self, parameter):
-            self.parameter = parameter
+            self.parameters = parameter
 
     class ForAllEffect:
         def __init__(self, parameter, precondition, negated):
-            self.parameter = parameter
+            self.parameters = parameter
             self.precondition = precondition
             self.effects = []
             self.negated = negated
