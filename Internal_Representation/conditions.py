@@ -14,7 +14,10 @@ class Condition:
 class PredicateCondition(Condition):
     def __init__(self, pred: Predicate, parameter_names: list[str]):
         super().__init__()
-        assert isinstance(pred, Predicate)
+        try:
+            assert isinstance(pred, Predicate)
+        except:
+            raise TypeError
         self.pred = pred
         assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
         self.parameter_name = parameter_names
@@ -36,6 +39,8 @@ class GoalPredicateCondition(Condition):
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         """Check if predicate is in goal state"""
+        if problem.goal_conditions is None:
+            return False
         raise NotImplementedError
 
 

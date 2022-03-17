@@ -91,7 +91,10 @@ class JSHOPParser(Parser):
         assert type(pred_name) == str
         assert type(parameters) == list
         for p in parameters:
-            assert type(p) == str
+            try:
+                assert type(p) == str
+            except:
+                raise TypeError
         # Check if predicate already exists
         res = self.domain.get_predicate(pred_name)
         if res is None:
@@ -125,6 +128,8 @@ class JSHOPParser(Parser):
                 else:
                     parameters = []
                 if pred_name != 'forall':
+                    if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                        parameters = parameters[0]
                     pred = self._log_predicate(pred_name, parameters)
                     effects.add_effect(pred, parameters, negated)
                 else:

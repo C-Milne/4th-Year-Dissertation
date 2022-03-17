@@ -1,4 +1,5 @@
 import re
+import sys
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.reg_parameter import RegParameter
@@ -7,6 +8,7 @@ from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.task import Task
 from Internal_Representation.Object import Object
 from Internal_Representation.list_parameter import ListParameter
+Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 
 
 class Parser:
@@ -99,7 +101,11 @@ class Parser:
                         elif len(parameters) > 1 and all([type(x) == str for x in parameters]):
                             # Here a type is given
                             # ['valuableorhazardous', '?collect_fees_instance_2_argument_0']
-                            constraints.add_predicate_condition(self.domain.get_predicate(p), parameters[1:], parent)
+                            pred = self.domain.get_predicate(p)
+                            if pred is None:
+                                self.domain.add_predicate(Predicate(p, self._parse_parameters(parameters[1:])))
+                                pred = self.domain.get_predicate(p)
+                            constraints.add_predicate_condition(pred, parameters[1:], parent)
                             i = l
                         elif len(parameters) == 1 and type(p) == str:
                             constraints.add_predicate_condition(self.domain.get_predicate(p), [], parent)

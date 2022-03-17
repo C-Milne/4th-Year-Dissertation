@@ -427,10 +427,9 @@ class Solver:
             for j in range(len(pred.conditions)):
                 # Choose variables
                 found_params = self.__find_satisfying_parameters(search_model, pred.cond_requirements[j])
-                print("here")
                 for param_option in found_params:
                     # Evaluate predicate
-                    result = pred.conditions[j].evaluate(search_model, param_option)
+                    result = pred.conditions[j].evaluate(param_option, search_model, self.problem)
                     if result and param_option not in found_predicates:
                         found_predicates.append(param_option)
                         obs = self.convert_param_dict_to_list(param_option, pred.parameters)

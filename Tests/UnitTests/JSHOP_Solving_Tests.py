@@ -15,23 +15,11 @@ class JSHOPSolvingTests(unittest.TestCase):
 
     @unittest.skip
     def test_derived_predicate_processing_1(self):
+        """This test takes ages to process. For one of the derived predicates there is 84100 parameter options"""
         # Test 'same' axiom from blocks domain
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.block_path + "blocks")
         parser.parse_problem(self.block_path + "problem")
-        execution_prep(problem, solver)
-
-        model = solver.search_models._SearchQueue__Q.pop(0)
-
-        solver.compute_derived_predicates(model)
-        self.assertEqual(1, 2)
-
-    @unittest.skip
-    def test_derived_predicate_processing_2(self):
-        # Test 'same' axiom from blocks domain
-        domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.freecell_path + "freecell")
-        parser.parse_problem(self.freecell_path + "problem")
         execution_prep(problem, solver)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
