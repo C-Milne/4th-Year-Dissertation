@@ -119,6 +119,13 @@ class JSHOPSolvingTests(unittest.TestCase):
                          mod.given_params)
 
     @unittest.skip
+    def test_evaluating_goal_precondition(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.block_path + "blocks")
+        parser.parse_problem(self.block_path + "problem")
+        self.assertEqual(1, 2)
+
+    @unittest.skip
     def test_runtime_lists(self):
         # Test popping from a list at run time
         pass

@@ -113,6 +113,16 @@ class Parser:
                                 satisfier = self._parse_precondition(['and'] + parameters[3])
                             constraints.add_forall_condition(selector, satisfier.head, parent)
                             i += l
+                        elif p == "goal":
+                            i += 1
+                            section = parameters[i]
+                            assert type(section) == list
+                            pred_name = section[0]
+                            if len(section) > 1:
+                                params = section[1:]
+                            else:
+                                params = []
+                            constraints.add_goal_predicate_condition(self.domain.get_predicate(pred_name), params, parent)
                         else:
                             raise TypeError("Unexpected token {}".format(p))
                     elif type(p) == list:

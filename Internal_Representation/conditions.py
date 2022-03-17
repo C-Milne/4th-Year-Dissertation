@@ -14,7 +14,7 @@ class Condition:
 class PredicateCondition(Condition):
     def __init__(self, pred: Predicate, parameter_names: list[str]):
         super().__init__()
-        assert type(pred) == Predicate
+        assert isinstance(pred, Predicate)
         self.pred = pred
         assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
         self.parameter_name = parameter_names
@@ -24,6 +24,19 @@ class PredicateCondition(Condition):
         for i in self.parameter_name:
             p_list.append(param_dict[i])
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+
+
+class GoalPredicateCondition(Condition):
+    def __init__(self, pred: Predicate, parameter_names: list[str]):
+        super().__init__()
+        assert type(pred) == Predicate
+        self.pred = pred
+        assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
+        self.parameter_name = parameter_names
+
+    def evaluate(self, param_dict: dict, search_model, problem) -> bool:
+        """Check if predicate is in goal state"""
+        raise NotImplementedError
 
 
 class VariableCondition(Condition):

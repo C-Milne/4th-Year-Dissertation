@@ -98,8 +98,13 @@ class Domain:
 
     def get_predicate(self, name):
         if name not in self.predicates.keys():
-            return None
+            return self.get_derived_predicate(name)
         return self.predicates[name]
+
+    def get_derived_predicate(self, name):
+        if name not in self.derived_predicates.keys():
+            return None
+        return self.derived_predicates[name]
 
     def name_assigned(self, str):
         """TODO : Test this with all components"""

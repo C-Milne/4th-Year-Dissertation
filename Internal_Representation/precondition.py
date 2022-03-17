@@ -1,5 +1,6 @@
 import sys
-from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, ForallCondition
+from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
+    ForallCondition, GoalPredicateCondition
 
 
 class Precondition:
@@ -44,6 +45,12 @@ class Precondition:
             selected_cons = selector[1]
 
         con = ForallCondition(selected_variable, selected_cons, satisfier)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def add_goal_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+        assert isinstance(parent, Condition) or parent is None
+        con = GoalPredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)
         return con
 
