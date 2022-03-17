@@ -254,7 +254,7 @@ class Solver:
         assert type(method) == Method or type(method) == Action or type(method) == Task
         assert type(parameters) == dict
         for p in parameters:
-            assert type(parameters[p]) == Object
+            assert type(parameters[p]) == Object or type(parameters[p]) == ListParameter
 
         missing_params = []
         for p in method.parameters:

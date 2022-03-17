@@ -17,3 +17,7 @@ class ListParameter(Parameter):
         if len(self.list) > 0:
             return self.list.pop(0)
         return None
+
+    @property
+    def name(self):
+        return self.param_list_name

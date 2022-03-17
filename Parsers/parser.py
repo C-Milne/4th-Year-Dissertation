@@ -263,6 +263,8 @@ class Parser:
                             t.parameters[i] = self.problem.get_object(t.parameters[i].name)
                         elif type(t.parameters[i]) == Object:
                             pass
+                        elif type(t.parameters[i]) == ListParameter:
+                            pass
                         else:
                             raise AttributeError("Grounding process for subtask with type {} unknown".format(type(t.parameters[i])))
                         i += 1

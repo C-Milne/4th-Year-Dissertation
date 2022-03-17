@@ -79,7 +79,8 @@ class JSHOPParser(Parser):
         self._parse_initial_state(tokens.pop(0))
 
         # Subtasks
-        self._parse_execution_subtasks(tokens.pop(0))
+        sub_task_tokens = tokens.pop(0)
+        self._parse_execution_subtasks(sub_task_tokens)
 
         # Grounding
         self._post_problem_parsing_grounding()
@@ -91,10 +92,7 @@ class JSHOPParser(Parser):
         assert type(pred_name) == str
         assert type(parameters) == list
         for p in parameters:
-            try:
-                assert type(p) == str
-            except:
-                raise TypeError
+            assert type(p) == str
         # Check if predicate already exists
         res = self.domain.get_predicate(pred_name)
         if res is None:
@@ -302,6 +300,13 @@ class JSHOPParser(Parser):
                     """['?goal', '.', '?goals']
                     At solve time we need to check ?goals is a list and pop the leading value and store it in ?goal"""
                     param_list.append(ListParameter(p[2], p[0]))
+                elif all([len(x) == 1 for x in params if type(x) == list]):
+                    i = 0
+                    l = len(params)
+                    while i < l:
+                        if type(params[i]) == list:
+                            params[i] = params[i][0]
+                        i += 1
                 else:
                     raise TypeError("This method does not accept a list within a list")
             elif p == "-":
@@ -321,14 +326,20 @@ class JSHOPParser(Parser):
         __add_t_param_list()
         return param_list
 
-    def _parse_list_parameter(self, params) -> ListParameter:
-        list_param = ListParameter(None, None)
+    def _parse_list_parameter(self, params, param_name=None) -> ListParameter:
+        list_param = ListParameter(param_name)
         for p in params:
+            obs = []
             if len(p) > 1:
-                obs = [self.problem.get_object(x) for x in p[1:]]
+                for x in p[1:]:
+                    found_ob = self.problem.get_object(x)
+                    obs.append(found_ob)
+                list_param.add_to_list([self.domain.get_predicate(p[0]), obs])
+            elif type(p) == str:
+                found_ob = self.problem.get_object(p)
+                list_param.add_to_list(found_ob)
             else:
                 obs = []
-            list_param.add_to_list([self.domain.get_predicate(p[0]), obs])
         return list_param
 
     def _parse_predicates(self, *args):
@@ -400,6 +411,19 @@ class JSHOPParser(Parser):
                         task_modifier = params[0]
                         task_parameters = self._parse_parameters(params[1:])
                         i += len(params)
+                    elif type(params[0]) == str and all([type(x) == str or type(x) == list for x in params[1:]]):
+                        # ['transport', ['0', '1', '2'], '0.1', '0.1']
+                        task_modifier = self.domain.get_modifier(params[0])
+                        task_parameters = []
+                        counter = 0
+                        for p in params[1:]:
+                            if type(p) == list:
+                                task_parameters.append(self._parse_list_parameter(p, task_modifier.parameters[counter].name))
+                            else:
+                                task_parameters += self._parse_parameters([p])
+
+                            counter += 1
+                        i += l
                     else:
                         raise SyntaxError("Unrecognised Format {}".format(params))
 
@@ -420,15 +444,18 @@ class JSHOPParser(Parser):
     def _parse_initial_state(self, group):
         while len(group) > 0:
             section = group.pop(0)
-            if len(section) > 1:
-                obs = [self._log_object(x) for x in section[1:]]
+            if section[0] == 'goal':
+                self._parse_goal_state(section[1:])
             else:
-                obs = []
-            if len(section) > 1:
-                pred_params = section[1:]
-            else:
-                pred_params = []
-            self.problem.add_to_initial_state(ProblemPredicate(self._log_predicate(section[0], section[1:]), obs))
+                if len(section) > 1:
+                    obs = [self._log_object(x) for x in section[1:]]
+                else:
+                    obs = []
+                if len(section) > 1:
+                    pred_params = section[1:]
+                else:
+                    pred_params = []
+                self.problem.add_to_initial_state(ProblemPredicate(self._log_predicate(section[0], section[1:]), obs))
 
     def _parse_execution_subtasks(self, group):
         sub_tasks = None
@@ -447,8 +474,9 @@ class JSHOPParser(Parser):
         self.problem.add_subtasks(sub_tasks)
         self._requires_grounding.append(sub_tasks)
 
-    def _parse_goal_state(self, *args):
-        pass
+    def _parse_goal_state(self, params):
+        cons = self._parse_precondition_JSHOP(params)
+        self.problem.add_goal_conditions(cons)
 
     def _parse_htn_tag(self, *args):
         pass

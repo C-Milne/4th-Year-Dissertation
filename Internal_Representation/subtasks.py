@@ -2,6 +2,7 @@ from Internal_Representation.modifier import Modifier
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
 from Internal_Representation.list_parameter import ListParameter
+from Internal_Representation.parameter import Parameter
 
 
 class Subtasks:
@@ -15,18 +16,21 @@ class Subtasks:
             assert type(parameters) == list or type(parameters) == ListParameter
             if type(parameters) == list:
                 for p in parameters:
-                    assert type(p) == RegParameter
+                    assert isinstance(p, Parameter)
             self.parameters = parameters
             self.given_params = {}
 
         def get_name(self):
-            return self.task.name
+            try:
+                return self.task.name
+            except:
+                raise TypeError
 
         def add_given_parameters(self, params: dict[Object]):
             assert type(params) == dict
             if not (len(params.keys()) == 1 and type(params[list(params.keys())[0]]) == ListParameter):
                 for i in params:
-                    assert type(params[i]) == Object
+                    assert type(params[i]) == Object or type(params[i]) == ListParameter
             self.given_params = params
 
         def evaluate_preconditions(self, model, params, problem):
@@ -45,7 +49,7 @@ class Subtasks:
         assert type(parameters) == list or type(parameters) == ListParameter
         if type(parameters) == list:
             for p in parameters:
-                assert type(p) == RegParameter
+                assert isinstance(p, Parameter)
         subtask_to_add = self.Subtask(modifier, parameters)
         if label is not None:
             self.labelled_tasks[label] = subtask_to_add

@@ -160,8 +160,3 @@ class JSHOPSolvingTests(unittest.TestCase):
     def test_runtime_lists(self):
         # Test popping from a list at run time
         pass
-
-    @unittest.skip
-    def test_forall_effects(self):
-        # Test for all effects
-        pass
