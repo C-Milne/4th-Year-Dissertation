@@ -11,9 +11,9 @@ from Solver.solver import Solver
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
-from TestTools.env_setup import env_setup
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -55,6 +55,7 @@ class HDDLGroundingTests(unittest.TestCase):
     #     self.assertEqual(blocksworld_pb1_initial_state_index, model.current_state._index)
 
     def test_precondition_complex(self):
+        domain, problem, parser, solver = env_setup(True)
         # Devise a complex precondition and test it
         precon_list = ['and',
                        ['not',
@@ -67,11 +68,14 @@ class HDDLGroundingTests(unittest.TestCase):
                         ['hate', '?z'], ['hate', '?d']
                         ]
                        ]
-        precons = Precondition(precon_list)
-
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
-        hate_pred = Predicate('hate', [Parameter('?a')])
+        have_pred = Predicate('have', [RegParameter('?x')])
+        hate_pred = Predicate('hate', [RegParameter('?a')])
+        domain.add_predicate(have_pred)
+        domain.add_predicate(hate_pred)
+
+        precons = parser._parse_precondition(precon_list)
+
 
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
@@ -91,14 +95,14 @@ class HDDLGroundingTests(unittest.TestCase):
         param_dict = {"?z": ob_ham, "?x": ob_irnbru, "?y": ob_car, "?a": ob_bike, "?b": ob_popcorn,
                       "?c": ob_crisps, "?d": ob_dark}
 
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(False, result)
 
         # Set up next model - {'have': ['ham', 'irn-bru', 'car', 'popcorn'], 'hate': ['dark']}
         state.add_element(ProblemPredicate(have_pred, [ob_popcorn]))
         state.add_element(ProblemPredicate(hate_pred, [ob_dark]))
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
     def test_method_requirements(self):
@@ -128,7 +132,7 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1.hddl")
         method = domain.methods['setdone']
         model = Model(problem.initial_state, [], problem)
-        result = method.evaluate_preconditions(model, {})
+        result = method.evaluate_preconditions(model, {}, problem)
         self.assertEqual(False, result)
 
         # Test for True
@@ -142,7 +146,7 @@ class HDDLGroundingTests(unittest.TestCase):
         parser.parse_problem(self.test_tools_path + "Blocksworld/Blocksworld_test_problem_1_1.hddl")
         method = domain.methods['setdone']
         model = Model(problem.initial_state, [], problem)
-        result = method.evaluate_preconditions(model, {})
+        result = method.evaluate_preconditions(model, {}, problem)
         self.assertEqual(True, result)
 
     def test_forall_preconditions_2(self):
@@ -162,16 +166,19 @@ class HDDLGroundingTests(unittest.TestCase):
         self.assertIsNone(plan)
 
     def test_precondition_and(self):
+        domain, problem, parser, solver = env_setup(True)
         # Test the 'and' functionality for preconditions
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
+        domain.add_predicate(have_pred)
+
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')
 
         # Set up precondition object
         precon_list = ['and', ['have', '?x'], ['have', '?y'], ['have', '?z']]
-        precons = Precondition(precon_list)
+        precons = parser._parse_precondition(precon_list)
 
         # Set up model - {'have': ['ham', 'irn-bru', 'car']}
         state = State()
@@ -182,7 +189,7 @@ class HDDLGroundingTests(unittest.TestCase):
         param_dict = {"?z": ob_ham, "?x": ob_irnbru, "?y": ob_car}
 
         # Testing for True
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
         # Testing for False - {'have': ['irn-bru', 'car']}
@@ -190,17 +197,19 @@ class HDDLGroundingTests(unittest.TestCase):
         state.add_element(ProblemPredicate(have_pred, [ob_irnbru]))
         state.add_element(ProblemPredicate(have_pred, [ob_car]))
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(False, result)
 
     def test_precondition_or(self):
+        domain, problem, parser, solver = env_setup(True)
+        domain.add_predicate(Predicate('have'))
         # Test the 'or' functionality for preconditions
         # Set up precondition object
         precon_list = ['or', ['have', '?x'], ['have', '?y'], ['have', '?z']]
-        precons = Precondition(precon_list)
+        precons = parser._parse_precondition(precon_list)
 
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')
@@ -214,7 +223,7 @@ class HDDLGroundingTests(unittest.TestCase):
         param_dict = {"?z": ob_ham, "?x": ob_irnbru, "?y": ob_car}
 
         # Testing for True
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
         # Testing for True - {'have': ['irn-bru', 'car']}
@@ -222,30 +231,32 @@ class HDDLGroundingTests(unittest.TestCase):
         state.add_element(ProblemPredicate(have_pred, [ob_irnbru]))
         state.add_element(ProblemPredicate(have_pred, [ob_car]))
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
         # {'have': ['irn-bru']}
         state = State()
         state.add_element(ProblemPredicate(have_pred, [ob_irnbru]))
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
         # {'have': []}
         state = State()
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(False, result)
 
     def test_precondition_not(self):
+        domain, problem, parser, solver = env_setup(True)
+        domain.add_predicate(Predicate('have'))
         # Test the 'not' functionality for preconditions
         # Set up precondition object
         precon_list = ['not', ['have', '?x']]
-        precons = Precondition(precon_list)
+        precons = parser._parse_precondition(precon_list)
 
         # Set up values
-        have_pred = Predicate('have', [Parameter('?x')])
+        have_pred = Predicate('have', [RegParameter('?x')])
         ob_ham = Object("ham")
         ob_irnbru = Object('irn-bru')
         ob_car = Object('car')
@@ -259,7 +270,7 @@ class HDDLGroundingTests(unittest.TestCase):
         param_dict = {"?z": ob_ham, "?x": ob_irnbru, "?y": ob_car}
 
         # Testing for False
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(False, result)
 
         # Testing for True - {'have': ['ham', 'car']}
@@ -267,7 +278,7 @@ class HDDLGroundingTests(unittest.TestCase):
         state.add_element(ProblemPredicate(have_pred, [ob_ham]))
         state.add_element(ProblemPredicate(have_pred, [ob_car]))
         model = Model(state, [])
-        result = precons.evaluate(model, param_dict)
+        result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
     def test_action_requirements(self):
@@ -384,11 +395,11 @@ class HDDLGroundingTests(unittest.TestCase):
             "?turn_to_instance_3_argument_2": problem.objects['satellite0'],
             "?turn_to_instance_3_argument_4": problem.objects['phenomenon6']
         }
-        self.assertEqual(True, method._evaluate_constraints(param_dict))
+        self.assertEqual(True, method._evaluate_constraints(param_dict, None, problem))
 
         # Test for False
         param_dict['?turn_to_instance_3_argument_4'] = problem.objects['phenomenon4']
-        self.assertEqual(False, method._evaluate_constraints(param_dict))
+        self.assertEqual(False, method._evaluate_constraints(param_dict, None, problem))
 
     def test_type_satisfaction(self):
         domain, problem, parser, solver = env_setup(True)

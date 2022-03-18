@@ -1,5 +1,6 @@
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.predicate import Predicate
+from Internal_Representation.Object import Object
 
 
 class State:
@@ -78,6 +79,16 @@ class State:
                 if self._index[k][i] > index_removed:
                     self._index[k][i] -= 1
                 i += 1
+
+    def check_if_predicate_value_exists(self, predicate: Predicate, obs: list[Object]) -> bool:
+        indexes = self.get_indexes(predicate.name)
+        prob_pred = ProblemPredicate(predicate, obs)
+        if indexes is None:
+            return False
+        for i in indexes:
+            if self.elements[i] == prob_pred:
+                return True
+        return False
 
     @staticmethod
     def reproduce(state):

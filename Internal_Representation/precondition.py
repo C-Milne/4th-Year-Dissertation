@@ -1,72 +1,75 @@
+import sys
+from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
+    ForallCondition, GoalPredicateCondition
+
+
 class Precondition:
-    def __init__(self, cons):
-        assert type(cons) == list
-        self.conditions = cons
+    def __init__(self, conditions: str):
+        self.head = None
+        self.conditions = conditions
+        self.requirements = None
 
-    def evaluate(self, model, param_dict, cons=None):
-        """Evaluates if precondition is satisfied by the current state of the model
+    def add_operator_condition(self, operator: str, parent: Condition) -> Condition:
+        assert type(operator) == str
+        assert isinstance(parent, Condition) or parent is None
 
-        :parameter - model : model of current state
-        :parameter - param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}.
-        Values in dictionary need to match up with the ones defined in the precondition
-        :returns - True if precondition is satisfied
-        :returns - False if precondition is not satisfied
+        con = OperatorCondition(operator)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def add_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+        assert isinstance(parent, Condition) or parent is None
+        con = PredicateCondition(pred, parameter_names)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def add_variable_condition(self, parameter_name: str, parent: Condition):
+        assert isinstance(parent, Condition) or parent is None
+        con = VariableCondition(parameter_name)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def add_forall_condition(self, selector, satisfier: Condition, parent):
         """
-        if self.conditions == []:
+        :param selector: ['?b', '-', 'block'] OR ['?z', ['package', '?z'], ['at', '?z', '?x']]
+        :param satisfier: ['done', '?b']
+        :return:
+        """
+        if len(selector) == 3 and all([type(x) == str for x in selector]):
+            assert len(selector) == 3
+            selected_variable = selector[0]
+            selected_cons = ("type", selector[2])
+        else:
+            assert len(selector) == 2
+            selected_variable = selector[0]
+            selected_cons = selector[1]
+
+        con = ForallCondition(selected_variable, selected_cons, satisfier)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def add_goal_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+        assert isinstance(parent, Condition) or parent is None
+        con = GoalPredicateCondition(pred, parameter_names)
+        self.__final_condition_addition_checks(con, parent)
+        return con
+
+    def __final_condition_addition_checks(self, con, parent):
+        if self.head is None:
+            self.head = con
+        if parent is not None:
+            parent.add_child(con)
+
+    def evaluate(self, param_dict, search_model, problem) -> bool:
+        if self.head is None:
             return True
 
-        if cons is None:
-            cons = self.conditions
+        result = self.head.evaluate(param_dict, search_model, problem)
+        return result
 
-        for i in range(len(cons)):
-            if cons[i] == "and":
-                # All the following statements need to be True
-                predicates = [self.evaluate(model, param_dict, x) for x in cons[i + 1:]]
-                for p in predicates:
-                    if not p:
-                        return False
-                return True
-            elif cons[i] == "or":
-                # Only one of the following statements need to be True
-                predicates = [self.evaluate(model, param_dict, x) for x in cons[i + 1:]]
-                for p in predicates:
-                    if p:
-                        return True
-                return False
-            elif cons[i] == "not":
-                # Negate the following statement
-                return not self.evaluate(model, param_dict, cons[1])
-            elif cons[i] == "forall":
-                # All instances of predicates need to hold
-                param_name = cons[1][0]
-                param_type = cons[1][2]
-
-                # get all objects of type param_type
-                obs = model.problem.get_objects_of_type(param_type)
-
-                for o in obs:
-                    response = self.evaluate(model, self.merge_dictionaries(param_dict, {param_name: o}), cons[2])
-                    if response is False:
-                        return False
-                return True
-
-            else:
-                # Evaluate predicate
-                indexes = model.current_state.get_indexes(cons[0])
-                if indexes is None:
-                    return False
-
-                for j in indexes:
-                    index = 0
-                    broken = False
-                    for p in cons[1:]:
-                        if param_dict[p] != model.current_state.elements[j].objects[index]:
-                            broken = True
-                            break
-                        index += 1
-                    if not broken:
-                        return True
-                return False
+    def load_requirements(self):
+        self.requirements = sys.modules['Internal_Representation.requirements'].Requirements([], self)
+        self.requirements.prepare_requirements()
 
     @staticmethod
     def merge_dictionaries(a, b):
