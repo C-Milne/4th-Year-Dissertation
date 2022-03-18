@@ -288,6 +288,8 @@ class Parser:
                 if type(item.task) != Task:
                     assert type(item.task) == str
                     item.task = self.domain.get_task(item.task)
+            elif type(item) == tuple and len(item) == 2 and type(item[1]) == ListParameter:
+                pass
             else:
                 raise NotImplementedError("Functionality for post problem grounding of {} is not implemented".format(type(item)))
         self._requires_grounding = []

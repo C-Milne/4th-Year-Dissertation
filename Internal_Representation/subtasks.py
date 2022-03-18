@@ -40,7 +40,7 @@ class Subtasks:
         self.tasks = []
         self.labelled_tasks = {}
 
-    def add_subtask(self, label: str, modifier, parameters: list, decorator: str = None):
+    def add_subtask(self, label: str, modifier, parameters: list, decorator: str = None) -> Subtask:
         assert type(label) == str or label is None
         assert isinstance(modifier, Modifier) or type(modifier) == str
         assert type(parameters) == list or type(parameters) == ListParameter
@@ -51,6 +51,7 @@ class Subtasks:
         if label is not None:
             self.labelled_tasks[label] = subtask_to_add
         self.tasks.append(subtask_to_add)
+        return subtask_to_add
 
     def order_subtasks(self, orderings):
         ordered_subtasks = []

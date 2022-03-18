@@ -11,6 +11,7 @@ from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.derived_predicate import DerivedPredicate
 from Internal_Representation.requirements import Requirements
+from Internal_Representation.parameter import Parameter
 
 
 class JSHOPParser(Parser):
@@ -65,6 +66,7 @@ class JSHOPParser(Parser):
                             self._parse_state_axiom(section)
                         else:
                             raise AttributeError("Unknown tag - {}".format(lead))
+        self._post_domain_parsing_grounding()
 
     def parse_problem(self, problem_path):
         self.problem_path = problem_path
@@ -84,6 +86,35 @@ class JSHOPParser(Parser):
 
         # Grounding
         self._post_problem_parsing_grounding()
+
+    def _post_domain_parsing_grounding(self):
+        for item in self._requires_grounding:
+            if type(item) == Subtasks.Subtask:
+                if type(item.task) == str:
+                    new_task = self.domain.get_modifier(item.task)
+                    if new_task is None:
+                        continue
+                    item.task = new_task
+                else:
+                    continue
+            elif type(item) == tuple and len(item) == 2 and type(item[0]) == Subtasks.Subtask and type(item[1]) == list \
+                    and all([isinstance(x, Parameter) for x in item[1]]):
+                subT = item[0]
+                params = item[1]
+
+                if len(params) != len(subT.task.parameters) and type(subT.task) == Task:
+                    potential_tasks = self.domain.get_task(subT.task.name)
+                    if len(potential_tasks.tasks) > 0:
+                        potential_tasks = potential_tasks.tasks
+                    else:
+                        potential_tasks = [potential_tasks]
+
+                    for p_task in potential_tasks:
+                        if len(p_task.parameters) == len(params):
+                            subT.task = p_task
+            else:
+                raise TypeError("Unknown Grounding procedure for type {}".format(type(item)))
+        self._requires_grounding = []
 
     def _parse_type(self, *args):
         pass
@@ -359,7 +390,7 @@ class JSHOPParser(Parser):
     def _parse_subtasks(self, params):
         """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]
                             : ['swap', 'banjo', 'kiwi']"""
-        if len(params) == 0:
+        if len(params) == 0 or params == "nil":
             return None
         else:
             subtasks = Subtasks()
@@ -432,11 +463,15 @@ class JSHOPParser(Parser):
                     task_modifier_ob = self.domain.get_modifier(task_modifier)
                     if not task_modifier_ob is None:
                         task_modifier = task_modifier_ob
-                    subtasks.add_subtask(task_label, task_modifier, task_parameters, decorator)
+
+                    added_sub_task = subtasks.add_subtask(task_label, task_modifier, task_parameters, decorator)
 
                     if type(task_modifier) == str:
                         # Mark this method for grounding after parsing has finished
                         self._requires_grounding.append(subtasks.tasks[len(subtasks) - 1])
+                    elif task_modifier.parameters != task_parameters:
+                        # Check parameters match found task
+                        self._requires_grounding.append((added_sub_task, task_parameters))
                 i += 1
         return subtasks
 

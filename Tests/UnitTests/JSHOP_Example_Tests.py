@@ -49,5 +49,20 @@ class JSHOPSolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.rover_test_path + "rover")
         parser.parse_problem(self.rover_test_path + "problem")
-        res = solver.solve()
+
+        execution_prep(problem, solver)
+        # res = solver.solve()
+
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver.search_models._SearchQueue__Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
+        solver._Solver__search(True)
+        # solver._Solver__search(True)
+        # solver._Solver__search(True)
+        # solver._Solver__search(True)
+        # solver._Solver__search(True)
+        # solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(1, 2)

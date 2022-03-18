@@ -143,12 +143,19 @@ class Solver:
             # Check parameter count
             parameters = {}
             param_keys = [p.name for p in mod.parameters]
-            action_keys = [p.name for p in mod.task.parameters]
-            for j in range(len(action_keys)):
-                try:
-                    parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
-                except IndexError:
-                    pass
+            try:
+                action_keys = [p.name for p in mod.task.parameters]
+            except:
+                raise TypeError
+            if len(action_keys) > 0:
+                for j in range(len(action_keys)):
+                    try:
+                        parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+                    except IndexError:
+                        pass
+            else:
+                for j in range(len(param_keys)):
+                    parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
 
             mod.add_given_parameters(parameters)
 

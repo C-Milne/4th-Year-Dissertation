@@ -12,6 +12,7 @@ class JSHOPParsingTests(unittest.TestCase):
         self.block_path = "../Examples/JShop/blocks/"
         # self.block_path = "Tests/Examples/JShop/blocks/"
         self.forall_path = "../Examples/JShop/forall/"
+        self.rover_test_path = "TestTools/J-Rover/"
 
     def test_parsing_basic_domain(self):
         domain, problem, parser, solver = env_setup(False)
@@ -160,3 +161,14 @@ class JSHOPParsingTests(unittest.TestCase):
 
         self.assertEqual([RegParameter('?x'), RegParameter('?t')],
                          domain.methods['method0'].subtasks.tasks[0].parameters)
+
+    def test_parsing_subtask_method_selection(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_test_path + "rover")
+
+        method = domain.tasks['navigate'].tasks[0]
+        req_method = domain.tasks['navigate'].tasks[1]
+
+        self.assertEqual(1, len(method.methods))
+        method = method.methods[0]
+        self.assertEqual(3, len(method.subtasks.tasks[1].task.parameters))
