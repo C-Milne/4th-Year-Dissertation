@@ -32,6 +32,6 @@ class JSHOPSolvingTests(unittest.TestCase):
 
         solver._Solver__search(True)
         solver._Solver__search(True)
-        # solver._Solver__search(True)
+        solver._Solver__search(True)
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(1, 2)

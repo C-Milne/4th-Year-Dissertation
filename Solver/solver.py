@@ -99,29 +99,28 @@ class Solver:
                 self.search_models.clear_completed_models()
 
     def __expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
-        # For each method, create a new search model
-        for method in subtask.task.methods:
-            # Check parameters for new_model
-            # Is all the required parameters present or do some need to be chosen
-            parameters = {}
-            i = 0
-            for k in subtask.given_params.keys():
-                parameters[method.task['params'][i].name] = subtask.given_params[k]
-                i += 1
+        if len(subtask.task.tasks) != 0:
+            raise NotImplementedError
+        else:
+            # For each method, create a new search model
+            for method in subtask.task.methods:
+                # Check parameters for new_model
+                # Is all the required parameters present or do some need to be chosen
+                parameters = {}
+                i = 0
+                for k in subtask.given_params.keys():
+                    parameters[method.task['params'][i].name] = subtask.given_params[k]
+                    i += 1
 
-            param_options = self._get_potential_parameters(method, parameters, search_model)
+                param_options = self._get_potential_parameters(method, parameters, search_model)
 
-            for param_option in param_options:
-                subT = Subtasks.Subtask(method, method.parameters)
-                subT.add_given_parameters(param_option)
-                # Create new model and add to search_models
-                new_model = Model(State.reproduce(search_model.current_state),
-                                  [subT] + search_model.search_modifiers, self.problem)
-
-                new_model.populate_actions_taken(Model.reproduce_actions_taken(search_model))
-                new_model.populate_operations_taken(Model.reproduce_operations_list(search_model))
-                new_model.add_operation(subtask.task, subtask.given_params)
-                self.search_models.add(new_model)
+                for param_option in param_options:
+                    subT = Subtasks.Subtask(method, method.parameters)
+                    subT.add_given_parameters(param_option)
+                    # Create new model and add to search_models
+                    new_model = self.reproduce_model(search_model, [subT] + search_model.search_modifiers)
+                    new_model.add_operation(subtask.task, subtask.given_params)
+                    self.search_models.add(new_model)
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
@@ -496,6 +495,18 @@ class Solver:
         for i in parameters:
             return_list.append(param_dict[i.name])
         return return_list
+
+    def reproduce_model(self, model, search_mods=None):
+        if search_mods is None:
+            new_model = Model(State.reproduce(model.current_state),
+                  model.search_modifiers, self.problem)
+        else:
+            new_model = Model(State.reproduce(model.current_state),
+                              search_mods, self.problem)
+
+        new_model.populate_actions_taken(Model.reproduce_actions_taken(model))
+        new_model.populate_operations_taken(Model.reproduce_operations_list(model))
+        return new_model
 
     def output(self, resulting_model: Model):
         assert type(resulting_model) == Model or resulting_model is None
