@@ -28,7 +28,7 @@ class Problem:
             assert type(ob) == Object
             self.objects[ob.name] = ob
 
-    def add_to_initial_state(self, v):
+    def add_to_initial_state(self, v: ProblemPredicate):
         assert type(v) == ProblemPredicate
         self.initial_state.add_element(v)
 
@@ -40,20 +40,27 @@ class Problem:
         self.subtasks.order_subtasks(orderings)
 
     def get_object(self, name):
-        return self.objects[name]
+        if name in self.objects:
+            return self.objects[name]
+        return None
 
     def get_objects_of_type(self, param_type):
         if type(param_type) == str:
             param_type = self.domain.get_type(param_type)
-        if type(param_type) != Type:
+        if type(param_type) == Type:
+            returnObs = []
+            for o in self.objects:
+                if self.objects[o].type == param_type:
+                    returnObs.append(self.objects[o])
+
+            return returnObs
+        elif param_type is None:
+            return self.objects
+        else:
             raise TypeError("Unexpected type {}".format(type(param_type)))
 
-        returnObs = []
-        for o in self.objects:
-            if self.objects[o].type == param_type:
-                returnObs.append(self.objects[o])
-
-        return returnObs
+    def get_all_objects(self):
+        return self.objects
 
     def get_subtasks(self):
         if self.subtasks is None:
@@ -67,7 +74,7 @@ class Problem:
     def evaluate_goal(self, model: Model):
         if self.goal_conditions is None:
             return None
-        return self.goal_conditions.evaluate(model, self.objects)
+        return self.goal_conditions.evaluate(self.objects, model, self)
 
     def has_goal_conditions(self):
         if self.goal_conditions is None:

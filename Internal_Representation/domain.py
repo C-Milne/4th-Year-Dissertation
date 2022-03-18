@@ -1,9 +1,9 @@
-from Internal_Representation.modifier import Modifier
 from Internal_Representation.action import Action
 from Internal_Representation.method import Method
 from Internal_Representation.task import Task
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.Type import Type
+from Internal_Representation.derived_predicate import DerivedPredicate
 
 
 class Domain:
@@ -13,6 +13,7 @@ class Domain:
         self.tasks = {}
         self.types = {}
         self.predicates = {}
+        self.derived_predicates = {}
         self.problem = problem
 
     def add_action(self, action):
@@ -25,13 +26,22 @@ class Domain:
         if not method.task is None:
             self._add_method_to_task(method, method.task['task'])
 
-    def add_task(self, task):
+    def add_task(self, task: Task):
         assert type(task) == Task
         self.tasks[task.name] = task
 
-    def add_predicate(self, predicate):
+    def add_predicate(self, predicate: Predicate):
         assert type(predicate) == Predicate
-        self.predicates[predicate.name] = predicate
+        assert predicate.name not in self.predicates.keys()
+        if predicate.name not in self.derived_predicates:
+            self.predicates[predicate.name] = predicate
+
+    def add_derived_predicate(self, derived_predicate: DerivedPredicate):
+        assert type(derived_predicate) == DerivedPredicate
+        assert derived_predicate.name not in self.derived_predicates.keys()
+        if derived_predicate.name in self.predicates:
+            del self.predicates[derived_predicate.name]
+        self.derived_predicates[derived_predicate.name] = derived_predicate
 
     def add_type(self, t):
         assert type(t) == Type
@@ -60,8 +70,7 @@ class Domain:
             return self.tasks[name]
         return None
 
-    def get_task_methods(self, task):
-        """TODO : implement for type Task"""
+    def get_task_methods(self, task: str):
         if type(task) == str:
             task = self.get_task(task)
         return task.methods
@@ -88,9 +97,14 @@ class Domain:
             return None
 
     def get_predicate(self, name):
-        if not name in self.predicates.keys():
-            return None
+        if name not in self.predicates.keys():
+            return self.get_derived_predicate(name)
         return self.predicates[name]
+
+    def get_derived_predicate(self, name):
+        if name not in self.derived_predicates.keys():
+            return None
+        return self.derived_predicates[name]
 
     def name_assigned(self, str):
         """TODO : Test this with all components"""

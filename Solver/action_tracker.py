@@ -2,6 +2,7 @@ from Internal_Representation.action import Action
 from Internal_Representation.task import Task
 from Internal_Representation.method import Method
 from Internal_Representation.Object import Object
+from Internal_Representation.list_parameter import ListParameter
 
 
 class ActionTracker:
@@ -9,7 +10,7 @@ class ActionTracker:
         assert type(action) == Action or type(action) == Method or type(action) == Task
         assert type(parameters_used) == dict
         for k in parameters_used:
-            assert type(parameters_used[k]) == Object
+            assert type(parameters_used[k]) == Object or type(parameters_used[k]) == ListParameter
         self.action = action
         self.parameters_used = parameters_used
 

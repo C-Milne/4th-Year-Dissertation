@@ -9,7 +9,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.state import State
-from Internal_Representation.parameter import Parameter
+from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 import Tests.UnitTests.TestTools.rover_execution as RovEx
@@ -154,7 +154,7 @@ class SolvingTests(unittest.TestCase):
             m.ranking = 0
 
         # Execute action on model[7]
-        subT = Subtasks.Subtask(domain.actions['visit'], [Parameter('?from')])
+        subT = Subtasks.Subtask(domain.actions['visit'], [RegParameter('?from')])
         subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
         solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
 
@@ -278,7 +278,7 @@ class SolvingTests(unittest.TestCase):
         RovEx.execution_prep(problem, solver)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver._Solver__find_satisfying_parameters(model, method, model.search_modifiers[0].given_params)
+        found_params = solver._Solver__find_satisfying_parameters(model, method.requirements, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:
             self.assertEqual(problem.objects['objective1'], combo['?objective'])

@@ -1,6 +1,7 @@
 import sys
 import os
 from Parsers.HDDL_Parser import HDDLParser
+from Parsers.JSHOP_Parser import JSHOPParser
 from Solver.solver import Solver
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
@@ -33,8 +34,8 @@ class Runner:
         self.suffix = self.__get_suffix(domain_path)
         if self.suffix == "hddl":
             self.parser = HDDLParser(self.domain, self.problem)
-        elif self.suffix == "jshop":
-            pass
+        elif self.suffix is None:
+            self.parser = JSHOPParser(self.domain, self.problem)
         else:
             raise TypeError("Unknown descriptor type ({})".format(self.suffix))
         self.parser.parse_domain(domain_path)
@@ -60,7 +61,7 @@ class Runner:
         try:
             return path[path.rindex(".") + 1:]
         except ValueError:
-            raise IOError("File type not identified. ({})".format(path))
+            return None
 
 
 if __name__ == "__main__":
