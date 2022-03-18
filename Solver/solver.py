@@ -125,11 +125,13 @@ class Solver:
 
     def __expand_method(self, subtask: Subtasks.Subtask, search_model: Model):
         # Add actions to search model - with parameters
-        i = 0
         if subtask.task.subtasks is None:
             search_model.add_operation(subtask.task, subtask.given_params)
             self.search_models.add(search_model)
             return
+
+        new_models = [search_model]
+        index = 0
         for mod in subtask.task.subtasks.tasks:
             try:
                 assert type(mod.task) == Action or type(mod.task) == Task
@@ -139,10 +141,25 @@ class Solver:
 
             mod = Subtasks.Subtask(mod.task, mod.parameters)
 
+            if type(mod.task) == Action or len(mod.task.tasks) == 0:
+                new_models = self.__expand_method_task(mod, mod.task, subtask, new_models, index)
+            else:
+                for mod_task in mod.task.tasks:
+                    new_models = self.__expand_method_task(mod, mod_task, subtask, new_models, index)
+            index += 1
+
+        for search_model in new_models:
+            search_model.add_operation(subtask.task, subtask.given_params)
+            self.search_models.add(search_model)
+
+    def __expand_method_task(self, mod, task, subtask, given_models, index):
+        new_models = []
+
+        for search_model in given_models:
             # Check parameter count
             parameters = {}
             param_keys = [p.name for p in mod.parameters]
-            action_keys = [p.name for p in mod.task.parameters]
+            action_keys = [p.name for p in task.parameters]
             for j in range(len(action_keys)):
                 try:
                     parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
@@ -152,10 +169,9 @@ class Solver:
             mod.add_given_parameters(parameters)
 
             # Add mod to search_model
-            search_model.insert_modifier(mod, i)
-            i += 1
-        search_model.add_operation(subtask.task, subtask.given_params)
-        self.search_models.add(search_model)
+            search_model.insert_modifier(mod, index)
+            new_models.append(search_model)
+        return new_models
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
