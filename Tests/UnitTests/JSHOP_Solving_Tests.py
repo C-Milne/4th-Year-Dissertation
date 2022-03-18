@@ -12,6 +12,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         # self.block_path = "Tests/Examples/JShop/blocks/"
         self.forall_test_path = "../Examples/JShop/foralltest/"
         self.forall_path = "../Examples/JShop/forall/"
+        self.rover_test_path = "TestTools/J-Rover/"
 
     @unittest.skip
     def test_derived_predicate_processing_1(self):
@@ -148,6 +149,30 @@ class JSHOPSolvingTests(unittest.TestCase):
         self.assertNotEqual(None, res)
         self.assertIn(ActionTracker(domain.actions['!drop'], {'?a': problem.objects['kiwi']}), res.actions_taken)
         self.assertIn(ActionTracker(domain.actions['!pickup'], {'?a': problem.objects['banjo']}), res.actions_taken)
+
+    def test_rover_execution_part_guided(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_test_path + "rover")
+        parser.parse_problem(self.rover_test_path + "problem")
+
+        execution_prep(problem, solver)
+        # res = solver.solve()
+
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
+        solver.search_models._SearchQueue__Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
+        search_models = solver.search_models._SearchQueue__Q
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        solver._Solver__search(True)
+        res = solver._Solver__search()
+        # solver._Solver__search(True)
+        # solver._Solver__search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertNotEqual(None, res)
+        solver.output(res)
 
     @unittest.skip
     def test_evaluating_goal_precondition(self):
