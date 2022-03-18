@@ -9,6 +9,8 @@ class JSHOPSolvingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.logistics_path = "../Examples/JShop/logistics/"
         self.madrts_path = "../Examples/JShop/madrts/"
+        self.rover_path = "../Examples/JShop/rover/"
+        self.rover_test_path = "TestTools/J-Rover/"
 
     def test_logistics_execution(self):
         domain, problem, parser, solver = env_setup(False)
@@ -34,4 +36,18 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver._Solver__search(True)
         solver._Solver__search(True)
         search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(1, 2)
+
+    def test_rover_execution(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_path + "rover")
+        parser.parse_problem(self.rover_path + "problem")
+        res = solver.solve()
+        self.assertEqual(1, 2)
+
+    def test_rover_execution_part(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_test_path + "rover")
+        parser.parse_problem(self.rover_test_path + "problem")
+        res = solver.solve()
         self.assertEqual(1, 2)

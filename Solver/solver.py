@@ -100,7 +100,9 @@ class Solver:
 
     def __expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
         if len(subtask.task.tasks) != 0:
-            raise NotImplementedError
+            for new_task in subtask.task.tasks:
+                self.__expand_task(Subtasks.Subtask(new_task, self.reproduce_parameter_list(subtask.parameters)),
+                                   self.reproduce_model(search_model))
         else:
             # For each method, create a new search model
             for method in subtask.task.methods:
@@ -495,6 +497,13 @@ class Solver:
         for i in parameters:
             return_list.append(param_dict[i.name])
         return return_list
+
+    @staticmethod
+    def reproduce_parameter_list(param_list):
+        new_list = []
+        for p in param_list:
+            new_list.append(p)
+        return new_list
 
     def reproduce_model(self, model, search_mods=None):
         if search_mods is None:

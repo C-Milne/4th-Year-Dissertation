@@ -25,7 +25,10 @@ class PredicateCondition(Condition):
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         p_list = []
         for i in self.parameter_name:
-            p_list.append(param_dict[i])
+            try:
+                p_list.append(param_dict[i])
+            except:
+                raise KeyError
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
 
 

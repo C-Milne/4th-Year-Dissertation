@@ -21,10 +21,7 @@ class Subtasks:
             self.given_params = {}
 
         def get_name(self):
-            try:
-                return self.task.name
-            except:
-                raise TypeError
+            return self.task.name
 
         def add_given_parameters(self, params: dict[Object]):
             assert type(params) == dict

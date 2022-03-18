@@ -147,6 +147,8 @@ class JSHOPParser(Parser):
 
             elif type(p) == str and p[0] == '?':
                 effects.add_runtime_effect(p)
+            elif params == "nil":
+                return
             else:
                 raise NotImplementedError("Effect {} of type {}".format(p, type(p)))
 
@@ -162,7 +164,7 @@ class JSHOPParser(Parser):
 
         assert len(params) == 4
         for p in params:
-            assert type(p) == list
+            assert type(p) == list or p == "nil"
 
         action_name = params[0][0]
         if len(params[0]) > 1:
@@ -470,7 +472,7 @@ class JSHOPParser(Parser):
             if sub_tasks is None:
                 sub_tasks = subT
             else:
-                sub_tasks.append(subT.tasks[0])
+                sub_tasks.tasks.append(subT.tasks[0])
         self.problem.add_subtasks(sub_tasks)
         self._requires_grounding.append(sub_tasks)
 
