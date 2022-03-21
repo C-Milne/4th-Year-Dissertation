@@ -59,7 +59,13 @@ class Solver:
             list_subT.append(subT)
             task_counter += 1
 
-        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem)
+        if len(list_subT) == 1:
+            waiting_subT = []
+        else:
+            waiting_subT = list_subT[1:]
+            list_subT = [list_subT[0]]
+
+        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem, waiting_subT)
 
         self.search_models.add(initial_model)
 
@@ -515,10 +521,14 @@ class Solver:
     def reproduce_model(self, model, search_mods=None):
         if search_mods is None:
             new_model = Model(State.reproduce(model.current_state),
-                  model.search_modifiers, self.problem)
+                  model.search_modifiers, self.problem, [])
         else:
             new_model = Model(State.reproduce(model.current_state),
-                              search_mods, self.problem)
+                              search_mods, self.problem, [])
+
+        i = 0
+        for i in model.waiting_subtasks:
+            new_model.waiting_subtasks.append(i)
 
         new_model.populate_actions_taken(Model.reproduce_actions_taken(model))
         new_model.populate_operations_taken(Model.reproduce_operations_list(model))

@@ -11,14 +11,17 @@ from Solver.action_tracker import ActionTracker
 
 
 class Model:
-    def __init__(self, state: State, search_modifiers: list[Subtasks.Subtask], problem=None):
+    def __init__(self, state: State, search_modifiers: list[Subtasks.Subtask], problem=None,
+                 waiting_subtasks: list[Subtasks.Subtask] = []):
         assert type(state) == State
         self.current_state = state
         assert type(search_modifiers) == list
         for m in search_modifiers:
-            assert type(m) == Subtasks.Subtask and (type(m.task) == Method or type(m.task) == Action or type(m.task) == Task)
+            assert type(m) == Subtasks.Subtask and (
+                        type(m.task) == Method or type(m.task) == Action or type(m.task) == Task)
         self.search_modifiers = search_modifiers
         self.problem = problem  # Problem object from internal rep
+        self.waiting_subtasks = waiting_subtasks
 
         self.actions_taken = []
         self.operations_taken = []
@@ -37,8 +40,8 @@ class Model:
 
     def insert_modifier(self, modifier, index=0):
         assert type(modifier) == Task or type(modifier) == Method or type(modifier) == Action or \
-            (type(modifier) == Subtasks.Subtask and type(modifier.task) == Action) or \
-            (type(modifier) == Subtasks.Subtask and type(modifier.task) == Task)
+               (type(modifier) == Subtasks.Subtask and type(modifier.task) == Action) or \
+               (type(modifier) == Subtasks.Subtask and type(modifier.task) == Task)
         self.search_modifiers.insert(index, modifier)
 
     def add_operation(self, mod, parameters_used):
@@ -53,6 +56,10 @@ class Model:
 
     def populate_operations_taken(self, v):
         self.operations_taken = v
+
+    def promote_waiting_subtask(self):
+        if len(self.search_modifiers) == 0 and len(self.waiting_subtasks) > 0:
+            self.search_modifiers.append(self.waiting_subtasks.pop(0))
 
     @staticmethod
     def reproduce_actions_taken(model):
