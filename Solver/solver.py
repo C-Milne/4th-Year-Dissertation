@@ -13,13 +13,14 @@ from Internal_Representation.state import State
 from Internal_Representation.Type import Type
 from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.effects import Effects
-"""Importing from sys modules"""
-Precondition = sys.modules['Internal_Representation.precondition'].Precondition
-ForallCondition = sys.modules['Internal_Representation.conditions'].ForallCondition
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
+from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
+"""Importing from sys modules"""
+Precondition = sys.modules['Internal_Representation.precondition'].Precondition
+ForallCondition = sys.modules['Internal_Representation.conditions'].ForallCondition
 
 
 class Solver:
@@ -30,7 +31,7 @@ class Solver:
         self.has_goal_conditions = self.problem.has_goal_conditions()
 
         self.search_models = SearchQueue()
-        heuristic = BreadthFirstOperations(self.domain, self.problem, self, self.search_models)
+        heuristic = BreadthFirstOperationsPruning(self.domain, self.problem, self, self.search_models)
         self.search_models.add_heuristic(heuristic)
 
     def set_heuristic(self, heuristic):
@@ -258,7 +259,7 @@ class Solver:
                 return_list.append(param_option)
         return return_list
 
-    def __compare_parameters(self, method: Method, parameters: dict[Object]):
+    def __compare_parameters(self, method: Method, parameters: dict):
         """ Compares if all the parameters required for a method are given
         :parameter  - method : Method
         :parameter  - parameters : {'?objective1': Object, '?mode': Object}
@@ -282,7 +283,7 @@ class Solver:
             return [True]
         return [False, missing_params]
 
-    def __find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict[Object] = {}):
+    def __find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict = {}):
         """Find parameters to satisfy a modifier
         :parameter model:
         :parameter requirements: {'type': Type/None, 'predicates': {}}
@@ -505,7 +506,7 @@ class Solver:
         return return_dict
 
     @staticmethod
-    def convert_param_dict_to_list(param_dict, parameters: list[RegParameter]):
+    def convert_param_dict_to_list(param_dict, parameters: list):
         return_list = []
         for i in parameters:
             return_list.append(param_dict[i.name])
@@ -517,6 +518,10 @@ class Solver:
         for p in param_list:
             new_list.append(p)
         return new_list
+
+    @staticmethod
+    def reproduce_state(state):
+        return State.reproduce(state)
 
     def reproduce_model(self, model, search_mods=None):
         if search_mods is None:

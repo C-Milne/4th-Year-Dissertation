@@ -23,7 +23,7 @@ class Subtasks:
         def get_name(self):
             return self.task.name
 
-        def add_given_parameters(self, params: dict[Object]):
+        def add_given_parameters(self, params: dict):
             assert type(params) == dict
             if not (len(params.keys()) == 1 and type(params[list(params.keys())[0]]) == ListParameter):
                 for i in params:

@@ -15,37 +15,38 @@ class Runner:
         self.domain = Domain(None)
         self.problem = Problem(self.domain)
         self.domain.add_problem(self.problem)
-
-        # Parse Domain
-        self.__check_file_exists(domain_path, "Domain")
-        self.__parse_domain(domain_path)
-
-        # Parse problem
-        self.__check_file_exists(problem_path, "Problem")
-        self.__parse_problem(problem_path)
-
-        # Solve
         self.solver = Solver(self.domain, self.problem)
-        search_result = self.solver.solve()
-        self.solver.output(search_result)
+        self.domain_path = domain_path
+        self.problem_path = problem_path
 
-    def __parse_domain(self, domain_path):
+    def parse_domain(self):
+        self.__check_file_exists(self.domain_path, "Domain")
         # Check for valid suffix
-        self.suffix = self.__get_suffix(domain_path)
+        self.suffix = self.__get_suffix(self.domain_path)
         if self.suffix == "hddl":
             self.parser = HDDLParser(self.domain, self.problem)
         elif self.suffix is None:
             self.parser = JSHOPParser(self.domain, self.problem)
         else:
             raise TypeError("Unknown descriptor type ({})".format(self.suffix))
-        self.parser.parse_domain(domain_path)
+        self.parser.parse_domain(self.domain_path)
 
-    def __parse_problem(self, problem_path):
-        suffix = self.__get_suffix(problem_path)
+    def parse_problem(self):
+        self.__check_file_exists(self.problem_path, "Problem")
+        suffix = self.__get_suffix(self.problem_path)
         if suffix == self.suffix:
-            self.parser.parse_problem(problem_path)
+            self.parser.parse_problem(self.problem_path)
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
+
+    def set_heuristic(self, heuristic):
+        self.solver.set_heuristic(heuristic)
+
+    def solve(self):
+        return self.solver.solve()
+
+    def output_result(self, search_result):
+        self.solver.output(search_result)
 
     @staticmethod
     def __check_file_exists(file_path, file_purpose=None):
@@ -66,7 +67,11 @@ class Runner:
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
-        Runner(sys.argv[1], sys.argv[2])
+        controller = Runner(sys.argv[1], sys.argv[2])
+        controller.parse_domain()
+        controller.parse_problem()
+        result = controller.solve()
+        controller.output_result(result)
     else:
         # Incorrect usage of program
         raise IOError("Expected 3 arguments, got {}.\nCorrect usage 'python runner.py <domain.suffix> <problem.suffix>'"

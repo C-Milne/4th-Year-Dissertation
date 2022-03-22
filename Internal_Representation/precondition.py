@@ -17,7 +17,7 @@ class Precondition:
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+    def add_predicate_condition(self, pred, parameter_names: list, parent: Condition):
         assert isinstance(parent, Condition) or parent is None
         con = PredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)
@@ -48,7 +48,7 @@ class Precondition:
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_goal_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+    def add_goal_predicate_condition(self, pred, parameter_names: list, parent: Condition):
         assert isinstance(parent, Condition) or parent is None
         con = GoalPredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)

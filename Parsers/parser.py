@@ -47,7 +47,7 @@ class Parser:
     def _parse_task(self, *args):
         raise NotImplementedError
 
-    def _parse_parameters(self, params) -> list[RegParameter]:
+    def _parse_parameters(self, params) -> list:
         def __add_t_param_list(t=None):
             for i in param_names:
                 param_list.append(RegParameter(i, t))

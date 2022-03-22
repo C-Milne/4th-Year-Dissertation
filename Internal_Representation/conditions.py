@@ -12,7 +12,7 @@ class Condition:
 
 
 class PredicateCondition(Condition):
-    def __init__(self, pred: Predicate, parameter_names: list[str]):
+    def __init__(self, pred: Predicate, parameter_names: list):
         super().__init__()
         try:
             assert isinstance(pred, Predicate)
@@ -33,7 +33,7 @@ class PredicateCondition(Condition):
 
 
 class GoalPredicateCondition(Condition):
-    def __init__(self, pred: Predicate, parameter_names: list[str]):
+    def __init__(self, pred: Predicate, parameter_names: list):
         super().__init__()
         assert type(pred) == Predicate
         self.pred = pred
@@ -109,7 +109,7 @@ class ForallCondition(Condition):
                 return False
         return True
 
-    def _collect_objects(self, param_dict, search_model, problem) -> list[Object]:
+    def _collect_objects(self, param_dict, search_model, problem) -> list:
         """TODO: Make this use parameter selection module when implemented"""
         if type(self.selector) == tuple and self.selector[0] == "type":
             return problem.get_objects_of_type(self.selector[1])

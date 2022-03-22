@@ -4,7 +4,7 @@ from Internal_Representation.precondition import Precondition
 
 
 class DerivedPredicate(Predicate):
-    def __init__(self, name: str, parameters: list[RegParameter] = None):
+    def __init__(self, name: str, parameters: list = None):
         super().__init__(name, parameters)
         self.conditions = []
         self.cond_requirements = []

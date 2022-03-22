@@ -119,7 +119,7 @@ class JSHOPParser(Parser):
     def _parse_type(self, *args):
         pass
 
-    def _log_predicate(self, pred_name: str, parameters: list[str]) -> Predicate:
+    def _log_predicate(self, pred_name: str, parameters: list) -> Predicate:
         assert type(pred_name) == str
         assert type(parameters) == list
         for p in parameters:
@@ -142,7 +142,7 @@ class JSHOPParser(Parser):
             return ob
         return res
 
-    def _parse_effects(self, params: list[list[str]], negated: bool, effects: Effects):
+    def _parse_effects(self, params: list, negated: bool, effects: Effects):
         """
         :param params: [['have', '?a'], [...], ...]
         :param negated: boolean
@@ -314,7 +314,7 @@ class JSHOPParser(Parser):
 
         self.domain.add_derived_predicate(derived_pred)
 
-    def _parse_parameters(self, params) -> list[RegParameter]:
+    def _parse_parameters(self, params) -> list:
         def __add_t_param_list(t=None):
             for i in param_names:
                 param_list.append(RegParameter(i, t))

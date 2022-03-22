@@ -11,8 +11,8 @@ from Solver.action_tracker import ActionTracker
 
 
 class Model:
-    def __init__(self, state: State, search_modifiers: list[Subtasks.Subtask], problem=None,
-                 waiting_subtasks: list[Subtasks.Subtask] = []):
+    def __init__(self, state: State, search_modifiers: list, problem=None,
+                 waiting_subtasks: list = []):
         assert type(state) == State
         self.current_state = state
         assert type(search_modifiers) == list

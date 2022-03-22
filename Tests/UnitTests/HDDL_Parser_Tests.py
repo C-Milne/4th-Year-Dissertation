@@ -26,22 +26,18 @@ class HDDLParsingTests(unittest.TestCase):
     def test_load_unknown_domain(self):
         # Test loading unknown domain file
         with self.assertRaises(FileNotFoundError) as error:
-            Runner("../Examples/WrongBasic/basic.hddl", self.basic_pb1_path)
+            cont = Runner("../Examples/WrongBasic/basic.hddl", self.basic_pb1_path)
+            cont.parse_domain()
         self.assertEqual("Domain file entered could not be found. ({})".format("../Examples/WrongBasic/basic.hddl"),
                          str(error.exception))
 
     def test_load_unknown_problem(self):
         # Test loading unknown problem file
         with self.assertRaises(FileNotFoundError) as error:
-            Runner(self.basic_domain_path, "../Examples/WrongBasic/pb1.hddl")
+            cont = Runner(self.basic_domain_path, "../Examples/WrongBasic/pb1.hddl")
+            cont.parse_domain()
+            cont.parse_problem()
         self.assertEqual("Problem file entered could not be found. ({})".format("../Examples/WrongBasic/pb1.hddl"),
-                         str(error.exception))
-
-    def test_load_unknown_domain_problem(self):
-        # Test loading unknown domain and problem files
-        with self.assertRaises(FileNotFoundError) as error:
-            Runner("../Examples/WrongBasic/basic.hddl", "../Examples/WrongBasic/pb1.hddl")
-        self.assertEqual("Domain file entered could not be found. ({})".format("../Examples/WrongBasic/basic.hddl"),
                          str(error.exception))
 
     def test_load_known_file(self):
@@ -70,7 +66,8 @@ class HDDLParsingTests(unittest.TestCase):
     def test_load_unknown_file_type(self):
         # Test loading a txt file
         with self.assertRaises(TypeError) as error:
-            Runner("TestTools/fakeDomain.txt", self.basic_pb1_path)
+            cont = Runner("TestTools/fakeDomain.txt", self.basic_pb1_path)
+            cont.parse_domain()
         self.assertEqual("Unknown descriptor type (txt)", str(error.exception))
 
         # # Load file with no suffix
@@ -93,7 +90,8 @@ class HDDLParsingTests(unittest.TestCase):
     def test_method_no_name(self):
         # Define method with no name
         with self.assertRaises(SyntaxError) as error:
-            Runner(self.test_tools_path + "basic/basic_domain_test_4.hddl", self.basic_pb1_path)
+            cont = Runner(self.test_tools_path + "basic/basic_domain_test_4.hddl", self.basic_pb1_path)
+            cont.parse_domain()
         self.assertEqual("Error with Method name. Must be a string not beginning with ':'."
                          "\nPlease check your domain file.",
                          str(error.exception).replace("\"", ""))
