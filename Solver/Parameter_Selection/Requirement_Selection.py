@@ -84,43 +84,7 @@ class RequirementSelection(ParameterSelector):
         if param_dict == {}:
             return False
         # Convert param_dict into a form which can be used - [[?a, ?b, ?c], [?a, ?b, ?d], ... ]
-        return self.__convert_parameter_options_execution_ready(param_dict, len(given_requirements.keys()))
-
-    def __convert_parameter_options_execution_ready(self, param_dict, num_params):
-        """The aim of this method is to return a list with all possible combinations of values from param_dict.
-        This method is called from self.__find_satisfying_parameters()
-        :parameter param_dict: {'?objective': Object, '?mode': Object, '?camera': [Object], '?rover': [Object],
-        '?waypoint': [Object, Object, Object, Object]}
-        :return: list of dictionaries containing all possible combinations
-        """
-        combinations = []
-
-        def __create_combinations(remaining_params, selected_params={}):
-            if remaining_params == {}:
-                combinations.append(selected_params)
-                return
-            k = list(remaining_params.keys())[0]
-            popped = remaining_params.pop(k)
-            for po in popped:
-                __create_combinations(self.solver.reproduce_dict(remaining_params), Model.merge_dictionaries(selected_params, {k: po}))
-
-        # Check input format
-        for p in param_dict:
-            q = param_dict[p]
-            if type(q) == Object:
-                param_dict[p] = [q]
-            elif type(q) == list:
-                for i in q:
-                    assert type(i) == Object
-            else:
-                raise TypeError("Unknown type {}".format(type(q)))
-        # Create combinations
-        __create_combinations(self.solver.reproduce_dict(param_dict))
-        return_list = []
-        for i in combinations:
-            if len(i) == num_params:
-                return_list.append(i)
-        return return_list
+        return self._convert_parameter_options_execution_ready(param_dict, len(given_requirements.keys()))
 
     def __check_object_satisfies_parameter(self, model: Model, object: Object, requirements: dict):
         """

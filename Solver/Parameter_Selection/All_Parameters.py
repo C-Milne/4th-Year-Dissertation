@@ -10,9 +10,30 @@ Object = sys.modules["Internal_Representation.Object"].Object
 ListParameter = sys.modules["Internal_Representation.list_parameter"].ListParameter
 Type = sys.modules["Internal_Representation.Type"].Type
 
+
 class AllParameters(ParameterSelector):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, solver):
+        super().__init__(solver)
 
     def get_potential_parameters(self, modifier: Modifier, parameters: dict, search_model: Model) -> list:
-        raise NotImplementedError
+        parameters_to_select = [x for x in modifier.parameters if x.name not in parameters]
+        parameter_options = self.solver.reproduce_dict(parameters)
+
+        for p in parameters_to_select:
+            # For each parameter that needs to be selected
+            # Get the required type
+            # Get all objects of that type
+            if p.name not in parameter_options:
+                parameter_options[p.name] = []
+            if p.type is not None:
+                for x in self.solver.problem.objects:
+                    x = self.solver.problem.objects[x]
+                    if x.type == p.type:
+                        parameter_options[p.name].append(x)
+            else:
+                for x in self.solver.problem.objects:
+                    x = self.solver.problem.objects[x]
+                    parameter_options[p.name].append(x)
+
+        # Return all combinations
+        return self._convert_parameter_options_execution_ready(parameter_options, len(modifier.parameters))

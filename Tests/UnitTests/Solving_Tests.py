@@ -12,9 +12,10 @@ from Internal_Representation.state import State
 from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
-from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
+from Tests.UnitTests.TestTools.rover_execution import execution_prep
 
 
 class SolvingTests(unittest.TestCase):
@@ -22,7 +23,6 @@ class SolvingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.basic_domain_path = "../Examples/Basic/basic.hddl"
         self.basic_pb1_path = "../Examples/Basic/pb1.hddl"
-        self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
@@ -181,7 +181,7 @@ class SolvingTests(unittest.TestCase):
                           'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [45]},
                          model.current_state._index)
 
-    def test_basic_execution(self):
+    def test_basic_execution_step_through(self):
         domain = Domain(None)
         problem = Problem(domain)
         domain.add_problem(problem)
@@ -260,6 +260,23 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(domain.predicates['have'], model.current_state.elements[0].predicate)
         self.assertEqual(1, len(model.current_state.elements[0].objects))
         self.assertEqual(problem.objects['banjo'], model.current_state.elements[0].objects[0])
+
+    def test_basic_execution(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
+        execution_prep(problem, solver)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+        self.assertEqual(ActionTracker(domain.tasks['swap'], {'?x': problem.objects['banjo'],
+                                                              '?y': problem.objects['kiwi']}), res.operations_taken[0])
+        self.assertEqual(ActionTracker(domain.methods['have_second'], {'?x': problem.objects['banjo'],
+                                                                        '?y': problem.objects['kiwi']}),
+                         res.operations_taken[1])
+        self.assertEqual(ActionTracker(domain.actions['drop'], {'?a': problem.objects['kiwi']}),
+                         res.operations_taken[2])
+        self.assertEqual(ActionTracker(domain.actions['pickup'], {'?a': problem.objects['banjo']}),
+                         res.operations_taken[3])
 
     def test_compare_parameters(self):
         domain, problem, solver = RovEx.setup()
