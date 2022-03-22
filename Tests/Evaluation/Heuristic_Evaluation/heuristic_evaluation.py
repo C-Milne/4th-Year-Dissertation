@@ -93,14 +93,14 @@ def run_tests(tests, strats):
 
 
 """Test Rover p01 -> p03 with breadth first search with and without pruning"""
-tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
-("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
-("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
-
-strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
-Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-
-run_tests(tests, strats)
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
+# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
+# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
+# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+#
+# run_tests(tests, strats)
 
 """Test Rover p04 with breadth first search and pruning"""
 # tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
