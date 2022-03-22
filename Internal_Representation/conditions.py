@@ -110,7 +110,6 @@ class ForallCondition(Condition):
         return True
 
     def _collect_objects(self, param_dict, search_model, problem) -> list:
-        """TODO: Make this use parameter selection module when implemented"""
         if type(self.selector) == tuple and self.selector[0] == "type":
             return problem.get_objects_of_type(self.selector[1])
         elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):
