@@ -1,6 +1,7 @@
 import re
 import sys
-from Solver.Parameter_Selection.ParameterSelector import ParameterSelector, Modifier, Model
+from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
+from Internal_Representation.requirements import Requirements
 """Import already imported modules from sys.modules"""
 Modifier = sys.modules["Internal_Representation.modifier"].Modifier
 Method = sys.modules["Internal_Representation.method"].Method
@@ -10,6 +11,7 @@ Model = sys.modules["Solver.model"].Model
 Object = sys.modules["Internal_Representation.Object"].Object
 ListParameter = sys.modules["Internal_Representation.list_parameter"].ListParameter
 Type = sys.modules["Internal_Representation.Type"].Type
+RegParameter = sys.modules['Internal_Representation.reg_parameter'].RegParameter
 
 
 class RequirementSelection(ParameterSelector):
@@ -147,3 +149,25 @@ class RequirementSelection(ParameterSelector):
                     except:
                         raise TypeError
                 return False
+
+    def presolving_processing(self, domain, problem):
+        # Define requirements for each method and action
+        for m in domain.get_all_methods():
+            self._prepare_requirements(m)
+
+        for a in domain.get_all_actions():
+            self._prepare_requirements(a)
+
+    def _prepare_requirements(self, mod):
+        req = Requirements(mod.parameters, mod.preconditions)
+        mod.requirements = req.prepare_requirements()
+        self._compare_requirements_parameters(mod)
+
+    def _compare_requirements_parameters(self, mod):
+        """Check that all the parameters listed in the requirements are present in the parameters list.
+        If any are missing; add them"""
+        for p in mod.requirements:
+            if p.startswith('forall'):
+                continue
+            if p not in [x.name for x in mod.parameters]:
+                mod.add_parameter(RegParameter(p, mod.requirements[p]['type']))

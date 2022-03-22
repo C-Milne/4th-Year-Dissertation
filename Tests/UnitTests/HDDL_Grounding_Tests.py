@@ -113,6 +113,8 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_2.hddl")
+        solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
         self.assertEqual(2, len(domain.methods['pickup-ready-block'].requirements))
@@ -289,6 +291,8 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain2.hddl")
+        solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Check action requirements
         self.assertEqual(domain.types['rover'], domain.actions['take_image'].requirements['?r']['type'])

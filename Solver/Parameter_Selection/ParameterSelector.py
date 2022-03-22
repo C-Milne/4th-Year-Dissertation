@@ -23,6 +23,9 @@ class ParameterSelector:
         """
         raise NotImplementedError
 
+    def presolving_processing(self, domain, problem):
+        pass
+
     def compare_parameters(self, method: Method, parameters: dict):
         """ Compares if all the parameters required for a method are given
         :parameter  - method : Method

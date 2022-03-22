@@ -297,6 +297,7 @@ class SolvingTests(unittest.TestCase):
         domain, problem, solver = RovEx.setup()
         solver.set_parameter_selector(RequirementSelection)
         RovEx.execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
         found_params = solver.parameter_selector._RequirementSelection__find_satisfying_parameters(model,
@@ -327,6 +328,7 @@ class SolvingTests(unittest.TestCase):
     def test_rover_execution_1(self):
         domain, problem, solver = RovEx.setup()
         RovEx.execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
         solver._Solver__search(True)
         # Check searchModels has 4 search nodes each with a different ?waypoint parameter
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
@@ -381,6 +383,7 @@ class SolvingTests(unittest.TestCase):
 
         # Initialise solver
         solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Create initial model
         solver.search_models.clear()

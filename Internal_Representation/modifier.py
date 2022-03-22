@@ -18,20 +18,7 @@ class Modifier:
         self.parameters = parameters
         assert type(preconditions) == Precondition or preconditions is None
         self.preconditions = preconditions
-
-    def _prepare_requirements(self):
-        req = Requirements(self.parameters, self.preconditions)
-        self.requirements = req.prepare_requirements()
-        self._compare_requirements_parameters()
-
-    def _compare_requirements_parameters(self):
-        """Check that all the parameters listed in the requirements are present in the parameters list.
-        If any are missing; add them"""
-        for p in self.requirements:
-            if p.startswith('forall'):
-                continue
-            if p not in [x.name for x in self.parameters]:
-                self.add_parameter(RegParameter(p, self.requirements[p]['type']))
+        self.requirements = None
 
     def add_parameter(self, parameter):
         self.parameters.append(parameter)

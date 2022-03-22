@@ -9,4 +9,3 @@ class Action(Modifier):
         self.effects = effects
 
         self.requirements = {}
-        super(Action, self)._prepare_requirements()

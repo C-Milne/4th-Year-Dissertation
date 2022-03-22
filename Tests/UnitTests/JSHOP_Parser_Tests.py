@@ -144,6 +144,7 @@ class JSHOPParsingTests(unittest.TestCase):
         # preconditions/effects are found
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.forall_path + "forall")
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         method = domain.methods['method0']
         self.assertIn('?x', [p.name for p in method.parameters])

@@ -21,7 +21,6 @@ class Method(Modifier):
         self.constraints = constraints
 
         self.requirements = {}
-        super(Method, self)._prepare_requirements()
 
     def evaluate_preconditions(self, model, param_dict, problem):
         """:params  - model : proposed model

@@ -52,6 +52,7 @@ class Solver:
         self.parameter_selector = selector
 
     def solve(self):
+        self.parameter_selector.presolving_processing(self.domain, self.problem)
         task_counter = 0
         subtasks = self.problem.subtasks.get_tasks()
         list_subT = []
