@@ -38,8 +38,30 @@ def create_file(strat):
 
 def save_to_file(test_name, strat, time, result):
     print("Writing: {}".format(time))
-    strat.file.write("\n" + test_name + "," + str(time) + "," + str(pickle.dumps(result.actions_taken)) + "," +
-                     str(pickle.dumps(result.current_state)))
+    # Pickle actions taken and state. Save them in the /serialised_objects folder
+    pickle_test_name = test_name.replace("/", "_") + "_" + strat.name
+    actions_taken_pickle_file = save_pickle_object(result.actions_taken, pickle_test_name + "_" + "actions")
+    state_pickle_file = save_pickle_object(result.current_state, pickle_test_name + "_" + "state")
+    strat.file.write("\n" + test_name + "," + str(time) + "," + actions_taken_pickle_file + "," +
+                     state_pickle_file)
+
+
+def save_pickle_object(object, file_name) -> str:
+    file_name = file_name.replace(".", "")
+    # Find a suitable file name
+    f_name = "serialised_objects\\" + file_name + ".pickle"
+    counter = 0
+    while os.path.exists(f_name):
+        counter += 1
+        f_name = "serialised_objects\\" + file_name + str(counter) + ".pickle"
+
+    # Save pickle file
+    file = open(f_name, "wb")
+    file.write(pickle.dumps(object))
+    file.close()
+
+    # Return file name
+    return f_name
 
 
 def test_runner(test, heuristic):
@@ -71,14 +93,14 @@ def run_tests(tests, strats):
 
 
 """Test Rover p01 -> p03 with breadth first search with and without pruning"""
-# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
+tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
+("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
+("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
 
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
-# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
+Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
 
-# run_tests(tests, strats)
+run_tests(tests, strats)
 
 """Test Rover p04 with breadth first search and pruning"""
 # tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
