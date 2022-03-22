@@ -14,6 +14,7 @@ from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
 from Tests.UnitTests.TestTools.env_setup import env_setup
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -381,6 +382,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
     def test_constraint_evaluation(self):
         domain, problem, parser, solver = env_setup(True)
+        solver.set_parameter_selector(RequirementSelection)
         parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
         parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
 
@@ -408,17 +410,17 @@ class HDDLGroundingTests(unittest.TestCase):
 
         # Check that type 'regular_package' satisfies both 'package' and 'regular'
         reg_pack_ob = Object('test_package', domain.types['regular_package'])
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], reg_pack_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], reg_pack_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['package'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
 
         # Check a child of regular_package also satisfies them both
         food_ob = Object('test_food', domain.types['food'])
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], food_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], food_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['food'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['package'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['food'], food_ob))
 
         # Test for false
-        self.assertEqual(False, solver.check_satisfies_type(domain.types['airport'], reg_pack_ob))
+        self.assertEqual(False, solver.parameter_selector.check_satisfies_type(domain.types['airport'], reg_pack_ob))
 
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()

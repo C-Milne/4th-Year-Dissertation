@@ -18,6 +18,10 @@ from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
+"""Space for importing parameter selection functions"""
+from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
+from Solver.Parameter_Selection.All_Parameters import AllParameters
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 """Importing from sys modules"""
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 ForallCondition = sys.modules['Internal_Representation.conditions'].ForallCondition
@@ -33,12 +37,19 @@ class Solver:
         self.search_models = SearchQueue()
         heuristic = BreadthFirstOperationsPruning(self.domain, self.problem, self, self.search_models)
         self.search_models.add_heuristic(heuristic)
+        self.parameter_selector = RequirementSelection(self)
 
     def set_heuristic(self, heuristic):
         if type(heuristic) == type:
             heuristic = heuristic(self.domain, self.problem, self, self.search_models)
         assert isinstance(heuristic, Heuristic)
         self.search_models.add_heuristic(heuristic)
+
+    def set_parameter_selector(self, selector):
+        if type(selector) == type:
+            selector = selector(self)
+        assert isinstance(selector, ParameterSelector)
+        self.parameter_selector = selector
 
     def solve(self):
         task_counter = 0
@@ -121,7 +132,7 @@ class Solver:
                     parameters[method.task['params'][i].name] = subtask.given_params[k]
                     i += 1
 
-                param_options = self._get_potential_parameters(method, parameters, search_model)
+                param_options = self.parameter_selector.get_potential_parameters(method, parameters, search_model)
 
                 for param_option in param_options:
                     subT = Subtasks.Subtask(method, method.parameters)
@@ -175,9 +186,8 @@ class Solver:
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
 
-
         # Check if all the required parameters are given
-        comparison_result = self.__compare_parameters(subtask.task, subtask.given_params)
+        comparison_result = self.parameter_selector.compare_parameters(subtask.task, subtask.given_params)
 
         assert comparison_result[0] == True
 
@@ -231,213 +241,6 @@ class Solver:
 
         search_model.add_operation(subtask.task, subtask.given_params)
         self.search_models.add(search_model)
-
-    def _get_potential_parameters(self, modifier, parameters, search_model):
-        comparison_result = self.__compare_parameters(modifier, parameters)
-
-        if not comparison_result[0] and not comparison_result[1]:
-            return []
-        elif not comparison_result[0]:
-            found_params = self.__find_satisfying_parameters(search_model, modifier.requirements, parameters)
-            if found_params is False:
-                found_params = []
-        else:
-            found_params = [parameters]
-
-        return_list = []
-        for param_option in found_params:
-            # Check preconditions of new_model
-            result = None
-            for k in modifier.parameters:
-                if not k.name in param_option:
-                    result = False
-
-            if result is None:
-                result = modifier.evaluate_preconditions(search_model, param_option, self.problem)
-
-            if result:
-                return_list.append(param_option)
-        return return_list
-
-    def __compare_parameters(self, method: Method, parameters: dict):
-        """ Compares if all the parameters required for a method are given
-        :parameter  - method : Method
-        :parameter  - parameters : {'?objective1': Object, '?mode': Object}
-        :returns    - [True] : if parameters match what is required by method
-        :returns    - [False, missing_params] : otherwise. missing_params = ["name1", "name2" ... ]
-        """
-        assert type(method) == Method or type(method) == Action or type(method) == Task
-        assert type(parameters) == dict
-        for p in parameters:
-            assert type(parameters[p]) == Object or type(parameters[p]) == ListParameter
-
-        missing_params = []
-        for p in method.parameters:
-            # Check if a parameter corresponding to p is in parameters dictionary
-            if not p.name in parameters:
-                missing_params.append(p.name)
-                continue
-            if not self.check_satisfies_type(p.type, parameters[p.name]):
-                return [False, False]
-        if len(missing_params) == 0:
-            return [True]
-        return [False, missing_params]
-
-    def __find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict = {}):
-        """Find parameters to satisfy a modifier
-        :parameter model:
-        :parameter requirements: {'type': Type/None, 'predicates': {}}
-        :parameter param_dict:    : parameters already set - {'?objective': Object, '?mode': Object}
-        :return: list of possible combinations of parameters
-        """
-        assert type(model) == Model and type(given_requirements) == dict and type(param_dict) == dict
-        for required_param_name in given_requirements:
-            if required_param_name.startswith('forall-'):
-                inner = given_requirements[required_param_name]
-                k = list(inner.keys())[0]
-                inner[k] = 1
-                requirements = {'type': None, 'predicates': inner}
-
-                inds = [m.start() for m in re.finditer('-', required_param_name)]
-                required_param_name = required_param_name[inds[0]+1:inds[-1]]
-
-                for i in self.problem.objects:
-                    i = self.problem.objects[i]
-                    match = self.__check_object_satisfies_parameter(model, i, requirements)
-                    if match:
-                        if required_param_name not in param_dict.keys():
-                            param_dict[required_param_name] = [i]
-                        else:
-                            param_dict[required_param_name].append(i)
-            elif required_param_name in param_dict:
-                continue
-            else:
-                requirements = given_requirements[required_param_name]
-                for i in self.problem.objects:
-                    i = self.problem.objects[i]
-                    match = self.__check_object_satisfies_parameter(model, i, requirements)
-                    if match:
-                        if required_param_name not in param_dict.keys():
-                            param_dict[required_param_name] = [i]
-                        else:
-                            param_dict[required_param_name].append(i)
-        if param_dict == {}:
-            return False
-        # Convert param_dict into a form which can be used - [[?a, ?b, ?c], [?a, ?b, ?d], ... ]
-        return self.__convert_parameter_options_execution_ready(param_dict, len(given_requirements.keys()))
-
-    def check_satisfies_type(self, required_type: Type, object_to_check: Object):
-        def __check_type(req_t, t):
-            if t == req_t:
-                return True
-            for i in t.parents:
-                if __check_type(req_t, i):
-                    return True
-            return False
-
-        if required_type is None:
-            return True
-        ob_t = object_to_check.type
-        res = __check_type(required_type, ob_t)
-        return res
-
-    def __check_object_satisfies_parameter(self, model: Model, object: Object, requirements: dict):
-        """
-        :param model:
-        :param object:
-        :param requirements: {'type': Type, 'predicates': {'and': {'on_board': 1, 'supports': 1}}
-        :return: True - If object satisfies the requirements
-        :return: False - Otherwise
-        """
-        required_type = requirements['type']
-        required_predicates = requirements['predicates']
-
-        # Check type
-        if not self.check_satisfies_type(required_type, object):
-            return False
-
-        # If there is no requirements on predicates then the object satisfies
-        if required_predicates is None or len(required_predicates) == 0:
-            return True
-
-        # Check if each predicate is satisfied
-        for pred in required_predicates:
-            if pred == "and" or pred == "not" or pred == "or":
-                required_param = required_predicates[pred]
-                result = []
-                for x in required_param.keys():
-                    r = self.__check_object_satisfies_parameter(model, object,
-                                                                {'type': None, 'predicates': {x: required_param[x]}})
-                    if type(r) == list:
-                        result += r
-                    else:
-                        result.append(r)
-                if pred == "and":
-                    for i in result:
-                        if i is False:
-                            return False
-                    return True
-                elif pred == "not":
-                    i = 0
-                    while i < len(result):
-                        result[i] = not result[i]
-                        i += 1
-                    return result
-                else:
-                    # pred == or
-                    for i in result:
-                        if i is True:
-                            return True
-                    return False
-            else:
-                indexes = model.current_state.get_indexes(pred)
-                if indexes is None:
-                    return False
-                for index in indexes:
-                    try:
-                        if object == model.current_state.elements[index].objects[required_predicates[pred] - 1]:
-                            return True
-                    except IndexError:
-                        continue
-                    except:
-                        raise TypeError
-                return False
-
-    def __convert_parameter_options_execution_ready(self, param_dict, num_params):
-        """The aim of this method is to return a list with all possible combinations of values from param_dict.
-        This method is called from self.__find_satisfying_parameters()
-        :parameter param_dict: {'?objective': Object, '?mode': Object, '?camera': [Object], '?rover': [Object],
-        '?waypoint': [Object, Object, Object, Object]}
-        :return: list of dictionaries containing all possible combinations
-        """
-        combinations = []
-
-        def __create_combinations(remaining_params, selected_params={}):
-            if remaining_params == {}:
-                combinations.append(selected_params)
-                return
-            k = list(remaining_params.keys())[0]
-            popped = remaining_params.pop(k)
-            for po in popped:
-                __create_combinations(self.reproduce_dict(remaining_params), Model.merge_dictionaries(selected_params, {k: po}))
-
-        # Check input format
-        for p in param_dict:
-            q = param_dict[p]
-            if type(q) == Object:
-                param_dict[p] = [q]
-            elif type(q) == list:
-                for i in q:
-                    assert type(i) == Object
-            else:
-                raise TypeError("Unknown type {}".format(type(q)))
-        # Create combinations
-        __create_combinations(self.reproduce_dict(param_dict))
-        return_list = []
-        for i in combinations:
-            if len(i) == num_params:
-                return_list.append(i)
-        return return_list
 
     def __generate_param_dict(self, modifier, params):
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task

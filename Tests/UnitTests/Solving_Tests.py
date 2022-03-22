@@ -14,6 +14,7 @@ from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 
 
 class SolvingTests(unittest.TestCase):
@@ -262,10 +263,12 @@ class SolvingTests(unittest.TestCase):
 
     def test_compare_parameters(self):
         domain, problem, solver = RovEx.setup()
+        solver.set_parameter_selector(RequirementSelection)
         RovEx.execution_prep(problem, solver)
         model = solver.search_models._SearchQueue__Q[0]
 
-        response = solver._Solver__compare_parameters(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].given_params)
+        response = solver.parameter_selector.compare_parameters(domain.methods['m_get_image_data_ordering_0'],
+                                                                model.search_modifiers[0].given_params)
         self.assertEqual(list, type(response))
         self.assertEqual(2, len(response))
         self.assertEqual(bool, type(response[0]))
@@ -275,10 +278,12 @@ class SolvingTests(unittest.TestCase):
 
     def test_finding_parameters(self):
         domain, problem, solver = RovEx.setup()
+        solver.set_parameter_selector(RequirementSelection)
         RovEx.execution_prep(problem, solver)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver._Solver__find_satisfying_parameters(model, method.requirements, model.search_modifiers[0].given_params)
+        found_params = solver.parameter_selector._RequirementSelection__find_satisfying_parameters(model,
+                                                    method.requirements, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:
             self.assertEqual(problem.objects['objective1'], combo['?objective'])
