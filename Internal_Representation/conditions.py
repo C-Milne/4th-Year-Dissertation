@@ -5,7 +5,7 @@ from Internal_Representation.Object import Object
 
 class Condition:
     def __init__(self):
-        pass
+        parent = None
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         raise NotImplementedError
@@ -83,7 +83,10 @@ class OperatorCondition(Condition):
                     return True
             return False
         elif self.operator == "not":
-            assert len(children_eval) == 1 and type(children_eval[0]) == bool
+            try:
+                assert len(children_eval) == 1 and type(children_eval[0]) == bool
+            except:
+                raise TypeError
             return not children_eval[0]
         elif self.operator == "=":
             v = children_eval[0]

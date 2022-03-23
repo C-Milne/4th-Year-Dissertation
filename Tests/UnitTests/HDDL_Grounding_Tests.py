@@ -26,34 +26,8 @@ class HDDLGroundingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
         self.IPC_Tests_path = "../Examples/IPC_Tests/"
-
-    # def test_blocksworld_pb1_initial_state(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     # Test preconditions
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.blocksworld_path + "domain.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     solver = Solver(domain, problem)
-    #     model = Model(solver.problem, solver, solver._available_modifiers)
-    #
-    #     # Check all values are correct before execution of action
-    #     blocksworld_pb1_initial_state = ['hand-empty', ['clear', 'b3'],
-    #                                      ['on-table', 'b2'], ['on', 'b3', 'b5'], ['on', 'b5', 'b4'],
-    #                                      ['on', 'b4', 'b2'],
-    #                                      ['clear', 'b1'], ['on-table', 'b1'], ['goal_clear', 'b2'],
-    #                                      ['goal_on-table', 'b4'],
-    #                                      ['goal_on', 'b2', 'b5'], ['goal_on', 'b5', 'b4'], ['goal_clear', 'b1'],
-    #                                      ['goal_on-table', 'b3'], ['goal_on', 'b1', 'b3']]
-    #     blocksworld_pb1_initial_state_index = {'hand-empty': [0], 'clear': [1, 6], 'goal_clear': [8, 12],
-    #                                            'goal_on': [10, 11, 14], 'goal_on-table': [9, 13],
-    #                                            'on': [3, 4, 5], 'on-table': [2, 7]}
-    #     self.assertEqual(blocksworld_pb1_initial_state, model.current_state.elements)
-    #     self.assertEqual(blocksworld_pb1_initial_state_index, model.current_state._index)
 
     def test_precondition_complex(self):
         domain, problem, parser, solver = env_setup(True)
@@ -283,6 +257,14 @@ class HDDLGroundingTests(unittest.TestCase):
         model = Model(state, [])
         result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
+
+    @unittest.skip
+    def test_upgraded_precondition(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        method = domain.methods['m9_send_soil_data']
+        # ['and', ['at_lander', '?l', '?w1'], ['visible', '?from', '?w1'], ['at', '?x', '?from']] - Initial preconditions
+        self.assertEqual(1, 2)
 
     def test_action_requirements(self):
         domain = Domain(None)

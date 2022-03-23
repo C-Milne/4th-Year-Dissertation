@@ -8,6 +8,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
+from Internal_Representation.conditions import OperatorCondition, PredicateCondition
 from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
@@ -888,6 +889,38 @@ class HDDLParsingTests(unittest.TestCase):
 
         op2 = op.children[1]
         self.assertEqual("?turn_to_instance_2_argument_2", op2.variable_name)
+
+    def test_upgraded_precondition_parsing(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+
+        method = domain.methods['m4_do_navigate2']
+        precond = method.preconditions
+        given_precond = precond.conditions_given_params
+
+        self.assertEqual(2, len(precond.head.children))
+        self.assertEqual(OperatorCondition, type(precond.head.children[0]))
+        self.assertEqual("not", precond.head.children[0].operator)
+        self.assertEqual(1, len(precond.head.children[0].children))
+        self.assertEqual(domain.predicates['visited'], precond.head.children[0].children[0].pred)
+        self.assertEqual(['?mid'], precond.head.children[0].children[0].parameter_name)
+
+        self.assertEqual(PredicateCondition, type(precond.head.children[1]))
+        self.assertEqual(domain.predicates['can_traverse'], precond.head.children[1].pred)
+        self.assertEqual(['?x', '?from', '?mid'], precond.head.children[1].parameter_name)
+
+        self.assertEqual(1, len(given_precond.head.children))
+        self.assertEqual(OperatorCondition, type(given_precond.head.children[0]))
+        self.assertEqual("not", given_precond.head.children[0].operator)
+        self.assertEqual(1, len(given_precond.head.children[0].children))
+        self.assertEqual(PredicateCondition, type(given_precond.head.children[0].children[0]))
+        self.assertEqual(domain.predicates['can_traverse'], given_precond.head.children[0].children[0].pred)
+        self.assertEqual(['?x', '?from', '?to'], given_precond.head.children[0].children[0].parameter_name)
 
     # def test_parsing_goal_state(self):
     #     domain = Domain(None)

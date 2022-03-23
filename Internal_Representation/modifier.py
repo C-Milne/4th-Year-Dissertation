@@ -26,6 +26,13 @@ class Modifier:
     def get_parameters(self):
         return self.parameters
 
+    def add_precondtions(self, precons: Precondition):
+        assert type(precons) == Precondition or precons is None
+        if self.preconditions is None:
+            self.preconditions = precons
+        else:
+            raise TypeError("Preconditions are already set for this modifier")
+
     def get_number_parameters(self):
         return len(self.parameters)
 

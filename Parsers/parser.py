@@ -65,7 +65,7 @@ class Parser:
             elif p == "-":
                 param_type_name = params[i + 1]
                 param_type = self.domain.get_type(param_type_name)
-                if param_type is None or params == False:
+                if param_type is None or params == False or param_type == False:
                     raise TypeError("Invalid type {}".format(param_type_name))
                 __add_t_param_list(param_type)
                 param_names = []
