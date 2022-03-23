@@ -276,8 +276,10 @@ class HDDLParser(Parser):
                                         constraints.add_given_params_predicate_condition(pred, pred_parameters,
                                                                                          operator_parent)
                                         parent = parent.parent
+                                    else:
+                                        constraints.add_given_params_predicate_condition(pred, pred_parameters, parent)
                                 else:
-                                    constraints.add_given_params_predicate_condition(pred, pred_parameters, parent)
+                                    constraints.add_predicate_condition(pred, pred_parameters, parent)
                             i = l
                         elif len(parameters) == 1 and type(p) == str:
                             constraints.add_predicate_condition(self.domain.get_predicate(p), [], parent)
