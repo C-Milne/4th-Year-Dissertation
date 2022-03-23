@@ -133,6 +133,10 @@ class Solver:
                     parameters[method.task['params'][i].name] = subtask.given_params[k]
                     i += 1
 
+                # Check if the given parameters satisfy preconditions that only use the given parameters
+                if not method.evaluate_preconditions_conditions_given_params(parameters, search_model, self.problem):
+                    continue
+
                 param_options = self.parameter_selector.get_potential_parameters(method, parameters, search_model)
 
                 for param_option in param_options:

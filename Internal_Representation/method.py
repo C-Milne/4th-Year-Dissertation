@@ -36,6 +36,11 @@ class Method(Modifier):
             result = self._evaluate_constraints(param_dict, model, problem)
         return result
 
+    def evaluate_preconditions_conditions_given_params(self, param_dict, search_model, problem):
+        if self.preconditions is None:
+            return True
+        return self.preconditions.evaluate_given_params_conditions(param_dict, search_model, problem)
+
     def _evaluate_constraints(self, param_dict: dict, model, problem):
         """:parameter param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}."""
         if self.constraints is None:
