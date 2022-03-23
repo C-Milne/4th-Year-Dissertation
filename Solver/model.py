@@ -11,6 +11,9 @@ from Solver.action_tracker import ActionTracker
 
 
 class Model:
+
+    model_counter = 0
+
     def __init__(self, state: State, search_modifiers: list, problem=None,
                  waiting_subtasks: list = []):
         assert type(state) == State
@@ -26,6 +29,7 @@ class Model:
         self.actions_taken = []
         self.operations_taken = []
         self.ranking = None
+        Model.model_counter += 1
 
     def set_ranking(self, ranking):
         assert type(ranking) == float or type(ranking) == int

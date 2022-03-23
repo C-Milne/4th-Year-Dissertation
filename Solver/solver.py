@@ -361,7 +361,9 @@ class Solver:
             for a in resulting_model.operations_taken:
                 print(a)
 
-            print("\nFinal State:")
-            print(resulting_model.current_state)
+            # print("\nFinal State:")
+            # print(resulting_model.current_state)
+
+            print("\nSearch Models Created During Search: {}".format(Model.model_counter))
         else:
             print("plan not found")
