@@ -9,6 +9,7 @@ os.chdir("../../..")
 sys.path.append(os.getcwd())
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
+from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
 from runner import Runner
 os.chdir(working_dir)
 
@@ -151,3 +152,40 @@ def run_tests(tests, strats):
 """Test rover with all parameter selection and requirement parameter selection"""
 
 """Test some depot examples"""
+
+"""Test rover with distance to goal heuristic -> DONE"""
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
+# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
+# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
+#
+# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+#
+# run_tests(tests, strats)
+
+"""Test rover p4 with distance to goal -> DONE"""
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
+#
+# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+#
+# run_tests(tests, strats)
+
+"""Test rover p5 with distance to goal -> DONE"""
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p05.hddl")]
+#
+# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+#
+# run_tests(tests, strats)
+
+"""Test rover p6 with distance to goal -> DONE"""
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p06.hddl")]
+#
+# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+#
+# run_tests(tests, strats)
+
+"""Test rover p7 with distance to goal -> DONE"""
+# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p07.hddl")]
+#
+# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+#
+# run_tests(tests, strats)
