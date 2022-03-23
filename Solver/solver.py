@@ -38,6 +38,7 @@ class Solver:
         heuristic = BreadthFirstOperationsPruning(self.domain, self.problem, self, self.search_models)
         self.search_models.add_heuristic(heuristic)
         self.parameter_selector = RequirementSelection(self)
+        self.task_expansion_given_param_check = True
 
     def set_heuristic(self, heuristic):
         if type(heuristic) == type:
@@ -114,6 +115,7 @@ class Solver:
                 for m in self.search_models.get_completed_models():
                     eval = self.problem.evaluate_goal(m)
                     if eval is None or eval == True:
+                        m.num_models_used = Model.model_counter
                         return m
                 self.search_models.clear_completed_models()
 
@@ -134,7 +136,7 @@ class Solver:
                     i += 1
 
                 # Check if the given parameters satisfy preconditions that only use the given parameters
-                if not method.evaluate_preconditions_conditions_given_params(parameters, search_model, self.problem):
+                if self.task_expansion_given_param_check and not method.evaluate_preconditions_conditions_given_params(parameters, search_model, self.problem):
                     continue
 
                 param_options = self.parameter_selector.get_potential_parameters(method, parameters, search_model)

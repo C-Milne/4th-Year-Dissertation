@@ -42,6 +42,9 @@ class Runner:
     def set_heuristic(self, heuristic):
         self.solver.set_heuristic(heuristic)
 
+    def set_early_task_precon_checker(self, v: bool):
+        self.solver.task_expansion_given_param_check = v
+
     def solve(self):
         return self.solver.solve()
 

@@ -29,6 +29,7 @@ class Model:
         self.actions_taken = []
         self.operations_taken = []
         self.ranking = None
+        self.num_models_used = None
         Model.model_counter += 1
 
     def set_ranking(self, ranking):
