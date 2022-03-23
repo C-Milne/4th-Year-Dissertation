@@ -54,6 +54,7 @@ class Solver:
 
     def solve(self):
         self.parameter_selector.presolving_processing(self.domain, self.problem)
+        self.search_models.heuristic.presolving_processing()
         task_counter = 0
         subtasks = self.problem.subtasks.get_tasks()
         list_subT = []

@@ -110,6 +110,7 @@ def run_tests(tests, strats):
 # run_tests(tests, strats)
 
 """Test Rover p04 with breadth first search and no pruning"""
+# This test took 2+ hours
 # tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
 # run_tests(tests, strats)
@@ -148,3 +149,5 @@ def run_tests(tests, strats):
 """Create an test more rover domains (larger than p3 but smaller than p4)"""
 
 """Test rover with all parameter selection and requirement parameter selection"""
+
+"""Test some depot examples"""
