@@ -1,2 +1,0 @@
-example_name,time_taken,search_models_created,serialised_actions_taken,serialised_state
-Rover/p04.hddl,67.25814461708069,25832,serialised_objects\Rover_p04hddl_Breadth_First_Operations_Pruning_actions.pickle,serialised_objects\Rover_p04hddl_Breadth_First_Operations_Pruning_state.pickle

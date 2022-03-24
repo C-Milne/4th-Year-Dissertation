@@ -1,2 +1,0 @@
-example_name,time_taken,search_models_created,serialised_actions_taken,serialised_state
-Rover/p05.hddl,6.882004737854004,5338,serialised_objects\Rover_p05hddl_Predicate_Distance_To_Goal_actions.pickle,serialised_objects\Rover_p05hddl_Predicate_Distance_To_Goal_state.pickle
