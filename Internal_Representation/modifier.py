@@ -1,9 +1,6 @@
 from typing import List
-
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
-from Internal_Representation.reg_parameter import RegParameter
-from Internal_Representation.requirements import Requirements
 
 
 class Modifier:
@@ -26,7 +23,7 @@ class Modifier:
     def get_parameters(self):
         return self.parameters
 
-    def add_precondtions(self, precons: Precondition):
+    def add_preconditions(self, precons: Precondition):
         assert type(precons) == Precondition or precons is None
         if self.preconditions is None:
             self.preconditions = precons

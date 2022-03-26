@@ -128,7 +128,7 @@ class HDDLParser(Parser):
         action = Action(action_name, parameters, precon, effects)
         if precon_conditions is not None:
             precon = self._parse_precondition(precon_conditions, action)
-            action.add_precondtions(precon)
+            action.add_preconditions(precon)
         return action
 
     def _parse_effects(self, params):
@@ -231,7 +231,7 @@ class HDDLParser(Parser):
         method = Method(method_name, parameters, precon, task, subtasks, constraints)
         if precon_conditions is not None:
             precon = self._parse_precondition(precon_conditions, method)
-            method.add_precondtions(precon)
+            method.add_preconditions(precon)
         return method
 
     def _parse_precondition(self, params, mod: Modifier = None) -> Precondition:
