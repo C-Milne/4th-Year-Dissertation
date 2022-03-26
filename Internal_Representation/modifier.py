@@ -17,10 +17,11 @@ class Modifier:
         self.preconditions = preconditions
         self.requirements = None
 
-    def add_parameter(self, parameter):
+    def add_parameter(self, parameter: Parameter):
+        assert isinstance(parameter, Parameter)
         self.parameters.append(parameter)
 
-    def get_parameters(self):
+    def get_parameters(self) -> List[Parameter]:
         return self.parameters
 
     def add_preconditions(self, precons: Precondition):
@@ -30,8 +31,25 @@ class Modifier:
         else:
             raise TypeError("Preconditions are already set for this modifier")
 
-    def get_number_parameters(self):
+    def get_number_parameters(self) -> int:
         return len(self.parameters)
+
+    def evaluate_preconditions(self, model, param_dict, problem) -> bool:
+        """:params  - model : proposed model
+                    - param_dict : dictionary of parameters
+                    - problem : problem being solved
+        :returns    - True : if method can be run on the given model with given parameters
+                    - False : Otherwise"""
+        # Evaluate preconditions
+        if self.preconditions is None:
+            return True
+        assert type(self.preconditions) == Precondition
+        return self.preconditions.evaluate(param_dict, model, problem)
+
+    def evaluate_preconditions_conditions_given_params(self, param_dict, search_model, problem) -> bool:
+        if self.preconditions is None:
+            return True
+        return self.preconditions.evaluate_given_params_conditions(param_dict, search_model, problem)
 
     def __str__(self):
         return self.name

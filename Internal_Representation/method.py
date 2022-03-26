@@ -22,24 +22,16 @@ class Method(Modifier):
 
         self.requirements = {}
 
-    def evaluate_preconditions(self, model, param_dict, problem):
+    def evaluate_preconditions(self, model, param_dict, problem) -> bool:
         """:params  - model : proposed model
                     - param_dict : dictionary of parameters
+                    - problem : problem being solved
         :returns    - True : if method can be run on the given model with given parameters
                     - False : Otherwise"""
-        # Evaluate preconditions
-        if self.preconditions is None:
-            return True
-        assert type(self.preconditions) == super().Precondition
-        result = self.preconditions.evaluate(param_dict, model, problem)
+        result = super().evaluate_preconditions(model, param_dict, problem)
         if self.constraints is not None and result:
             result = self._evaluate_constraints(param_dict, model, problem)
         return result
-
-    def evaluate_preconditions_conditions_given_params(self, param_dict, search_model, problem):
-        if self.preconditions is None:
-            return True
-        return self.preconditions.evaluate_given_params_conditions(param_dict, search_model, problem)
 
     def _evaluate_constraints(self, param_dict: dict, model, problem):
         """:parameter param_dict : map of parameters - {?x: Object[banjo], ?y: Object[kiwi]}."""

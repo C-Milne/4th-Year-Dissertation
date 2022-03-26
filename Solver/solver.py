@@ -199,10 +199,6 @@ class Solver:
 
         assert comparison_result[0] == True
 
-        # If all are not given select variables and create new search models with the found variables
-        # Add the search models to the search Queue
-        # Do not progress further in this method
-
         # Check preconditions
         if not subtask.evaluate_preconditions(search_model, subtask.given_params, self.problem):
             return
