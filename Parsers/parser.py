@@ -35,9 +35,6 @@ class Parser:
     def _parse_type(self, *args):
         raise NotImplementedError
 
-    def _parse_predicate(self, *args):
-        raise NotImplementedError
-
     def _parse_action(self, *args):
         raise NotImplementedError
 
@@ -191,9 +188,6 @@ class Parser:
     def _parse_predicates(self, *args):
         raise NotImplementedError
 
-    def _parse_type(self, *args):
-        raise NotImplementedError
-
     def _parse_constraint(self, *args):
         raise NotImplementedError
 
@@ -213,9 +207,6 @@ class Parser:
         raise NotImplementedError
 
     def _parse_goal_state(self, *args):
-        raise NotImplementedError
-
-    def _parse_htn_tag(self, *args):
         raise NotImplementedError
 
     def _parse_constant(self, *args):
