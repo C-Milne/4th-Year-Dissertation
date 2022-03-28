@@ -6,7 +6,7 @@ from Internal_Representation.parameter import Parameter
 class Modifier:
     Precondition = Precondition
 
-    def __init__(self, name, parameters: List[Parameter], preconditions=None):
+    def __init__(self, name, parameters: List[Parameter], preconditions: Precondition = None):
         assert type(name) == str
         self.name = name
         assert type(parameters) == list

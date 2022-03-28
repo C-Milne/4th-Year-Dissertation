@@ -1,5 +1,4 @@
 from Internal_Representation.predicate import Predicate
-from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.precondition import Precondition
 
 

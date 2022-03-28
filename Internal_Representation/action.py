@@ -7,5 +7,3 @@ class Action(Modifier):
         super().__init__(name, parameters, preconditions)
         assert type(effects) == Effects or effects is None
         self.effects = effects
-
-        self.requirements = {}

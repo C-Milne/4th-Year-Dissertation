@@ -24,7 +24,7 @@ from Solver.Parameter_Selection.All_Parameters import AllParameters
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 """Importing from sys modules"""
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
-ForallCondition = sys.modules['Internal_Representation.conditions'].ForallCondition
+ForallCondition = sys.modules['Internal_Representation.conditions'].ForAllCondition
 
 
 class Solver:

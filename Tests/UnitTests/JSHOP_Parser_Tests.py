@@ -95,7 +95,7 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(1, len(assertGoalTask.tasks[0].parameters))
         self.assertEqual(ListParameter, type(assertGoalTask.tasks[0].parameters[0]))
         self.assertEqual('?goal', assertGoalTask.tasks[0].parameters[0].internal_param_name)
-        self.assertEqual('?goals', assertGoalTask.tasks[0].parameters[0].param_list_name)
+        self.assertEqual('?goals', assertGoalTask.tasks[0].parameters[0].name)
         self.assertEqual([], assertGoalTask.tasks[0].tasks)
 
         self.assertEqual([], assertGoalTask.tasks[1].parameters)

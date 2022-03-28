@@ -14,10 +14,7 @@ class Condition:
 class PredicateCondition(Condition):
     def __init__(self, pred: Predicate, parameter_names: list):
         super().__init__()
-        try:
-            assert isinstance(pred, Predicate)
-        except:
-            raise TypeError
+        assert isinstance(pred, Predicate)
         self.pred = pred
         assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
         self.parameter_name = parameter_names
@@ -58,7 +55,7 @@ class VariableCondition(Condition):
 
 
 class OperatorCondition(Condition):
-    def __init__(self, operator):
+    def __init__(self, operator: str):
         super().__init__()
         assert operator == "and" or operator == "not" or operator == "or" or operator == "="
         self.operator = operator  # and, not, or, =
@@ -96,7 +93,7 @@ class OperatorCondition(Condition):
             return True
 
 
-class ForallCondition(Condition):
+class ForAllCondition(Condition):
     def __init__(self, selected_variable: str, selector, satisfier: Condition):
         super().__init__()
         assert isinstance(satisfier, Condition)

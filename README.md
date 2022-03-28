@@ -6,6 +6,7 @@
 5. topological sort - for ordering partial ordered problems
 6. Remove the requirements variable from modifier class. Move Requirement class to heuristic folder
 7. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
+8. Implement writing plan to file
 
 # Things to Test
 1. Models created and solving times with and without the precondition optimisations (checking some preconditions before selecting parameters)

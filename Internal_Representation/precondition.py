@@ -1,6 +1,6 @@
 import sys
 from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
-    ForallCondition, GoalPredicateCondition
+    ForAllCondition, GoalPredicateCondition
 
 
 class Precondition:
@@ -8,7 +8,7 @@ class Precondition:
         self.head = None
         self.conditions = conditions
         self.requirements = None
-        self.conditions_given_params = None
+        self.conditions_given_params = None     # This is the conditions that only include parameters given by the task (not selected parameters)
 
     def add_operator_condition(self, operator: str, parent: Condition) -> OperatorCondition:
         assert type(operator) == str
@@ -30,7 +30,7 @@ class Precondition:
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_forall_condition(self, selector, satisfier: Condition, parent) -> ForallCondition:
+    def add_forall_condition(self, selector, satisfier: Condition, parent) -> ForAllCondition:
         """
         :param selector: ['?b', '-', 'block'] OR ['?z', ['package', '?z'], ['at', '?z', '?x']]
         :param satisfier: ['done', '?b']
@@ -45,7 +45,7 @@ class Precondition:
             selected_variable = selector[0]
             selected_cons = selector[1]
 
-        con = ForallCondition(selected_variable, selected_cons, satisfier)
+        con = ForAllCondition(selected_variable, selected_cons, satisfier)
         self.__final_condition_addition_checks(con, parent)
         return con
 

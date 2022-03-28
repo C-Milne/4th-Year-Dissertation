@@ -20,8 +20,6 @@ class Method(Modifier):
         assert type(constraints) == Modifier.Precondition or constraints is None
         self.constraints = constraints
 
-        self.requirements = {}
-
     def evaluate_preconditions(self, model, param_dict, problem) -> bool:
         """:params  - model : proposed model
                     - param_dict : dictionary of parameters
