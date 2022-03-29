@@ -34,6 +34,16 @@ class Modifier:
     def get_number_parameters(self) -> int:
         return len(self.parameters)
 
+    def get_parameter_names(self):
+        if len(self.parameters) != len(self.parameter_names):
+            self.__collect_parameter_names()
+        return self.parameter_names
+
+    def __collect_parameter_names(self):
+        self.parameter_names = []
+        for p in self.parameters:
+            self.parameter_names.append(p.name)
+
     def evaluate_preconditions(self, model, param_dict, problem) -> bool:
         """:params  - model : proposed model
                     - param_dict : dictionary of parameters
