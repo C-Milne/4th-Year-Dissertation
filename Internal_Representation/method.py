@@ -38,13 +38,5 @@ class Method(Modifier):
         result = self.constraints.evaluate(param_dict, model, problem)
         return result
 
-    def get_precondition(self):
-        return self.preconditions
-
-    def get_name(self):
-        if self.name is None:
-            return 'Unknown'
-        return self.name
-
     def get_constraints(self):
         return self.constraints

@@ -34,6 +34,14 @@ class Modifier:
     def get_number_parameters(self) -> int:
         return len(self.parameters)
 
+    def get_precondition(self):
+        return self.preconditions
+
+    def get_name(self):
+        if self.name is None:
+            return 'Unknown'
+        return self.name
+
     def get_parameter_names(self):
         if len(self.parameters) != len(self.parameter_names):
             self.__collect_parameter_names()
