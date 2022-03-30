@@ -8,10 +8,7 @@ from Internal_Representation.parameter import Parameter
 class Subtasks:
     class Subtask:
         def __init__(self, task, parameters=[]):
-            try:
-                assert isinstance(task, Modifier) or type(task) == str
-            except:
-                raise TypeError
+            assert isinstance(task, Modifier) or type(task) == str
             self.task = task
             assert type(parameters) == list or type(parameters) == ListParameter
             if type(parameters) == list:
@@ -20,7 +17,7 @@ class Subtasks:
             self.parameters = parameters
             self.given_params = {}
 
-        def get_name(self):
+        def get_name(self) -> str:
             return self.task.name
 
         def add_given_parameters(self, params: dict):
@@ -30,7 +27,7 @@ class Subtasks:
                     assert type(params[i]) == Object or type(params[i]) == ListParameter
             self.given_params = params
 
-        def evaluate_preconditions(self, model, params, problem):
+        def evaluate_preconditions(self, model, params, problem) -> bool:
             if self.task.preconditions is None:
                 return True
             else:

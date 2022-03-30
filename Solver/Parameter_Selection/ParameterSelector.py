@@ -26,7 +26,7 @@ class ParameterSelector:
     def presolving_processing(self, domain, problem):
         pass
 
-    def compare_parameters(self, method: Method, parameters: dict):
+    def compare_parameters(self, method: Modifier, parameters: dict) -> list:
         """ Compares if all the parameters required for a method are given
         :parameter  - method : Method
         :parameter  - parameters : {'?objective1': Object, '?mode': Object}

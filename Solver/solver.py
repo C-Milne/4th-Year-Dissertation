@@ -169,10 +169,7 @@ class Solver:
             # Check parameter count
             parameters = {}
             param_keys = [p.name for p in mod.parameters]
-            try:
-                action_keys = [p.name for p in mod.task.parameters]
-            except:
-                raise TypeError
+            action_keys = [p.name for p in mod.task.parameters]
             if len(action_keys) > 0:
                 for j in range(len(action_keys)):
                     try:
