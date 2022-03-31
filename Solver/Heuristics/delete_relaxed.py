@@ -64,7 +64,14 @@ class DeleteRelaxed(Heuristic):
         self.tree = Tree()
 
     def ranking(self, model) -> float:
-        pass
+        next_mod = model.search_modifiers[0].task
+        if type(next_mod) != Task and model.ranking is not None:
+            return model.ranking
+        elif type(next_mod) != Task:
+            op = model.operations_taken[-1].action
+            assert type(op) == Task
+            return len(model.operations_taken) + self.tree.nodes[op.name].distance
+        return len(model.operations_taken) + self.tree.nodes[next_mod.name].distance
 
     def presolving_processing(self) -> None:
         # Add all actions to tree
