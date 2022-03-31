@@ -14,6 +14,7 @@ class Tree:
             self.type = None
             self.parents = []
             self.children = []
+            self.distance = None
 
         def add_parent(self, node):
             # Check is not already in parent list
@@ -32,6 +33,10 @@ class Tree:
         def set_type(self, t):
             assert t == Task or t == Method or t == Action
             self.type = t
+
+        def set_distance(self, v: int):
+            assert type(v) == int
+            self.distance = v
 
     def __init__(self):
         self.root = None
@@ -64,7 +69,8 @@ class DeleteRelaxed(Heuristic):
     def presolving_processing(self) -> None:
         # Add all actions to tree
         for a in self.domain.get_all_actions():
-            self.tree.add_node(a.name)
+            node = self.tree.add_node(a.name)
+            node.set_distance(1)
 
         # Create bottom up reachability conditions for methods
         method_reach_conditions = {}
@@ -72,6 +78,7 @@ class DeleteRelaxed(Heuristic):
             method_reach_conditions[m.name] = list(set([x.task.name for x in m.subtasks.tasks]))
 
         # Add methods which are bottom up reachable to the tree
+        task_nodes = []
         change = True
         while change:
             change = False
@@ -85,6 +92,8 @@ class DeleteRelaxed(Heuristic):
                 if all(x in self.tree.nodes for x in m_cons):
                     method = self.domain.get_method(m)
                     node = self.tree.add_node(method.task['task'].name)
+                    if node not in task_nodes:
+                        task_nodes.append(node)
                     for mc in m_cons:
                         mc = self.tree[mc]
                         node.add_child(mc)
@@ -94,7 +103,27 @@ class DeleteRelaxed(Heuristic):
 
             for m in del_list:
                 del method_reach_conditions[m]
-        print("Here")
+
+        # Assign each task node a distance to goal
+        for tn in task_nodes:
+            self._calculate_task_node_distance_goal(tn)
+
+    def _calculate_task_node_distance_goal(self, tn) -> int:
+        if tn.distance is not None:
+            return tn.distance
+        total_distance = 0
+        for n in tn.children:
+            if n.distance is None and tn not in n.children:
+                total_distance += self._calculate_task_node_distance_goal(n)
+            elif n.distance is None and tn in n.children and tn != n:
+                total_distance += 1
+            elif tn == n:
+                continue
+            else:
+                total_distance += n.distance
+        total_distance += 1
+        tn.set_distance(total_distance)
+        return total_distance
 
     def task_milestone(self, model) -> bool:
         num_tasks_remaining = str(len(model.waiting_subtasks))

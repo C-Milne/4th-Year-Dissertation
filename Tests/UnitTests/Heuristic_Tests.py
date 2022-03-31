@@ -15,7 +15,16 @@ class HeuristicTests(unittest.TestCase):
         solver.set_heuristic(DeleteRelaxed)
         solver.search_models.heuristic.presolving_processing()
         heu = solver.search_models.heuristic
-        self.assertEqual(15, len(heu.tree.nodes))
-        self.assertEqual(1, len(heu.tree.root.children))
+        self.assertEqual(8, len(heu.tree.nodes))
 
-        # Bottom up reachable stage
+        node = heu.tree.nodes['deliver']
+        self.assertEqual(8, node.distance)
+
+        node = heu.tree.nodes['get_to']
+        self.assertEqual(3, node.distance)
+
+        node = heu.tree.nodes['unload']
+        self.assertEqual(2, node.distance)
+
+        node = heu.tree.nodes['load']
+        self.assertEqual(2, node.distance)
