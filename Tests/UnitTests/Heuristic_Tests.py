@@ -17,3 +17,5 @@ class HeuristicTests(unittest.TestCase):
         heu = solver.search_models.heuristic
         self.assertEqual(15, len(heu.tree.nodes))
         self.assertEqual(1, len(heu.tree.root.children))
+
+        # Bottom up reachable stage

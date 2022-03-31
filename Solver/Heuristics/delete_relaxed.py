@@ -10,6 +10,8 @@ class Tree:
     class Node:
         def __init__(self, name):
             self.name = name
+            self.operator = None
+            self.type = None
             self.parents = []
             self.children = []
 
@@ -23,19 +25,22 @@ class Tree:
             if all([x.name != node.name for x in self.children]):
                 self.children.append(node)
 
+        def set_operator(self, operator: str):
+            assert operator == "AND" or operator == "OR"
+            self.operator = operator
+
+        def set_type(self, t):
+            assert t == Task or t == Method or t == Action
+            self.type = t
+
     def __init__(self):
         self.root = None
         self.nodes = {}
 
-    def add_node(self, name, parent) -> Node:
-        assert name not in self.nodes
+    def add_node(self, name) -> Node:
+        if name in self.nodes:
+            return self.nodes[name]
         node = self.Node(name)
-        if parent is None and self.root is None:
-            self.root = node
-        else:
-            assert type(parent) == Tree.Node
-            parent.children.append(node)
-            node.parents.append(parent)
         self.nodes[name] = node
         return node
 
@@ -52,42 +57,44 @@ class DeleteRelaxed(Heuristic):
         self.seen_states = {}
 
         self.tree = Tree()
-        self.tree.add_node("BASE", None)
 
     def ranking(self, model) -> float:
         pass
 
     def presolving_processing(self) -> None:
-        for t in self.problem.subtasks.tasks:
-            self.__presolving_expand(t.task, self.tree.root)
+        # Add all actions to tree
+        for a in self.domain.get_all_actions():
+            self.tree.add_node(a.name)
 
-    def __presolving_expand(self, mod, parent):
-        assert type(parent) == Tree.Node
-        name = mod.name
+        # Create bottom up reachability conditions for methods
+        method_reach_conditions = {}
+        for m in self.domain.get_all_methods():
+            method_reach_conditions[m.name] = list(set([x.task.name for x in m.subtasks.tasks]))
 
-        # Check if mod is already in tree
-        found = self.tree[name]
-        if found is None:
-            # Create new node
-            node = self.tree.add_node(name, parent)
+        # Add methods which are bottom up reachable to the tree
+        change = True
+        while change:
+            change = False
+            if len(method_reach_conditions.keys()) == 0:
+                break
 
-            if type(mod) == Task:
-                subTs = mod.methods
-            elif type(mod) == Method:
-                subTs = mod.subtasks.tasks
-            elif type(mod) == Action:
-                return
-            else:
-                raise NotImplementedError
-            for t in subTs:
-                if type(t) == Subtask:
-                    t = t.task
-                self.__presolving_expand(t, node)
-        else:
-            # Node already exists
-            node = found
-            node.add_parent(parent)
-            parent.add_child(node)
+            del_list = []
+            for m in method_reach_conditions:
+                m_cons = method_reach_conditions[m]
+                # if all_m_cons hold, add m to tree
+                if all(x in self.tree.nodes for x in m_cons):
+                    method = self.domain.get_method(m)
+                    node = self.tree.add_node(method.task['task'].name)
+                    for mc in m_cons:
+                        mc = self.tree[mc]
+                        node.add_child(mc)
+                        mc.add_parent(node)
+                    change = True
+                    del_list.append(m)
+
+            for m in del_list:
+                del method_reach_conditions[m]
+        print("Here")
 
     def task_milestone(self, model) -> bool:
         num_tasks_remaining = str(len(model.waiting_subtasks))
