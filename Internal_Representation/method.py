@@ -20,19 +20,13 @@ class Method(Modifier):
         assert type(constraints) == Modifier.Precondition or constraints is None
         self.constraints = constraints
 
-        self.requirements = {}
-        super(Method, self)._prepare_requirements()
-
-    def evaluate_preconditions(self, model, param_dict, problem):
+    def evaluate_preconditions(self, model, param_dict, problem) -> bool:
         """:params  - model : proposed model
                     - param_dict : dictionary of parameters
+                    - problem : problem being solved
         :returns    - True : if method can be run on the given model with given parameters
                     - False : Otherwise"""
-        # Evaluate preconditions
-        if self.preconditions is None:
-            return True
-        assert type(self.preconditions) == super().Precondition
-        result = self.preconditions.evaluate(param_dict, model, problem)
+        result = super().evaluate_preconditions(model, param_dict, problem)
         if self.constraints is not None and result:
             result = self._evaluate_constraints(param_dict, model, problem)
         return result
@@ -43,14 +37,6 @@ class Method(Modifier):
             return True
         result = self.constraints.evaluate(param_dict, model, problem)
         return result
-
-    def get_precondition(self):
-        return self.preconditions
-
-    def get_name(self):
-        if self.name is None:
-            return 'Unknown'
-        return self.name
 
     def get_constraints(self):
         return self.constraints

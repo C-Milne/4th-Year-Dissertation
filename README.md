@@ -1,7 +1,18 @@
 # TODO
-1. Implement breadth first with pruning - If multiple subtasks are given in the beginning of search. Add them one at a time to the search_modifiers so duplicate states can be pruned
-2. Implement way for parameter selection to be done the same way as a heuristic - This needs to be used in the forall condition evaluation as well as the solving module (remove the assertion for the collect_objects method in forall conditions when this is done)
-3. Create a heuristic that estimates cost to goal - by comparing which of the goal conditions are already satisfied by the current model. Also ensure recursion does not impact this too bad
-
+1. Create an improved requirement parameter selector that looks ahead to the requirements of subtasks and their subtasks etc. Aiming to get better results for JSHOP
+2. Add and test a depth first approach - this will get stuck in recursion
+3. Track number of times a heuristic is called
+4. Delete relaxed plan - max heuristic
+5. topological sort - for ordering partial ordered problems
+6. Remove the requirements variable from modifier class. Move Requirement class to heuristic folder
+7. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
+8. Implement writing plan to file
 
 # Things to Test
+1. Models created and solving times with and without the precondition optimisations (checking some preconditions before selecting parameters)
+
+# Running Configurations
+1. -m cProfile
+2. Tests/Examples/IPC_Tests/Rover/rover-domain.hddl Tests/Examples/IPC_Tests/Rover/pfile01.hddl
+3. Tests/Examples/IPC_Tests/um-translog01/domain.hddl Tests/Examples/IPC_Tests/um-translog01/problem.hddl
+4. Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl

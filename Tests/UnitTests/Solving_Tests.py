@@ -12,8 +12,11 @@ from Internal_Representation.state import State
 from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
+from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
+from Tests.UnitTests.TestTools.rover_execution import execution_prep
 
 
 class SolvingTests(unittest.TestCase):
@@ -21,7 +24,6 @@ class SolvingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.basic_domain_path = "../Examples/Basic/basic.hddl"
         self.basic_pb1_path = "../Examples/Basic/pb1.hddl"
-        self.basic_pb1_path_SHOP = "../Examples/Basic/pb1.shop"
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
@@ -180,7 +182,7 @@ class SolvingTests(unittest.TestCase):
                           'visible_from': [37, 38, 39, 40, 41, 42, 43, 44], 'visited': [45]},
                          model.current_state._index)
 
-    def test_basic_execution(self):
+    def test_basic_execution_step_through(self):
         domain = Domain(None)
         problem = Problem(domain)
         domain.add_problem(problem)
@@ -260,12 +262,31 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(1, len(model.current_state.elements[0].objects))
         self.assertEqual(problem.objects['banjo'], model.current_state.elements[0].objects[0])
 
+    def test_basic_execution(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
+        execution_prep(problem, solver)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+        self.assertEqual(ActionTracker(domain.tasks['swap'], {'?x': problem.objects['banjo'],
+                                                              '?y': problem.objects['kiwi']}), res.operations_taken[0])
+        self.assertEqual(ActionTracker(domain.methods['have_second'], {'?x': problem.objects['banjo'],
+                                                                        '?y': problem.objects['kiwi']}),
+                         res.operations_taken[1])
+        self.assertEqual(ActionTracker(domain.actions['drop'], {'?a': problem.objects['kiwi']}),
+                         res.operations_taken[2])
+        self.assertEqual(ActionTracker(domain.actions['pickup'], {'?a': problem.objects['banjo']}),
+                         res.operations_taken[3])
+
     def test_compare_parameters(self):
         domain, problem, solver = RovEx.setup()
+        solver.set_parameter_selector(RequirementSelection)
         RovEx.execution_prep(problem, solver)
         model = solver.search_models._SearchQueue__Q[0]
 
-        response = solver._Solver__compare_parameters(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].given_params)
+        response = solver.parameter_selector.compare_parameters(domain.methods['m_get_image_data_ordering_0'],
+                                                                model.search_modifiers[0].given_params)
         self.assertEqual(list, type(response))
         self.assertEqual(2, len(response))
         self.assertEqual(bool, type(response[0]))
@@ -275,10 +296,13 @@ class SolvingTests(unittest.TestCase):
 
     def test_finding_parameters(self):
         domain, problem, solver = RovEx.setup()
+        solver.set_parameter_selector(RequirementSelection)
         RovEx.execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver._Solver__find_satisfying_parameters(model, method.requirements, model.search_modifiers[0].given_params)
+        found_params = solver.parameter_selector._RequirementSelection__find_satisfying_parameters(model,
+                                                    method.requirements, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:
             self.assertEqual(problem.objects['objective1'], combo['?objective'])
@@ -305,6 +329,7 @@ class SolvingTests(unittest.TestCase):
     def test_rover_execution_1(self):
         domain, problem, solver = RovEx.setup()
         RovEx.execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
         solver._Solver__search(True)
         # Check searchModels has 4 search nodes each with a different ?waypoint parameter
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
@@ -359,6 +384,7 @@ class SolvingTests(unittest.TestCase):
 
         # Initialise solver
         solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Create initial model
         solver.search_models.clear()
@@ -373,3 +399,11 @@ class SolvingTests(unittest.TestCase):
 
         model = search_models[0]
         self.assertEqual(4, len(model.search_modifiers[0].given_params))
+
+    def test_distance_to_goal_heuristic(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+        solver.set_heuristic(PredicateDistanceToGoal)
+        res = solver.solve()
+        self.assertNotEqual(None, res)

@@ -64,6 +64,12 @@ class Domain:
             pass
         return False
 
+    def get_all_actions(self):
+        action_list = []
+        for x in self.actions:
+            action_list.append(self.actions[x])
+        return action_list
+
     def get_task(self, name):
         if name in self.tasks.keys():
             # Compare parameters given with parameters of task
@@ -85,6 +91,12 @@ class Domain:
         if not method_name in self.methods.keys():
             return None
         return self.methods[method_name]
+
+    def get_all_methods(self):
+        method_list = []
+        for x in self.methods:
+            method_list.append(self.methods[x])
+        return method_list
 
     def get_modifier(self, name):
         if name in self.methods.keys():

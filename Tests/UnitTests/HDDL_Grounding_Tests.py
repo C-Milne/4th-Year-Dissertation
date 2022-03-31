@@ -14,6 +14,7 @@ from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.Object import Object
 from Tests.UnitTests.TestTools.env_setup import env_setup
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 
 
 class HDDLGroundingTests(unittest.TestCase):
@@ -25,34 +26,8 @@ class HDDLGroundingTests(unittest.TestCase):
         self.test_tools_path = "TestTools/"
         self.blocksworld_path = "../Examples/Blocksworld/"
         self.rover_path = "../Examples/IPC_Tests/Rover/"
+        self.rover_col_path = "../Examples/Rover/"
         self.IPC_Tests_path = "../Examples/IPC_Tests/"
-
-    # def test_blocksworld_pb1_initial_state(self):
-    #     domain = Domain(None)
-    #     problem = Problem(domain)
-    #     domain.add_problem(problem)
-    #
-    #     # Test preconditions
-    #     parser = HDDLParser(domain, problem)
-    #     parser.parse_domain(self.blocksworld_path + "domain.hddl")
-    #     parser.parse_problem(self.blocksworld_path + "pb1.hddl")
-    #
-    #     solver = Solver(domain, problem)
-    #     model = Model(solver.problem, solver, solver._available_modifiers)
-    #
-    #     # Check all values are correct before execution of action
-    #     blocksworld_pb1_initial_state = ['hand-empty', ['clear', 'b3'],
-    #                                      ['on-table', 'b2'], ['on', 'b3', 'b5'], ['on', 'b5', 'b4'],
-    #                                      ['on', 'b4', 'b2'],
-    #                                      ['clear', 'b1'], ['on-table', 'b1'], ['goal_clear', 'b2'],
-    #                                      ['goal_on-table', 'b4'],
-    #                                      ['goal_on', 'b2', 'b5'], ['goal_on', 'b5', 'b4'], ['goal_clear', 'b1'],
-    #                                      ['goal_on-table', 'b3'], ['goal_on', 'b1', 'b3']]
-    #     blocksworld_pb1_initial_state_index = {'hand-empty': [0], 'clear': [1, 6], 'goal_clear': [8, 12],
-    #                                            'goal_on': [10, 11, 14], 'goal_on-table': [9, 13],
-    #                                            'on': [3, 4, 5], 'on-table': [2, 7]}
-    #     self.assertEqual(blocksworld_pb1_initial_state, model.current_state.elements)
-    #     self.assertEqual(blocksworld_pb1_initial_state_index, model.current_state._index)
 
     def test_precondition_complex(self):
         domain, problem, parser, solver = env_setup(True)
@@ -112,6 +87,8 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_2.hddl")
+        solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
         self.assertEqual(2, len(domain.methods['pickup-ready-block'].requirements))
@@ -281,6 +258,14 @@ class HDDLGroundingTests(unittest.TestCase):
         result = precons.evaluate(param_dict, model, None)
         self.assertEqual(True, result)
 
+    @unittest.skip
+    def test_upgraded_precondition(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        method = domain.methods['m9_send_soil_data']
+        # ['and', ['at_lander', '?l', '?w1'], ['visible', '?from', '?w1'], ['at', '?x', '?from']] - Initial preconditions
+        self.assertEqual(1, 2)
+
     def test_action_requirements(self):
         domain = Domain(None)
         problem = Problem(domain)
@@ -288,6 +273,8 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain2.hddl")
+        solver = Solver(domain, problem)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         # Check action requirements
         self.assertEqual(domain.types['rover'], domain.actions['take_image'].requirements['?r']['type'])
@@ -381,6 +368,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
     def test_constraint_evaluation(self):
         domain, problem, parser, solver = env_setup(True)
+        solver.set_parameter_selector(RequirementSelection)
         parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
         parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
 
@@ -408,17 +396,17 @@ class HDDLGroundingTests(unittest.TestCase):
 
         # Check that type 'regular_package' satisfies both 'package' and 'regular'
         reg_pack_ob = Object('test_package', domain.types['regular_package'])
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], reg_pack_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], reg_pack_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['package'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular'], reg_pack_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular_package'], reg_pack_ob))
 
         # Check a child of regular_package also satisfies them both
         food_ob = Object('test_food', domain.types['food'])
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['package'], food_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['regular'], food_ob))
-        self.assertEqual(True, solver.check_satisfies_type(domain.types['food'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['package'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['regular'], food_ob))
+        self.assertEqual(True, solver.parameter_selector.check_satisfies_type(domain.types['food'], food_ob))
 
         # Test for false
-        self.assertEqual(False, solver.check_satisfies_type(domain.types['airport'], reg_pack_ob))
+        self.assertEqual(False, solver.parameter_selector.check_satisfies_type(domain.types['airport'], reg_pack_ob))
 
     # Ground objects to types? - would make for quicker look-ups in problem.get_objects_of_type()

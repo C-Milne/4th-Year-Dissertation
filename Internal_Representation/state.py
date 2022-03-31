@@ -80,7 +80,7 @@ class State:
                     self._index[k][i] -= 1
                 i += 1
 
-    def check_if_predicate_value_exists(self, predicate: Predicate, obs: list[Object]) -> bool:
+    def check_if_predicate_value_exists(self, predicate: Predicate, obs: list) -> bool:
         indexes = self.get_indexes(predicate.name)
         prob_pred = ProblemPredicate(predicate, obs)
         if indexes is None:
@@ -115,6 +115,17 @@ class State:
             if not validated:
                 return False
         return True
+
+    def __eq__(self, other):
+        try:
+            if len(self.elements) != len(other.elements):
+                return False
+            for el in self.elements:
+                if el not in other.elements:
+                    return False
+            return True
+        except:
+            return False
 
     def __len__(self):
         return len(self.elements)

@@ -1,15 +1,12 @@
 from typing import List
-
 from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
-from Internal_Representation.reg_parameter import RegParameter
-from Internal_Representation.requirements import Requirements
 
 
 class Modifier:
     Precondition = Precondition
 
-    def __init__(self, name, parameters: List[Parameter], preconditions=None):
+    def __init__(self, name, parameters: List[Parameter], preconditions: Precondition = None):
         assert type(name) == str
         self.name = name
         assert type(parameters) == list
@@ -18,29 +15,59 @@ class Modifier:
         self.parameters = parameters
         assert type(preconditions) == Precondition or preconditions is None
         self.preconditions = preconditions
+        self.requirements = None
 
-    def _prepare_requirements(self):
-        req = Requirements(self.parameters, self.preconditions)
-        self.requirements = req.prepare_requirements()
-        self._compare_requirements_parameters()
-
-    def _compare_requirements_parameters(self):
-        """Check that all the parameters listed in the requirements are present in the parameters list.
-        If any are missing; add them"""
-        for p in self.requirements:
-            if p.startswith('forall'):
-                continue
-            if p not in [x.name for x in self.parameters]:
-                self.add_parameter(RegParameter(p, self.requirements[p]['type']))
-
-    def add_parameter(self, parameter):
+    def add_parameter(self, parameter: Parameter):
+        assert isinstance(parameter, Parameter)
         self.parameters.append(parameter)
 
-    def get_parameters(self):
+    def get_parameters(self) -> List[Parameter]:
         return self.parameters
 
-    def get_number_parameters(self):
+    def add_preconditions(self, precons: Precondition):
+        assert type(precons) == Precondition or precons is None
+        if self.preconditions is None:
+            self.preconditions = precons
+        else:
+            raise TypeError("Preconditions are already set for this modifier")
+
+    def get_number_parameters(self) -> int:
         return len(self.parameters)
+
+    def get_precondition(self):
+        return self.preconditions
+
+    def get_name(self):
+        if self.name is None:
+            return 'Unknown'
+        return self.name
+
+    def get_parameter_names(self):
+        if len(self.parameters) != len(self.parameter_names):
+            self.__collect_parameter_names()
+        return self.parameter_names
+
+    def __collect_parameter_names(self):
+        self.parameter_names = []
+        for p in self.parameters:
+            self.parameter_names.append(p.name)
+
+    def evaluate_preconditions(self, model, param_dict, problem) -> bool:
+        """:params  - model : proposed model
+                    - param_dict : dictionary of parameters
+                    - problem : problem being solved
+        :returns    - True : if method can be run on the given model with given parameters
+                    - False : Otherwise"""
+        # Evaluate preconditions
+        if self.preconditions is None:
+            return True
+        assert type(self.preconditions) == Precondition
+        return self.preconditions.evaluate(param_dict, model, problem)
+
+    def evaluate_preconditions_conditions_given_params(self, param_dict, search_model, problem) -> bool:
+        if self.preconditions is None:
+            return True
+        return self.preconditions.evaluate_given_params_conditions(param_dict, search_model, problem)
 
     def __str__(self):
         return self.name

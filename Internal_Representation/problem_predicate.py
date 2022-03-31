@@ -3,7 +3,7 @@ from Internal_Representation.Object import Object
 
 
 class ProblemPredicate:
-    def __init__(self, predicate: Predicate, objects: list[Object]):
+    def __init__(self, predicate: Predicate, objects: list):
         """:Params  - predicate : Predicate
                     - objects   : List of objects that belong to this predicate in ONE instance
                                 [object[waypoint1], object[waypoint0]]"""

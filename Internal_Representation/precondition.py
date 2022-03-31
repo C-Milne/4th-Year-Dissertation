@@ -1,6 +1,6 @@
 import sys
 from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
-    ForallCondition, GoalPredicateCondition
+    ForAllCondition, GoalPredicateCondition
 
 
 class Precondition:
@@ -8,8 +8,9 @@ class Precondition:
         self.head = None
         self.conditions = conditions
         self.requirements = None
+        self.conditions_given_params = None     # This is the conditions that only include parameters given by the task (not selected parameters)
 
-    def add_operator_condition(self, operator: str, parent: Condition) -> Condition:
+    def add_operator_condition(self, operator: str, parent: Condition) -> OperatorCondition:
         assert type(operator) == str
         assert isinstance(parent, Condition) or parent is None
 
@@ -17,19 +18,19 @@ class Precondition:
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+    def add_predicate_condition(self, pred, parameter_names: list, parent: Condition) -> PredicateCondition:
         assert isinstance(parent, Condition) or parent is None
         con = PredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_variable_condition(self, parameter_name: str, parent: Condition):
+    def add_variable_condition(self, parameter_name: str, parent: Condition) -> VariableCondition:
         assert isinstance(parent, Condition) or parent is None
         con = VariableCondition(parameter_name)
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_forall_condition(self, selector, satisfier: Condition, parent):
+    def add_forall_condition(self, selector, satisfier: Condition, parent) -> ForAllCondition:
         """
         :param selector: ['?b', '-', 'block'] OR ['?z', ['package', '?z'], ['at', '?z', '?x']]
         :param satisfier: ['done', '?b']
@@ -44,27 +45,51 @@ class Precondition:
             selected_variable = selector[0]
             selected_cons = selector[1]
 
-        con = ForallCondition(selected_variable, selected_cons, satisfier)
+        con = ForAllCondition(selected_variable, selected_cons, satisfier)
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_goal_predicate_condition(self, pred, parameter_names: list[str], parent: Condition):
+    def add_goal_predicate_condition(self, pred, parameter_names: list, parent: Condition) -> GoalPredicateCondition:
         assert isinstance(parent, Condition) or parent is None
         con = GoalPredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)
         return con
+
+    def add_given_params_predicate_condition(self, pred, parameter_names, parent=None):
+        if self.conditions_given_params is None:
+            self.conditions_given_params = Precondition("Conditions from Given Parameters")
+            self.conditions_given_params.add_operator_condition("and", None)
+
+        if parent is None:
+            parent = self.conditions_given_params.head
+        self.conditions_given_params.add_predicate_condition(pred, parameter_names, parent)
+
+    def add_given_params_operator_condition(self, operator: str) -> OperatorCondition:
+        assert operator == "not"
+        if self.conditions_given_params is None:
+            self.conditions_given_params = Precondition("Conditions from Given Parameters")
+            self.conditions_given_params.add_operator_condition("and", None)
+        return self.conditions_given_params.add_operator_condition(operator, self.conditions_given_params.head)
 
     def __final_condition_addition_checks(self, con, parent):
         if self.head is None:
             self.head = con
         if parent is not None:
             parent.add_child(con)
+        con.parent = parent
+
+    def evaluate_given_params_conditions(self, param_dict, search_model, problem) -> bool:
+        if self.conditions_given_params is None:
+            return True
+        return self.conditions_given_params.evaluate(param_dict, search_model, problem)
 
     def evaluate(self, param_dict, search_model, problem) -> bool:
         if self.head is None:
             return True
 
         result = self.head.evaluate(param_dict, search_model, problem)
+        if result:
+            return self.evaluate_given_params_conditions(param_dict, search_model, problem)
         return result
 
     def load_requirements(self):

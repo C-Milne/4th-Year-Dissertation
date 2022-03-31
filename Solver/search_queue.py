@@ -18,19 +18,22 @@ class SearchQueue:
             raise TypeError("Invalid parameter type!\n"
                             "Expected Model got {}".format(type(model)))
 
-        # This is where the heuristic value would be calculated
-        ranking = self.heuristic.ranking(model)
-        model.set_ranking(ranking)
-
         if len(model.search_modifiers) > 0:
-            self.__add_model(model, ranking)
+            self.__add_model(model)
+        elif len(model.search_modifiers) == 0 and len(model.waiting_subtasks) > 0:
+            model.promote_waiting_subtask()
+            if self.heuristic.task_milestone(model):
+                self.__add_model(model)
         else:
             self.__add_completed_model(model)
 
     def __add_completed_model(self, model):
         self.__completed_models.append(model)
 
-    def __add_model(self, model, ranking):
+    def __add_model(self, model):
+        ranking = self.heuristic.ranking(model)
+        model.set_ranking(ranking)
+
         added = False
         i = 0
         while i < len(self.__Q):

@@ -109,7 +109,7 @@ class HDDLParser(Parser):
     def _parse_action(self, params):
         i = 0
         l = len(params)
-        action_name, parameters, precon, effects = None, None, None, None
+        action_name, parameters, precon, precon_conditions, effects = None, None, None, None, None
         while i < l:
             if i == 0:
                 action_name = params[i]
@@ -117,7 +117,7 @@ class HDDLParser(Parser):
                 parameters = self._parse_parameters(params[i + 1])
                 i += 1
             elif params[i] == ":precondition":
-                precon = self._parse_precondition(params[i + 1])
+                precon_conditions = params[i + 1]
                 i += 1
             elif params[i] == ":effect":
                 effects = self._parse_effects(params[i + 1])
@@ -125,7 +125,11 @@ class HDDLParser(Parser):
             else:
                 raise TypeError("Unknown identifier {}".format(params[i]))
             i += 1
-        return Action(action_name, parameters, precon, effects)
+        action = Action(action_name, parameters, precon, effects)
+        if precon_conditions is not None:
+            precon = self._parse_precondition(precon_conditions, action)
+            action.add_preconditions(precon)
+        return action
 
     def _parse_effects(self, params):
         def __extract_effect_values(params):
@@ -187,7 +191,8 @@ class HDDLParser(Parser):
     def _parse_method(self, params):
         i = 0
         l = len(params)
-        method_name, parameters, precon, task, subtasks, constraints = None, None, None, None, None, None
+        method_name, parameters, precon, precon_conditions, task, subtasks, constraints = None, None, None, None, None, \
+                                                                                          None, None
         while i < l:
             if i == 0:
                 if type(params[i]) != str or params[i][0] == ":":
@@ -198,7 +203,7 @@ class HDDLParser(Parser):
                 parameters = self._parse_parameters(params[i + 1])
                 i += 1
             elif params[i] == ":precondition":
-                precon = self._parse_precondition(params[i + 1])
+                precon_conditions = params[i + 1]
                 i += 1
             elif params[i] == ":constraints":
                 constraints = self._parse_precondition(params[i + 1])
@@ -223,7 +228,91 @@ class HDDLParser(Parser):
             else:
                 raise SyntaxError("Unknown token {}".format(params[i]))
             i += 1
-        return Method(method_name, parameters, precon, task, subtasks, constraints)
+        method = Method(method_name, parameters, precon, task, subtasks, constraints)
+        if precon_conditions is not None:
+            precon = self._parse_precondition(precon_conditions, method)
+            method.add_preconditions(precon)
+        return method
+
+    def _parse_precondition(self, params, mod: Modifier = None) -> Precondition:
+        def __parse_conditions(parameters, parent=None):
+            if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
+                parameters = parameters[0]
+
+            if type(parameters) == list:
+                i = 0
+                l = len(parameters)
+                while i < l:
+                    p = parameters[i]
+                    if type(p) == str:
+                        if p == "and" or p == "or" or p == "not":
+                            cons = constraints.add_operator_condition(p, parent)
+                            __parse_conditions(parameters[i + 1:], cons)
+                            return
+                        elif p == "=":
+                            cons = constraints.add_operator_condition(p, parent)
+                            for v in parameters[i + 1:]:
+                                __parse_conditions(v, cons)
+                            return
+                        elif len(parameters) > 1 and all([type(x) == str for x in parameters]):
+                            # Here a type is given
+                            # ['valuableorhazardous', '?collect_fees_instance_2_argument_0']
+                            pred = self.domain.get_predicate(p)
+                            if pred is None:
+                                self.domain.add_predicate(Predicate(p, self._parse_parameters(parameters[1:])))
+                                pred = self.domain.get_predicate(p)
+
+                            pred_parameters = parameters[1:]
+                            """Check if all of the parameters defined in pred_parameters are given from the task
+                            (assuming we are parsing a methods precondition)"""
+                            if given_params is None:
+                                constraints.add_predicate_condition(pred, pred_parameters, parent)
+                            else:
+                                # Check if all predicate_params are in given_params
+                                if all([x in given_params for x in pred_parameters]):
+                                    if parent.operator == "not":
+                                        parent.parent.children.remove(parent)
+                                        operator_parent = constraints.add_given_params_operator_condition("not")
+                                        constraints.add_given_params_predicate_condition(pred, pred_parameters,
+                                                                                         operator_parent)
+                                        parent = parent.parent
+                                    else:
+                                        constraints.add_given_params_predicate_condition(pred, pred_parameters, parent)
+                                else:
+                                    constraints.add_predicate_condition(pred, pred_parameters, parent)
+                            i = l
+                        elif len(parameters) == 1 and type(p) == str:
+                            constraints.add_predicate_condition(self.domain.get_predicate(p), [], parent)
+                            i = l
+                        elif p == "forall":
+                            if len(parameters) == 3:
+                                selector = parameters[1]
+                                satisfier = self._parse_precondition(parameters[2])
+                            else:
+                                selector = parameters[1] + [self._parse_precondition(['and'] + parameters[2])]
+                                satisfier = self._parse_precondition(['and'] + parameters[3])
+                            constraints.add_forall_condition(selector, satisfier.head, parent)
+                            i += l
+                        else:
+                            raise TypeError("Unexpected token {}".format(p))
+                    elif type(p) == list:
+                        __parse_conditions(p, parent)
+                    else:
+                        raise TypeError("Unexpected type {}".format(type(p)))
+                    i += 1
+            elif type(parameters) == str:
+                return constraints.add_variable_condition(parameters, parent)
+            else:
+                raise TypeError("Unexpected type {}".format(type(parameters)))
+
+        constraints = Precondition(params)
+        if type(mod) == Method:
+            given_params = [x.name for x in mod.task['params']]
+        else:
+            given_params = None
+        given_mod = mod
+        __parse_conditions(params)
+        return constraints
 
     def _parse_constant(self, params):
         def __add_constants_to_problem(t=None):

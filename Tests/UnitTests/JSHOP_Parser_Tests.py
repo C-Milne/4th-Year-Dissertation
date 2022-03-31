@@ -95,7 +95,7 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(1, len(assertGoalTask.tasks[0].parameters))
         self.assertEqual(ListParameter, type(assertGoalTask.tasks[0].parameters[0]))
         self.assertEqual('?goal', assertGoalTask.tasks[0].parameters[0].internal_param_name)
-        self.assertEqual('?goals', assertGoalTask.tasks[0].parameters[0].param_list_name)
+        self.assertEqual('?goals', assertGoalTask.tasks[0].parameters[0].name)
         self.assertEqual([], assertGoalTask.tasks[0].tasks)
 
         self.assertEqual([], assertGoalTask.tasks[1].parameters)
@@ -144,6 +144,7 @@ class JSHOPParsingTests(unittest.TestCase):
         # preconditions/effects are found
         domain, problem, parser, solver = env_setup(False)
         parser.parse_domain(self.forall_path + "forall")
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         method = domain.methods['method0']
         self.assertIn('?x', [p.name for p in method.parameters])

@@ -63,6 +63,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         parser.parse_domain(self.forall_path + "forall")
         parser.parse_problem(self.forall_path + "problem")
         execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
 
@@ -156,6 +157,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         parser.parse_problem(self.rover_test_path + "problem")
 
         execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
         # res = solver.solve()
 
         solver._Solver__search(True)

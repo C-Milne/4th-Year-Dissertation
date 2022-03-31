@@ -6,7 +6,7 @@ from Internal_Representation.list_parameter import ListParameter
 
 
 class ActionTracker:
-    def __init__(self, action: Action, parameters_used: dict[str, Object]):
+    def __init__(self, action: Action, parameters_used: dict):
         assert type(action) == Action or type(action) == Method or type(action) == Task
         assert type(parameters_used) == dict
         for k in parameters_used:

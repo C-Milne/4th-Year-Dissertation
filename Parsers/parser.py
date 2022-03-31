@@ -35,9 +35,6 @@ class Parser:
     def _parse_type(self, *args):
         raise NotImplementedError
 
-    def _parse_predicate(self, *args):
-        raise NotImplementedError
-
     def _parse_action(self, *args):
         raise NotImplementedError
 
@@ -47,7 +44,7 @@ class Parser:
     def _parse_task(self, *args):
         raise NotImplementedError
 
-    def _parse_parameters(self, params) -> list[RegParameter]:
+    def _parse_parameters(self, params) -> list:
         def __add_t_param_list(t=None):
             for i in param_names:
                 param_list.append(RegParameter(i, t))
@@ -65,7 +62,7 @@ class Parser:
             elif p == "-":
                 param_type_name = params[i + 1]
                 param_type = self.domain.get_type(param_type_name)
-                if param_type is None or params == False:
+                if param_type is None or params == False or param_type == False:
                     raise TypeError("Invalid type {}".format(param_type_name))
                 __add_t_param_list(param_type)
                 param_names = []
@@ -191,9 +188,6 @@ class Parser:
     def _parse_predicates(self, *args):
         raise NotImplementedError
 
-    def _parse_type(self, *args):
-        raise NotImplementedError
-
     def _parse_constraint(self, *args):
         raise NotImplementedError
 
@@ -213,9 +207,6 @@ class Parser:
         raise NotImplementedError
 
     def _parse_goal_state(self, *args):
-        raise NotImplementedError
-
-    def _parse_htn_tag(self, *args):
         raise NotImplementedError
 
     def _parse_constant(self, *args):

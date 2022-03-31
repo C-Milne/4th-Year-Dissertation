@@ -5,19 +5,16 @@ from Internal_Representation.Object import Object
 
 class Condition:
     def __init__(self):
-        pass
+        parent = None
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         raise NotImplementedError
 
 
 class PredicateCondition(Condition):
-    def __init__(self, pred: Predicate, parameter_names: list[str]):
+    def __init__(self, pred: Predicate, parameter_names: list):
         super().__init__()
-        try:
-            assert isinstance(pred, Predicate)
-        except:
-            raise TypeError
+        assert isinstance(pred, Predicate)
         self.pred = pred
         assert type(parameter_names) == list and all([type(x) == str for x in parameter_names])
         self.parameter_name = parameter_names
@@ -33,7 +30,7 @@ class PredicateCondition(Condition):
 
 
 class GoalPredicateCondition(Condition):
-    def __init__(self, pred: Predicate, parameter_names: list[str]):
+    def __init__(self, pred: Predicate, parameter_names: list):
         super().__init__()
         assert type(pred) == Predicate
         self.pred = pred
@@ -58,7 +55,7 @@ class VariableCondition(Condition):
 
 
 class OperatorCondition(Condition):
-    def __init__(self, operator):
+    def __init__(self, operator: str):
         super().__init__()
         assert operator == "and" or operator == "not" or operator == "or" or operator == "="
         self.operator = operator  # and, not, or, =
@@ -83,7 +80,10 @@ class OperatorCondition(Condition):
                     return True
             return False
         elif self.operator == "not":
-            assert len(children_eval) == 1 and type(children_eval[0]) == bool
+            try:
+                assert len(children_eval) == 1 and type(children_eval[0]) == bool
+            except:
+                raise TypeError
             return not children_eval[0]
         elif self.operator == "=":
             v = children_eval[0]
@@ -93,7 +93,7 @@ class OperatorCondition(Condition):
             return True
 
 
-class ForallCondition(Condition):
+class ForAllCondition(Condition):
     def __init__(self, selected_variable: str, selector, satisfier: Condition):
         super().__init__()
         assert isinstance(satisfier, Condition)
@@ -109,8 +109,7 @@ class ForallCondition(Condition):
                 return False
         return True
 
-    def _collect_objects(self, param_dict, search_model, problem) -> list[Object]:
-        """TODO: Make this use parameter selection module when implemented"""
+    def _collect_objects(self, param_dict, search_model, problem) -> list:
         if type(self.selector) == tuple and self.selector[0] == "type":
             return problem.get_objects_of_type(self.selector[1])
         elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):

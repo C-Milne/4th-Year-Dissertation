@@ -13,3 +13,9 @@ class Heuristic:
 
     def ranking(self, model) -> float:
         raise NotImplementedError
+
+    def presolving_processing(self) -> None:
+        pass
+
+    def task_milestone(self, model) -> bool:
+        return True

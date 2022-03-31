@@ -4,8 +4,8 @@ from Internal_Representation.parameter import Parameter
 
 class RegParameter(Parameter):
     def __init__(self, name, param_type=None):
-        super().__init__()
-        self.name = name
+        super().__init__(name)
+        assert self.name is not None
         if param_type is None:
             self.type = None
         elif type(param_type) == Type:
