@@ -33,7 +33,10 @@ class Model:
         Model.model_counter += 1
 
     def set_ranking(self, ranking):
-        assert type(ranking) == float or type(ranking) == int
+        try:
+            assert type(ranking) == float or type(ranking) == int
+        except:
+            raise TypeError
         self.ranking = ranking
 
     def get_next_modifier(self):

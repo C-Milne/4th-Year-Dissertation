@@ -8,6 +8,7 @@ from Tests.UnitTests.IPC_Tests import IPCTests
 from Tests.UnitTests.JSHOP_Parser_Tests import JSHOPParsingTests
 from Tests.UnitTests.JSHOP_Solving_Tests import JSHOPSolvingTests
 from Tests.UnitTests.Parameter_Selection_Tests import ParameterSelectionTests
+from Tests.UnitTests.Heuristic_Tests import HeuristicTests
 
 """https://stackoverflow.com/questions/12011091/trying-to-implement-python-testsuite"""
 
@@ -21,6 +22,7 @@ def suite():
     test_suite.addTest(unittest.makeSuite(SolvingTests))
     test_suite.addTest(unittest.makeSuite(IPCTests))
     test_suite.addTest(unittest.makeSuite(ParameterSelectionTests))
+    test_suite.addTest(unittest.makeSuite(HeuristicTests))
     return test_suite
 
 
