@@ -4,6 +4,7 @@ Task = sys.modules['Internal_Representation.task'].Task
 Method = sys.modules['Internal_Representation.method'].Method
 Action = sys.modules['Internal_Representation.action'].Action
 Subtask = sys.modules['Internal_Representation.subtasks'].Subtasks.Subtask
+Model = sys.modules['Solver.model'].Model
 
 
 class Tree:
@@ -63,15 +64,31 @@ class DeleteRelaxed(Heuristic):
 
         self.tree = Tree()
 
-    def ranking(self, model) -> float:
+    def ranking(self, model: Model) -> float:
         next_mod = model.search_modifiers[0].task
         if type(next_mod) != Task and model.ranking is not None:
             return model.ranking
         elif type(next_mod) != Task:
-            op = model.operations_taken[-1].action
+            i = -1
+            op = model.operations_taken[i].action
+            while type(op) != Task:
+                i -= 1
+                op = model.operations_taken[i].action
             assert type(op) == Task
-            return len(model.operations_taken) + self.tree.nodes[op.name].distance
-        return len(model.operations_taken) + self.tree.nodes[next_mod.name].distance
+            return len(model.operations_taken) + self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
+        else:
+            # We have all tasks
+            return len(model.operations_taken) + self._calculate_distance_tasks(model)
+
+    def _calculate_distance_tasks(self, model: Model):
+        distance = 0
+        for m in model.search_modifiers:
+            if type(m) == Task:
+                distance += self.tree.nodes[m.name].distance
+        for m in model.waiting_subtasks:
+            if type(m) == Task:
+                distance += self.tree.nodes[m.name].distance
+        return distance
 
     def presolving_processing(self) -> None:
         # Add all actions to tree
