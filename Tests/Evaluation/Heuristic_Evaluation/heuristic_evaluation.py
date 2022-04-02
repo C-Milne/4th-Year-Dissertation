@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import time
 import pickle
@@ -66,12 +67,13 @@ def save_pickle_object(object, file_name) -> str:
     return f_name
 
 
-def test_runner(test, heuristic):
+def test_runner(test, heuristic, early_precon=True):
     controller = Runner(test[0], test[1])
     controller.parse_domain()
     controller.parse_problem()
     controller.set_heuristic(heuristic.class_reference)
     controller.set_early_task_precon_checker(heuristic.early_task_precon_checker)
+    controller.solver.task_expansion_given_param_check = early_precon
 
     start_time = time.time()
     res = controller.solve()
@@ -84,74 +86,77 @@ def test_runner(test, heuristic):
     save_to_file(test_name, heuristic, timeTaken, res)
 
 
-def run_tests(tests, strats):
+def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
+    os.chdir("Archive")
+    # Clear subfolder
+    if clear_folder:
+        if os.path.isdir(sub_folder):
+            shutil.rmtree(sub_folder)
+    if not os.path.isdir(sub_folder):
+        os.mkdir(sub_folder)
+        os.mkdir(sub_folder + "/serialised_objects")
+    os.chdir(sub_folder)
+
+    if "early_precon" in kwargs.keys():
+        early_precon = kwargs["early_precon"]
+        assert type(early_precon) == bool
+    else:
+        early_precon = True
+
     # Create log csv for each strategy being assessed
     for s in strats:
         create_file(s)
     for t in tests:
         for s in strats:
             for i in range(5):
-                test_runner(t, s)
+                test_runner(t, s, early_precon)
     for s in strats:
         s.file.close()
+    os.chdir("../..")
 
 
 """Test Rover p01 -> p03 with breadth first search without pruning - DONE"""
-# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
+# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
 #
-# run_tests(tests, strats)
+# run_tests(tests, strats, "Rover")
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
-# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
+# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-# run_tests(tests, strats)
+# run_tests(tests, strats, "Rover", False)
 
-"""Test Rover p04 with breadth first search and no pruning"""
-# This test took 2+ hours
-# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
-# run_tests(tests, strats)
-
-"""Test Rover p01 -> p03 with breadth first search without pruning (No early precon checking) -> Done"""
+"""Test Rover p01 -> p03 with breadth first search without pruning (No early precon checking) -> NEEDS ATTENTION"""
 # tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
 # ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
 # ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl")]
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations, False)]
 #
-# run_tests(tests, strats)
+# run_tests(tests, strats, "Rover_no_early_precon")
 
-"""Test Rover p01 -> p04 with breadth first search and pruning (No early precon checking) -> DONE"""
+"""Test Rover p01 -> p04 with breadth first search and pruning (No early precon checking) -> NEEDS ATTENTION"""
 # tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
 # ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
 # ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl"),
 # ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl")]
 #
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning, False)]
-# run_tests(tests, strats)
+# run_tests(tests, strats, "Rover_no_early_precon", False)
 
 """Test translog1 with breadth first search with and without pruning -> DONE"""
-# tests = [("../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../Examples//IPC_Tests/um-translog01/problem.hddl")]
+# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
-# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-#
-# run_tests(tests, strats)
-
-"""Test translog1 with breadth first search with and without pruning (No early precon checking) -> DONE"""
-# tests = [("../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../Examples/IPC_Tests/um-translog01/problem.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations, False),
-# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning, False)]
-#
-# run_tests(tests, strats)
+# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
+#           Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+# run_tests(tests, strats, "translog")
 
 """Create an test more rover domains (larger than p3 but smaller than p4)"""
 
@@ -160,14 +165,14 @@ def run_tests(tests, strats):
 """Test some depot examples"""
 
 """Test rover with distance to goal heuristic -> DONE"""
-# tests = [("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p01.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p02.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p03.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p04.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p05.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p06.hddl"),
-# ("../../Examples/Rover/domain.hddl", "../../Examples/Rover/p07.hddl")]
+# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p05.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p06.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p07.hddl")]
 #
 # strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
 #
-# run_tests(tests, strats)
+# run_tests(tests, strats, "Rover")

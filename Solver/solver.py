@@ -137,8 +137,9 @@ class Solver:
                     i += 1
 
                 # Check if the given parameters satisfy preconditions that only use the given parameters
-                if self.task_expansion_given_param_check and not method.evaluate_preconditions_conditions_given_params(parameters, search_model, self.problem):
-                    continue
+                if self.task_expansion_given_param_check:
+                    if not method.evaluate_preconditions_conditions_given_params(parameters, search_model, self.problem):
+                        continue
 
                 param_options = self.parameter_selector.get_potential_parameters(method, parameters, search_model)
 
