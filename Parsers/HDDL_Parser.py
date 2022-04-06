@@ -416,6 +416,9 @@ class HDDLParser(Parser):
             self.problem.add_to_initial_state(ProblemPredicate(self.domain.get_predicate(i[0]), obs))
 
     def _parse_htn_tag(self, params):
+        ordered_subtasks = False
+        ordered = False
+
         while params:
             lead = params.pop(0)
 
@@ -423,6 +426,7 @@ class HDDLParser(Parser):
                 subtasks = self._parse_subtasks(params.pop(0))
                 self.problem.add_subtasks(subtasks)
                 self._requires_grounding.append(subtasks)
+                ordered_subtasks = True
             elif lead == ":tasks" or lead == ":subtasks":
                 subtasks = self._parse_subtasks(params.pop(0), False)
                 self.problem.add_subtasks(subtasks)
@@ -432,12 +436,18 @@ class HDDLParser(Parser):
                     raise NotImplementedError
             elif lead == ":ordering":
                 self.problem.order_subtasks(params.pop(0))
+                ordered = True
             elif lead == ":constraints":
                 group = params.pop(0)
                 if len(group) > 0:
                     raise NotImplementedError("Constraints on Problem Initiation is not supported")
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
+
+        if not ordered_subtasks and not ordered:
+            # We need to order the subtasks
+            self.problem.order_subtasks([])
+            print("Here")
 
     def _parse_goal_state(self, params):
         if type(params) == list and len(params) == 1 and type(params[0]) == list and len(params[0]) > 1:

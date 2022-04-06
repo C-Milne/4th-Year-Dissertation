@@ -52,11 +52,15 @@ class Solver:
         assert isinstance(selector, ParameterSelector)
         self.parameter_selector = selector
 
-    def solve(self):
+    def solve(self, **kwargs):
         self.parameter_selector.presolving_processing(self.domain, self.problem)
         self.search_models.heuristic.presolving_processing()
         task_counter = 0
-        subtasks = self.problem.subtasks.get_tasks()
+        subtasks = self.problem.subtasks.get_task_orderings()
+        if len(subtasks) == 1:
+            subtasks = subtasks[0]
+        else:
+            raise NotImplementedError
         list_subT = []
         num_tasks = len(subtasks)
         while task_counter < num_tasks:
@@ -84,7 +88,13 @@ class Solver:
 
         self.search_models.add(initial_model)
 
-        return self.__search()
+        if "search" in kwargs:
+            search = kwargs["search"]
+        else:
+            search = True
+
+        if search != False:
+            return self.__search()
 
     def __search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
