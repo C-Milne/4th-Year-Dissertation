@@ -390,7 +390,7 @@ class JSHOPParser(Parser):
         if len(params) == 0 or params == "nil":
             return None
         else:
-            subtasks = Subtasks()
+            subtasks = Subtasks(True)
             i = 0
             l = len(params)
             while i < l:
@@ -461,7 +461,7 @@ class JSHOPParser(Parser):
                     if not task_modifier_ob is None:
                         task_modifier = task_modifier_ob
 
-                    added_sub_task = subtasks.add_subtask(task_label, task_modifier, task_parameters, decorator)
+                    added_sub_task = subtasks.add_subtask(task_label, task_modifier, task_parameters)
 
                     if type(task_modifier) == str:
                         # Mark this method for grounding after parsing has finished

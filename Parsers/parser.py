@@ -142,13 +142,13 @@ class Parser:
         __parse_conditions(params)
         return constraints
 
-    def _parse_subtasks(self, params):
+    def _parse_subtasks(self, params, ordered=True):
         """:params  params  : ['and', ['task0', ['drop', '?rover', '?s']]]
                             : ['swap', 'banjo', 'kiwi']"""
         if len(params) == 0:
             return None
         else:
-            subtasks = Subtasks()
+            subtasks = Subtasks(ordered)
             i = 0
             l = len(params)
             while i < l:

@@ -157,36 +157,39 @@ class Solver:
             search_model.add_operation(subtask.task, subtask.given_params)
             self.search_models.add(search_model)
             return
-        for mod in subtask.task.subtasks.tasks:
-            try:
-                assert type(mod.task) == Action or type(mod.task) == Task
-            except:
-                if mod.task is None:
-                    continue
 
-            mod = Subtasks.Subtask(mod.task, mod.parameters)
+        for subtask_option in subtask.task.subtasks.task_orderings:
+            search_mod = self.reproduce_model(search_model)
+            for mod in subtask_option:
+                try:
+                    assert type(mod.task) == Action or type(mod.task) == Task
+                except:
+                    if mod.task is None:
+                        continue
 
-            # Check parameter count
-            parameters = {}
-            param_keys = [p.name for p in mod.parameters]
-            action_keys = [p.name for p in mod.task.parameters]
-            if len(action_keys) > 0:
-                for j in range(len(action_keys)):
-                    try:
-                        parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
-                    except IndexError:
-                        pass
-            else:
-                for j in range(len(param_keys)):
-                    parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
+                mod = Subtasks.Subtask(mod.task, mod.parameters)
 
-            mod.add_given_parameters(parameters)
+                # Check parameter count
+                parameters = {}
+                param_keys = [p.name for p in mod.parameters]
+                action_keys = [p.name for p in mod.task.parameters]
+                if len(action_keys) > 0:
+                    for j in range(len(action_keys)):
+                        try:
+                            parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+                        except IndexError:
+                            pass
+                else:
+                    for j in range(len(param_keys)):
+                        parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
 
-            # Add mod to search_model
-            search_model.insert_modifier(mod, i)
-            i += 1
-        search_model.add_operation(subtask.task, subtask.given_params)
-        self.search_models.add(search_model)
+                mod.add_given_parameters(parameters)
+
+                # Add mod to search_model
+                search_mod.insert_modifier(mod, i)
+                i += 1
+            search_mod.add_operation(subtask.task, subtask.given_params)
+            self.search_models.add(search_mod)
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action

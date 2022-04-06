@@ -193,6 +193,9 @@ class HDDLParser(Parser):
         l = len(params)
         method_name, parameters, precon, precon_conditions, task, subtasks, constraints = None, None, None, None, None, \
                                                                                           None, None
+
+        unordered_subtasks = False
+
         while i < l:
             if i == 0:
                 if type(params[i]) != str or params[i][0] == ":":
@@ -217,9 +220,12 @@ class HDDLParser(Parser):
                 else:
                     task = {"task": task_ob, "params": self._parse_parameters(params[i + 1][1:])}
                 i += 1
-            elif params[i] == ":ordered-subtasks" or params[i] == ":ordered-tasks" or params[i] == ":subtasks" or \
-                        params[i] == ":tasks":
+            elif params[i] == ":ordered-subtasks" or params[i] == ":ordered-tasks":
                 subtasks = self._parse_subtasks(params[i + 1])
+                i += 1
+            elif params[i] == ":subtasks" or params[i] == ":tasks":
+                subtasks = self._parse_subtasks(params[i + 1], False)
+                unordered_subtasks = True
                 i += 1
             elif params[i] == ":ordering":
                 assert not subtasks is None
@@ -228,6 +234,13 @@ class HDDLParser(Parser):
             else:
                 raise SyntaxError("Unknown token {}".format(params[i]))
             i += 1
+
+        if subtasks is not None and unordered_subtasks and len(subtasks.task_orderings) == 0:
+            l = []
+            for subt in subtasks.tasks:
+                l.append(subt)
+            subtasks.task_orderings.append(l)
+
         method = Method(method_name, parameters, precon, task, subtasks, constraints)
         if precon_conditions is not None:
             precon = self._parse_precondition(precon_conditions, method)
@@ -270,8 +283,16 @@ class HDDLParser(Parser):
                             else:
                                 # Check if all predicate_params are in given_params
                                 if all([x in given_params for x in pred_parameters]):
-                                    if parent.operator == "not":
-                                        parent.parent.children.remove(parent)
+                                    if parent is None:
+                                        constraints.add_given_params_predicate_condition(pred, pred_parameters,
+                                                                                         parent)
+                                    elif parent.operator == "not":
+                                        parent2 = parent.parent
+                                        if parent2 is not None:
+                                            parent2.children.remove(parent)
+                                        else:
+                                            constraints.head = None
+
                                         operator_parent = constraints.add_given_params_operator_condition("not")
                                         constraints.add_given_params_predicate_condition(pred, pred_parameters,
                                                                                          operator_parent)
@@ -398,8 +419,12 @@ class HDDLParser(Parser):
         while params:
             lead = params.pop(0)
 
-            if lead == ":subtasks" or lead == ":ordered-subtasks" or lead == ":tasks" or lead == ":ordered-tasks":
+            if lead == ":ordered-subtasks" or lead == ":ordered-tasks":
                 subtasks = self._parse_subtasks(params.pop(0))
+                self.problem.add_subtasks(subtasks)
+                self._requires_grounding.append(subtasks)
+            elif lead == ":tasks" or lead == ":subtasks":
+                subtasks = self._parse_subtasks(params.pop(0), False)
                 self.problem.add_subtasks(subtasks)
                 self._requires_grounding.append(subtasks)
             elif lead == ":parameters":
@@ -407,6 +432,10 @@ class HDDLParser(Parser):
                     raise NotImplementedError
             elif lead == ":ordering":
                 self.problem.order_subtasks(params.pop(0))
+            elif lead == ":constraints":
+                group = params.pop(0)
+                if len(group) > 0:
+                    raise NotImplementedError("Constraints on Problem Initiation is not supported")
             else:
                 raise TypeError("Unknown keyword {}".format(lead))
 

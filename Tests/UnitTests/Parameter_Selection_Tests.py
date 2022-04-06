@@ -39,4 +39,3 @@ class ParameterSelectionTests(unittest.TestCase):
         execution_prep(problem, solver)
         res = solver.solve()
         self.assertNotEqual(None, res)
-        self.assertEqual(1, 2)

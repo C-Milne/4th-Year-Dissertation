@@ -33,24 +33,37 @@ class Subtasks:
             else:
                 return self.task.preconditions.evaluate(params, model, problem)
 
-    def __init__(self):
+    def __init__(self, ordered):
         self.tasks = []
         self.labelled_tasks = {}
+        self.task_orderings = []
+        self.ordered = ordered
+        if self.ordered:
+            self.task_orderings.append([])
 
-    def add_subtask(self, label: str, modifier, parameters: list, decorator: str = None) -> Subtask:
+    def add_subtask(self, label: str, modifier, parameters: list) -> Subtask:
         assert type(label) == str or label is None
         assert isinstance(modifier, Modifier) or type(modifier) == str
         assert type(parameters) == list or type(parameters) == ListParameter
         if type(parameters) == list:
             for p in parameters:
                 assert isinstance(p, Parameter)
+
         subtask_to_add = self.Subtask(modifier, parameters)
         if label is not None:
             self.labelled_tasks[label] = subtask_to_add
         self.tasks.append(subtask_to_add)
+
+        if self.ordered:
+            self.task_orderings[0].append(subtask_to_add)
+
         return subtask_to_add
 
     def order_subtasks(self, orderings):
+        try:
+            assert not self.ordered
+        except:
+            raise ValueError
         ordered_subtasks = []
         for i in orderings:
             if i == "and":
