@@ -33,7 +33,7 @@ class Subtasks:
             else:
                 return self.task.preconditions.evaluate(params, model, problem)
 
-    def __init__(self, ordered):
+    def __init__(self, ordered: bool):
         self.tasks = []
         self.labelled_tasks = {}
         self.task_orderings = []
@@ -98,6 +98,9 @@ class Subtasks:
             def add_predecessor(self, node):
                 self.predecessors.append(node)
 
+            def __str__(self):
+                return self.name
+
         task_nodes = {}
         for i in orderings:
             if type(i) != list:
@@ -136,8 +139,15 @@ class Subtasks:
             elif len(S) == 0:
                 return ordering
             else:
-                print("Here")
-                raise NotImplementedError
+                return_orderings = []
+                for i in S:
+                    res = kahns_algo([i], self.reproduce_list(ordering))
+                    if all([type(x) == TaskNode for x in res]):
+                        return_orderings.append(res)
+                    else:
+                        for r in res:
+                            return_orderings.append(r)
+                return return_orderings
 
         S = []
         # Populate S
@@ -173,6 +183,13 @@ class Subtasks:
 
     def get_task_orderings(self):
         return self.task_orderings
+
+    @staticmethod
+    def reproduce_list(l: list):
+        l2 = []
+        for i in l:
+            l2.append(i)
+        return l2
 
     def __len__(self):
         return len(self.tasks)
