@@ -15,7 +15,15 @@ class PartialOrderTests(unittest.TestCase):
         parser.parse_domain(self.rover_path + "domain.hddl")
         parser.parse_problem(self.rover_path + "pfile01.hddl")
         res = solver.solve()
-        self.assertEqual(1, 2)
+        self.assertNotEqual(None, res)
+
+    def test_rover_presolve_setup(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_path + "domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
+        execution_prep(problem, solver)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertEqual(6, len(search_models))
 
     def test_ordering_total_ordered_problem(self):
         domain, problem, parser, solver = env_setup(True)

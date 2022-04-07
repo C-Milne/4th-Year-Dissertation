@@ -152,8 +152,14 @@ class Subtasks:
         S = []
         # Populate S
         if orderings == []:
+            # Create labels
+            count = 0
             for i in self.tasks:
-                S.append(i)
+                self.labelled_tasks["task" + str(count)] = i
+                # Add to S
+                task_nodes["task" + str(count)] = TaskNode("task" + str(count))
+                S.append(task_nodes["task" + str(count)])
+                count += 1
         else:
             for t in task_nodes:
                 t = task_nodes[t]
