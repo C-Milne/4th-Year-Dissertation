@@ -56,7 +56,7 @@ class Tree:
         return None
 
 
-class DeleteRelaxed(Heuristic):
+class TreeDistance(Heuristic):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
         self.low_target = True
