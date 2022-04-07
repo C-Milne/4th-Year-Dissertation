@@ -447,7 +447,6 @@ class HDDLParser(Parser):
         if not ordered_subtasks and not ordered:
             # We need to order the subtasks
             self.problem.order_subtasks([])
-            print("Here")
 
     def _parse_goal_state(self, params):
         if type(params) == list and len(params) == 1 and type(params[0]) == list and len(params[0]) > 1:

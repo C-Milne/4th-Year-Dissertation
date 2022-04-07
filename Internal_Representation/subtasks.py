@@ -141,10 +141,14 @@ class Subtasks:
 
         S = []
         # Populate S
-        for t in task_nodes:
-            t = task_nodes[t]
-            if len(t.predecessors) == 0:
-                S.append(t)
+        if orderings == []:
+            for i in self.tasks:
+                S.append(i)
+        else:
+            for t in task_nodes:
+                t = task_nodes[t]
+                if len(t.predecessors) == 0:
+                    S.append(t)
 
         # Kahns Algorithm
         orderings = kahns_algo(S)
@@ -157,7 +161,10 @@ class Subtasks:
         for o in orderings:
             r_o = []
             for label in o:
-                r_o.append(self.labelled_tasks[label.name])
+                if type(label) != Subtasks.Subtask:
+                    r_o.append(self.labelled_tasks[label.name])
+                else:
+                    r_o.append(label)
             return_orderings.append(r_o)
         return return_orderings
 
