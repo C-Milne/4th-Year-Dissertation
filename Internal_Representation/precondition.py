@@ -1,6 +1,7 @@
 import sys
 from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
     ForAllCondition, GoalPredicateCondition
+Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 
 
 class Precondition:
@@ -18,7 +19,7 @@ class Precondition:
         self.__final_condition_addition_checks(con, parent)
         return con
 
-    def add_predicate_condition(self, pred, parameter_names: list, parent: Condition) -> PredicateCondition:
+    def add_predicate_condition(self, pred: Predicate, parameter_names: list, parent: Condition) -> PredicateCondition:
         assert isinstance(parent, Condition) or parent is None
         con = PredicateCondition(pred, parameter_names)
         self.__final_condition_addition_checks(con, parent)
@@ -101,3 +102,11 @@ class Precondition:
         c = a.copy()
         c.update(b)
         return c
+
+    def __eq__(self, other):
+        try:
+            if self.conditions == other.conditions:
+                return True
+            return False
+        except:
+            return False

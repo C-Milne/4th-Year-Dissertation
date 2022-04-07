@@ -28,6 +28,14 @@ class PredicateCondition(Condition):
                 raise KeyError
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
 
+    def __eq__(self, other):
+        try:
+            if self.pred == other.pred and self.parameter_name == other.parameter_name:
+                return True
+            return False
+        except:
+            return False
+
 
 class GoalPredicateCondition(Condition):
     def __init__(self, pred: Predicate, parameter_names: list):
