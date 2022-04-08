@@ -3,7 +3,10 @@
 2. Add and test a depth first approach - this will get stuck in recursion
 3. Track number of times a heuristic is called
 4. Delete relaxed plan - max heuristic
-5. topological sort - for ordering partial ordered problems
+5. Partial ordering
+   1. Consider orderings for initial task network
+      1. The pruning methods found in current heuristics will not work with this - Change to consider which tasks are remaining not how many are remaining
+      2. Only print the subtask names and numbers once
 6. Remove the requirements variable from modifier class. Move Requirement class to heuristic folder
 7. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
 8. Implement writing plan to file
