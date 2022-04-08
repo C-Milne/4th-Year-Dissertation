@@ -72,10 +72,46 @@ class DeleteRelaxed(Heuristic):
         self.parameter_selector = AllParameters(self.solver)
 
     def ranking(self, model: Model) -> float:
+        # Create duplicate state
+        alt_state = State.reproduce(self.alt_problem.initial_state)
+
+        # Create list with all possible actions and methods
+        modifiers = []
+        for a in self.alt_domain.get_all_actions():
+            modifiers.append(a)
+        for m in self.alt_domain.get_all_methods():
+            modifiers.append(m)
+
+        # Choose target('s)
+        targets = self._get_target_tasks(model)
         print("here")
 
+    def _get_target_tasks(self, model):
+        targets = []
+        next_mod = model.search_modifiers[0].task
+        if type(next_mod) != Task and model.ranking is not None:
+            return model.ranking
+        elif type(next_mod) != Task:
+            i = -1
+            op = model.operations_taken[i].action
+            while type(op) != Task:
+                i -= 1
+                op = model.operations_taken[i].action
+            assert type(op) == Task
+            targets.append(op.name)
+        else:
+            # We have all tasks
+            pass
+
+        for m in model.search_modifiers:
+            if type(m) == Task:
+                targets.append(m.name)
+        for m in model.waiting_subtasks:
+            if type(m) == Task:
+                targets.append(m.name)
+        return targets
+
     def _calculate_distance(self, model: Model):
-        # Create duplicate state
         print("Here")
 
     def presolving_processing(self) -> None:

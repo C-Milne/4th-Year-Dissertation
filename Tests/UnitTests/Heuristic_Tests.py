@@ -137,3 +137,11 @@ class HeuristicTests(unittest.TestCase):
         heu = solver.search_models.heuristic
         alt_problem = heu.alt_problem
         self.assertEqual(problem.initial_state, alt_problem.initial_state)
+
+    def test_delete_relaxed_basic_execution_setup(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_path + "basic.hddl")
+        parser.parse_problem(self.basic_path + "pb1.hddl")
+        solver.set_heuristic(DeleteRelaxed)
+        solver.solve(search=False)
+        self.assertEqual(1, 2)
