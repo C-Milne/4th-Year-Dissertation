@@ -13,7 +13,7 @@ class Modifier:
         for p in parameters:
             assert isinstance(p, Parameter)
         self.parameters = parameters
-        assert type(preconditions) == Precondition or preconditions is None
+        assert isinstance(preconditions, Precondition) or preconditions is None
         self.preconditions = preconditions
         self.requirements = None
 

@@ -88,10 +88,7 @@ class OperatorCondition(Condition):
                     return True
             return False
         elif self.operator == "not":
-            try:
-                assert len(children_eval) == 1 and type(children_eval[0]) == bool
-            except:
-                raise TypeError
+            assert len(children_eval) == 1 and type(children_eval[0]) == bool
             return not children_eval[0]
         elif self.operator == "=":
             v = children_eval[0]

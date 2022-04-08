@@ -2,7 +2,7 @@ import unittest
 from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Solver.Heuristics.tree_distance import TreeDistance
-from Solver.Heuristics.delete_relaxed import DeleteRelaxed
+from Solver.Heuristics.delete_relaxed import DeleteRelaxed, AltPrecondition, AltOperatorCondition
 from Internal_Representation.conditions import PredicateCondition
 
 
@@ -63,6 +63,9 @@ class HeuristicTests(unittest.TestCase):
         self.assertEqual(domain.actions['pickup'].parameters, alt_domain.actions['pickup-banjo'].parameters)
         self.assertEqual(domain.actions['pickup'].parameters, alt_domain.actions['pickup-kiwi'].parameters)
 
+        self.assertEqual(AltPrecondition, type(alt_domain.actions['pickup-kiwi'].preconditions))
+        self.assertEqual(AltOperatorCondition, type(alt_domain.actions['pickup-kiwi'].preconditions.head))
+
         self.assertEqual(domain.actions['drop'].preconditions, alt_domain.actions['drop-banjo'].preconditions)
         self.assertEqual(domain.actions['drop'].preconditions, alt_domain.actions['drop-kiwi'].preconditions)
 
@@ -120,6 +123,11 @@ class HeuristicTests(unittest.TestCase):
         self.assertIn(PredicateCondition(alt_domain.predicates["U"], ['pickup-kiwi']),
                       alt_domain.methods["have_second-kiwi-kiwi"].preconditions.head.children)
 
+        self.assertEqual(AltPrecondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions))
+        self.assertEqual(AltOperatorCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head))
+        self.assertEqual(PredicateCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head.children[0]))
+        self.assertEqual(AltOperatorCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head.children[1]))
+
     def test_delete_relaxed_preprocessing_basic_alt_problem(self):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.basic_path + "basic.hddl")
@@ -128,4 +136,4 @@ class HeuristicTests(unittest.TestCase):
         solver.search_models.heuristic.presolving_processing()
         heu = solver.search_models.heuristic
         alt_problem = heu.alt_problem
-        self.assertEqual(1, 2)
+        self.assertEqual(problem.initial_state, alt_problem.initial_state)
