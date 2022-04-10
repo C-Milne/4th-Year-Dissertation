@@ -4,6 +4,8 @@ from Tests.UnitTests.TestTools.env_setup import env_setup
 from Solver.Heuristics.tree_distance import TreeDistance
 from Solver.Heuristics.delete_relaxed import DeleteRelaxed, AltPrecondition, AltOperatorCondition
 from Internal_Representation.conditions import PredicateCondition
+from Solver.model import Model
+from Internal_Representation.state import State
 
 
 class HeuristicTests(unittest.TestCase):
@@ -145,3 +147,34 @@ class HeuristicTests(unittest.TestCase):
         solver.set_heuristic(DeleteRelaxed)
         solver.solve(search=False)
         self.assertEqual(1, 2)
+
+    def test_delete_relaxed_choose_targets(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_path + "basic.hddl")
+        parser.parse_problem(self.basic_path + "pb1.hddl")
+        solver.set_heuristic(DeleteRelaxed)
+        heu = solver.search_models.heuristic
+        heu.presolving_processing()
+
+        subtasks_orderings = problem.subtasks.get_task_orderings()
+        subtasks = subtasks_orderings[0]
+        list_subT = []
+        num_tasks = len(subtasks)
+        task_counter = 0
+        while task_counter < num_tasks:
+            subT = subtasks[task_counter]
+            if subT == "and" or subT == "or":
+                del subtasks[task_counter]
+                num_tasks -= 1
+                continue
+
+            # Create initial search model
+            param_dict = solver._Solver__generate_param_dict(subT.task, subT.parameters)
+            subT.add_given_parameters(param_dict)
+            list_subT.append(subT)
+            task_counter += 1
+
+        model = Model(State.reproduce(problem.initial_state), list_subT, problem, [])
+        targets = heu._get_target_tasks(model)
+        self.assertNotEqual([], targets)
+        self.assertEqual(['U-swap-banjo-kiwi'], targets)

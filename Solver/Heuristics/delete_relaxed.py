@@ -1,5 +1,6 @@
 import copy
 import sys
+import re
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Parameter_Selection.All_Parameters import AllParameters
 Task = sys.modules['Internal_Representation.task'].Task
@@ -13,17 +14,19 @@ State = sys.modules['Internal_Representation.state'].State
 Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 RegParameter = sys.modules['Internal_Representation.reg_parameter'].RegParameter
 OperatorCondition = sys.modules['Internal_Representation.conditions'].OperatorCondition
+PredicateCondition = sys.modules['Internal_Representation.conditions'].PredicateCondition
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 Condition = sys.modules['Internal_Representation.conditions'].Condition
 
 
 class AltOperatorCondition(OperatorCondition):
-    def __init__(self, operator: str):
+    def __init__(self, operator: str, pred: Predicate):
         super().__init__(operator)
+        self.pred = pred
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         children_eval = []
-        if len(self.children) > 0:
+        if len(self.children) > 0 and (self.operator == "and" or self.operator == "or"):
             children_eval = [x.evaluate(param_dict, search_model, problem) for x in self.children]
         if self.operator == "and":
             for i in children_eval:
@@ -36,9 +39,15 @@ class AltOperatorCondition(OperatorCondition):
                     return True
             return False
         elif self.operator == "not":
-            assert len(children_eval) == 1 and len(self.children) == 1
+            assert len(self.children) == 1
             """Changes go here"""
-            raise NotImplementedError
+            # In the alt state not conditions are stored in the state under new predicates
+            # Such as (not-have, kiwi)
+            p_list = []
+            for i in self.children[0].parameter_name:
+                p_list.append(param_dict[i])
+
+            return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
         elif self.operator == "=":
             v = children_eval[0]
             for i in children_eval[1:]:
@@ -47,15 +56,37 @@ class AltOperatorCondition(OperatorCondition):
             return True
 
 
+class AltPredicateCondition(PredicateCondition):
+    def __init__(self, pred: Predicate, parameter_names: list):
+        super().__init__(pred, parameter_names)
+
+    def evaluate(self, param_dict: dict, search_model, problem) -> bool:
+        if self.pred.name != "U":
+            p_list = []
+            for i in self.parameter_name:
+                p_list.append(param_dict[i])
+
+            return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+        else:
+            return search_model.current_state.check_if_predicate_value_exists(self.pred, self.parameter_name)
+
+
 class AltPrecondition(Precondition):
     def __init__(self, conditions: str):
         super().__init__(conditions)
 
-    def add_operator_condition(self, operator: str, parent: Condition) -> AltOperatorCondition:
+    def add_operator_condition(self, operator: str, parent: Condition, pred: Predicate = None) -> AltOperatorCondition:
         assert type(operator) == str
         assert isinstance(parent, Condition) or parent is None
+        assert isinstance(pred, Predicate) or pred is None
 
-        con = AltOperatorCondition(operator)
+        con = AltOperatorCondition(operator, pred)
+        self._final_condition_addition_checks(con, parent)
+        return con
+
+    def add_predicate_condition(self, pred: Predicate, parameter_names: list, parent: Condition) -> PredicateCondition:
+        assert isinstance(parent, Condition) or parent is None
+        con = AltPredicateCondition(pred, parameter_names)
         self._final_condition_addition_checks(con, parent)
         return con
 
@@ -84,7 +115,7 @@ class DeleteRelaxed(Heuristic):
 
         # Choose target('s)
         targets = self._get_target_tasks(model)
-        print("here")
+        return self._calculate_distance(self.solver.reproduce_model(model), modifiers, alt_state, targets)
 
     def _get_target_tasks(self, model):
         targets = []
@@ -99,20 +130,57 @@ class DeleteRelaxed(Heuristic):
                 op = model.operations_taken[i].action
             assert type(op) == Task
             targets.append(op.name)
+            raise NotImplementedError
         else:
             # We have all tasks
             pass
 
         for m in model.search_modifiers:
-            if type(m) == Task:
-                targets.append(m.name)
+            if type(m.task) == Task:
+                targets.append("U-" + m.task.name + self._concat_param_object_names([m.given_params[x] for x in m.given_params]))
         for m in model.waiting_subtasks:
             if type(m) == Task:
-                targets.append(m.name)
+                targets.append("U-" + m.task.name + self._concat_param_object_names([m.given_params[x] for x in m.given_params]))
         return targets
 
-    def _calculate_distance(self, model: Model):
-        print("Here")
+    def _concat_param_object_names(self, list_obs: list):
+        names = ""
+        for o in list_obs:
+            names += "-" + o.name
+        return names
+
+    def _get_objects_from_alt_modifier_name(self, name: str) -> list:
+        obs = []
+        occurrences = [m.start() for m in re.finditer('-', name)]
+        while occurrences:
+            start = occurrences.pop(0) + 1
+            if occurrences:
+                end = occurrences[0]
+            else:
+                end = len(name)
+            obs.append(self.problem.get_object(name[start:end]))
+        return obs
+
+    def _calculate_distance(self, model: Model, modifiers: list, alt_state: State, targets: list) -> int:
+        model.current_state = alt_state
+        iteration = 0
+        while True:
+            iteration += 1
+            applicable_modifiers = []
+            # Find all modifiers which can be applied
+            for m in modifiers:
+                given_params = {}
+                obs = self._get_objects_from_alt_modifier_name(m.name)
+                params = m.get_parameters()
+                for i in range(len(params)):
+                    given_params[params[i].name] = obs[i]
+                if m.evaluate_preconditions(model, given_params, self.problem):
+                    applicable_modifiers.append(m)
+            print("here")
+            # Add effects of these modifiers to alt_state
+            # Remove modifiers from list
+            # Check exit conditions
+            pass
 
     def presolving_processing(self) -> None:
         self.alt_domain = Domain(None)
@@ -128,7 +196,9 @@ class DeleteRelaxed(Heuristic):
 
         # Give alt domain predicates
         for p in self.domain.predicates:
-            self.alt_domain.add_predicate(self.domain.predicates[p])
+            pred = self.domain.predicates[p]
+            self.alt_domain.add_predicate(pred)
+            self.alt_domain.add_predicate(Predicate("not_" + p, pred.parameters))
         self.alt_domain.add_predicate(Predicate("U", [RegParameter("?action")]))
 
         # Give alt domain actions
@@ -170,7 +240,7 @@ class DeleteRelaxed(Heuristic):
                 alt_m = Method(alt_name, m.get_parameters(), alt_precons, m.get_task_dict(), alt_subtasks, m.get_constraints())
                 self.alt_domain.add_method(alt_m)
 
-    def _process_alt_preconditions(self, params, mod = None):
+    def _process_alt_preconditions(self, params, mod=None):
         def __parse_conditions(parameters, parent=None):
             if type(parameters) == list and len(parameters) == 1 and type(parameters[0]) == list:
                 parameters = parameters[0]
@@ -182,7 +252,14 @@ class DeleteRelaxed(Heuristic):
                     p = parameters[i]
                     if type(p) == str:
                         if p == "and" or p == "or" or p == "not":
-                            cons = constraints.add_operator_condition(p, parent)
+                            if p == "not":
+                                pred_name = "not_" + parameters[i + 1][0]
+                                pred = self.alt_domain.get_predicate(pred_name)
+                                if pred is None:
+                                    raise NameError("Predicate '{}' not found in alt_domain".format(pred_name))
+                            else:
+                                pred = None
+                            cons = constraints.add_operator_condition(p, parent, pred)
                             __parse_conditions(parameters[i + 1:], cons)
                             return
                         elif p == "=":
