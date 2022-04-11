@@ -169,7 +169,9 @@ class Solver:
             return
 
         for subtask_option in subtask.task.subtasks.task_orderings:
+            mod_num = search_model.model_number
             search_mod = self.reproduce_model(search_model)
+            search_mod.set_parent_model_number(mod_num)
             for mod in subtask_option:
                 try:
                     assert type(mod.task) == Action or type(mod.task) == Task

@@ -118,23 +118,38 @@ class DeleteRelaxed(Heuristic):
         self.alt_domain = None
         self.alt_problem = None
         self.parameter_selector = AllParameters(self.solver)
+        self.model_rankings = {}
 
     def ranking(self, model: Model) -> float:
         # Create duplicate state
-        alt_state = State.reproduce(self.alt_problem.initial_state)
+        alt_state = State.reproduce(model.current_state)
 
-        # Create list with all possible actions and methods
-        modifiers = []
-        for a in self.alt_domain.get_all_actions():
-            modifiers.append(a)
-        for m in self.alt_domain.get_all_methods():
-            modifiers.append(m)
+        if len(model.operations_taken) == 0 or type(model.operations_taken[-1].action) == Action:
+            prev_action = True
+        else:
+            prev_action = False
 
-        # Choose target('s)
-        targets = self._get_target_tasks(model)
-        if type(targets) == int:
-            return targets
-        return self._calculate_distance(self.solver.reproduce_model(model), modifiers, alt_state, targets)
+        if model.model_number not in self.model_rankings and model.parent_model_number is not None and \
+                model.parent_model_number in self.model_rankings:
+            self.model_rankings[model.model_number] = copy.deepcopy(self.model_rankings[model.parent_model_number])
+
+        if model.model_number not in self.model_rankings or prev_action:
+            # Create list with all possible actions and methods
+            modifiers = []
+            for a in self.alt_domain.get_all_actions():
+                modifiers.append(a)
+            for m in self.alt_domain.get_all_methods():
+                modifiers.append(m)
+
+            # Choose target('s)
+            targets = self._get_target_tasks(model)
+            if type(targets) == int:
+                return targets
+            res = self._calculate_distance(self.solver.reproduce_model(model), modifiers, alt_state, targets)
+            self.model_rankings[model.model_number] = res
+            return res
+        else:
+            return self.model_rankings[model.model_number]
 
     def _get_target_tasks(self, model):
         targets = []
