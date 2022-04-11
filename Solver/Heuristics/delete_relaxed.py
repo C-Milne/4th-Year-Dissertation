@@ -17,6 +17,8 @@ OperatorCondition = sys.modules['Internal_Representation.conditions'].OperatorCo
 PredicateCondition = sys.modules['Internal_Representation.conditions'].PredicateCondition
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 Condition = sys.modules['Internal_Representation.conditions'].Condition
+Object = sys.modules['Internal_Representation.Object'].Object
+ProblemPredicate = sys.modules['Internal_Representation.problem_predicate'].ProblemPredicate
 
 
 class AltOperatorCondition(OperatorCondition):
@@ -47,7 +49,18 @@ class AltOperatorCondition(OperatorCondition):
             for i in self.children[0].parameter_name:
                 p_list.append(param_dict[i])
 
-            return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+            res = search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+            if res:
+                return res
+            else:
+                # Try normal not evaluation
+                res = self.children[0].evaluate(param_dict, search_model, problem)
+                if res is True:
+                    return False
+                else:
+                    # Add this new predicate to state
+                    search_model.current_state.add_element(ProblemPredicate(self.pred, p_list))
+                    return True
         elif self.operator == "=":
             v = children_eval[0]
             for i in children_eval[1:]:
@@ -68,6 +81,9 @@ class AltPredicateCondition(PredicateCondition):
 
             return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
         else:
+            if len(self.parameter_name) == 1 and type(self.parameter_name[0]) == str and self.parameter_name[0][0] != "?":
+                # Change this to an object
+                self.parameter_name = [problem.get_object(self.parameter_name[0])]
             return search_model.current_state.check_if_predicate_value_exists(self.pred, self.parameter_name)
 
 
@@ -174,13 +190,13 @@ class DeleteRelaxed(Heuristic):
                 params = m.get_parameters()
                 for i in range(len(params)):
                     given_params[params[i].name] = obs[i]
-                if m.evaluate_preconditions(model, given_params, self.problem):
+                if m.evaluate_preconditions(model, given_params, self.alt_problem):
                     applicable_modifiers.append(m)
             print("here")
             # Add effects of these modifiers to alt_state
             # Remove modifiers from list
             # Check exit conditions
-            pass
+            raise NotImplementedError
 
     def presolving_processing(self) -> None:
         self.alt_domain = Domain(None)
@@ -329,6 +345,29 @@ class DeleteRelaxed(Heuristic):
 
     def _generate_alt_problem(self):
         self.alt_problem.initial_state = State.reproduce(self.problem.initial_state)
+
+        # Get objects
+        obs = self.problem.get_all_objects()
+        for o in obs:
+            self.alt_problem.add_object(obs[o])
+
+        # Create objects for modifiers
+        for a in self.alt_domain.actions:
+            self.alt_problem.add_object(Object(a))
+
+        for m in self.alt_domain.methods:
+            self.alt_problem.add_object(Object(m))
+
+        tasks = self.domain.get_all_tasks()
+        for t in tasks:
+            # Get all possible combinations of parameter for t
+            param_options = self.parameter_selector.get_potential_parameters(tasks[t], {}, None)
+            for params in param_options:
+                concat_param_names = ""
+                for p in params:
+                    concat_param_names += "-" + params[p].name
+                alt_name = t + concat_param_names
+                self.alt_problem.add_object(Object(alt_name))
 
     def task_milestone(self, model) -> bool:
         num_tasks_remaining = str(len(model.waiting_subtasks))

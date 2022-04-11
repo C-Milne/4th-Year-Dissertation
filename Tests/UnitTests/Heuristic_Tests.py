@@ -127,7 +127,7 @@ class HeuristicTests(unittest.TestCase):
 
         self.assertEqual(AltPrecondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions))
         self.assertEqual(AltOperatorCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head))
-        self.assertEqual(PredicateCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head.children[0]))
+        self.assertIsInstance(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head.children[0], PredicateCondition)
         self.assertEqual(AltOperatorCondition, type(alt_domain.methods["have_first-banjo-kiwi"].preconditions.head.children[1]))
 
     def test_delete_relaxed_preprocessing_basic_alt_problem(self):
@@ -139,6 +139,28 @@ class HeuristicTests(unittest.TestCase):
         heu = solver.search_models.heuristic
         alt_problem = heu.alt_problem
         self.assertEqual(problem.initial_state, alt_problem.initial_state)
+
+        # Check objects
+        self.assertIn("kiwi", alt_problem.objects)
+        self.assertIn("banjo", alt_problem.objects)
+
+        # Check objects for modifiers
+        self.assertIn("drop-kiwi", alt_problem.objects)
+        self.assertIn("drop-banjo", alt_problem.objects)
+        self.assertIn("pickup-kiwi", alt_problem.objects)
+        self.assertIn("pickup-banjo", alt_problem.objects)
+        self.assertIn("have_first-banjo-kiwi", alt_problem.objects)
+        self.assertIn("have_first-banjo-banjo", alt_problem.objects)
+        self.assertIn("have_first-kiwi-banjo", alt_problem.objects)
+        self.assertIn("have_first-kiwi-kiwi", alt_problem.objects)
+        self.assertIn("have_second-banjo-kiwi", alt_problem.objects)
+        self.assertIn("have_second-banjo-banjo", alt_problem.objects)
+        self.assertIn("have_second-kiwi-banjo", alt_problem.objects)
+        self.assertIn("have_second-kiwi-kiwi", alt_problem.objects)
+        self.assertIn("swap-banjo-kiwi", alt_problem.objects)
+        self.assertIn("swap-banjo-banjo", alt_problem.objects)
+        self.assertIn("swap-kiwi-banjo", alt_problem.objects)
+        self.assertIn("swap-kiwi-kiwi", alt_problem.objects)
 
     def test_delete_relaxed_basic_execution_setup(self):
         domain, problem, parser, solver = env_setup(True)
