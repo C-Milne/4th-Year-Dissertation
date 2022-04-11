@@ -30,13 +30,11 @@ class Model:
         self.operations_taken = []
         self.ranking = None
         self.num_models_used = None
+        self.model_number = self.model_counter
         Model.model_counter += 1
 
     def set_ranking(self, ranking):
-        try:
-            assert type(ranking) == float or type(ranking) == int
-        except:
-            raise TypeError
+        assert type(ranking) == float or type(ranking) == int
         self.ranking = ranking
 
     def get_next_modifier(self):
