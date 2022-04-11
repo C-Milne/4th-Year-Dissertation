@@ -15,7 +15,7 @@ class Model:
     model_counter = 0
 
     def __init__(self, state: State, search_modifiers: list, problem=None,
-                 waiting_subtasks: list = []):
+                 waiting_subtasks: list = [], **kwargs):
         assert type(state) == State
         self.current_state = state
         assert type(search_modifiers) == list
@@ -32,6 +32,16 @@ class Model:
         self.num_models_used = None
         self.model_number = self.model_counter
         Model.model_counter += 1
+        self.parent_model_number = None
+        if "parent_num" in kwargs:
+            if type(kwargs['parent_num']) == int:
+                self.parent_model_number = kwargs['parent_num']
+
+    def get_model_number(self) -> int:
+        return self.model_number
+
+    def set_parent_model_number(self, num: int):
+        self.parent_model_number = num
 
     def set_ranking(self, ranking):
         assert type(ranking) == float or type(ranking) == int

@@ -156,6 +156,7 @@ class Solver:
                     subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
                     new_model = self.reproduce_model(search_model, [subT] + search_model.search_modifiers)
+                    new_model.set_parent_model_number(search_model.get_model_number())
                     new_model.add_operation(subtask.task, subtask.given_params)
                     self.search_models.add(new_model)
 
