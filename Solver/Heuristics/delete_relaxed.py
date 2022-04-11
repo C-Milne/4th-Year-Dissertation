@@ -165,7 +165,7 @@ class DeleteRelaxed(Heuristic):
             names += "-" + o.name
         return names
 
-    def _get_objects_from_alt_modifier_name(self, name: str) -> list:
+    def _get_objects_from_alt_modifier_name(self, name: str, names_only: bool = False) -> list:
         obs = []
         occurrences = [m.start() for m in re.finditer('-', name)]
         while occurrences:
@@ -174,7 +174,10 @@ class DeleteRelaxed(Heuristic):
                 end = occurrences[0]
             else:
                 end = len(name)
-            obs.append(self.problem.get_object(name[start:end]))
+            if not names_only:
+                obs.append(self.problem.get_object(name[start:end]))
+            else:
+                obs.append(name[start:end])
         return obs
 
     def _calculate_distance(self, model: Model, modifiers: list, alt_state: State, targets: list) -> int:
@@ -191,12 +194,66 @@ class DeleteRelaxed(Heuristic):
                 for i in range(len(params)):
                     given_params[params[i].name] = obs[i]
                 if m.evaluate_preconditions(model, given_params, self.alt_problem):
-                    applicable_modifiers.append(m)
-            print("here")
+                    applicable_modifiers.append((m, copy.copy(given_params)))
+
             # Add effects of these modifiers to alt_state
-            # Remove modifiers from list
+            for m in applicable_modifiers:
+                given_params = m[1]
+                m = m[0]
+                if type(m) == Action:
+                    for e in m.effects.effects:
+                        if e.negated:
+                            pred = self.alt_domain.get_predicate("not_" + e.predicate.name)
+                            model.current_state.add_element(
+                                ProblemPredicate(pred, [given_params[x] for x in e.parameters]))
+                        else:
+                            model.current_state.add_element(ProblemPredicate(e.predicate, [given_params[x] for x in e.parameters]))
+
+                        # Add action name to state (U-actionName)
+                        model.current_state.add_element(ProblemPredicate(
+                            self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(m.name)]))
+                elif type(m) == Method:
+                    # Check if name of task this method expands is already in state
+                    ob_names = self._get_objects_from_alt_modifier_name(m.name, True)
+                    task_name = m.task['task'].name
+                    for ob in ob_names:
+                        task_name += "-" + ob
+                    occurrences = model.current_state.get_indexes("U")
+                    found = False
+                    for o in occurrences:
+                        prob_pred = model.current_state.get_element_index(o)
+                        if prob_pred.objects[0].name == task_name:
+                            found = True
+                            break
+
+                    # If not add name of task this method expands to state
+                    if not found:
+                        model.current_state.add_element(ProblemPredicate(
+                            self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(task_name)]))
+                else:
+                    raise TypeError
+                # Remove modifiers from list
+                del modifiers[modifiers.index(m)]
+
             # Check exit conditions
-            raise NotImplementedError
+            if self._check_targets(model, targets):
+                return iteration
+            elif len(applicable_modifiers) == 0:
+                return False
+
+    def _check_targets(self, model: Model, targets: list) -> bool:
+        occurrences = model.current_state.get_indexes("U")
+        occurrences = [model.current_state.get_element_index(x) for x in occurrences]
+
+        for t in targets:
+            found = False
+            for element in occurrences:
+                if element.objects[0].name == t[2:]:
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
 
     def presolving_processing(self) -> None:
         self.alt_domain = Domain(None)
