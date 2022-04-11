@@ -6,6 +6,7 @@ from Solver.Parameter_Selection.All_Parameters import AllParameters
 Task = sys.modules['Internal_Representation.task'].Task
 Method = sys.modules['Internal_Representation.method'].Method
 Action = sys.modules['Internal_Representation.action'].Action
+Subtasks = sys.modules['Internal_Representation.subtasks'].Subtasks
 Subtask = sys.modules['Internal_Representation.subtasks'].Subtasks.Subtask
 Model = sys.modules['Solver.model'].Model
 Domain = sys.modules['Internal_Representation.domain'].Domain
@@ -220,8 +221,15 @@ class DeleteRelaxed(Heuristic):
                     # Check if name of task this method expands is already in state
                     ob_names = self._get_objects_from_alt_modifier_name(m.name, True)
                     task_name = m.task['task'].name
+
+                    l = len(m.task['params'])
+                    i = 0
                     for ob in ob_names:
+                        if i >= l:
+                            break
                         task_name += "-" + ob
+                        i += 1
+
                     occurrences = model.current_state.get_indexes("U")
                     found = False
                     for o in occurrences:
@@ -232,8 +240,9 @@ class DeleteRelaxed(Heuristic):
 
                     # If not add name of task this method expands to state
                     if not found:
+                        task_name_ob = self.alt_problem.get_object(task_name)
                         model.current_state.add_element(ProblemPredicate(
-                            self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(task_name)]))
+                            self.alt_domain.get_predicate("U"), [task_name_ob]))
                 else:
                     raise TypeError
                 # Remove modifiers from list
@@ -302,7 +311,11 @@ class DeleteRelaxed(Heuristic):
                     concat_param_names += "-" + params[p].name
                 alt_name = m.name + concat_param_names
                 alt_precons = self._process_alt_preconditions(m.get_precondition().get_conditions())
-                alt_subtasks = copy.deepcopy(m.get_subtasks())
+
+                alt_subtasks = Subtasks(m.subtasks.ordered)
+
+                for s in m.subtasks.tasks:
+                    alt_subtasks.add_subtask(None, s.task, [x for x in s.parameters])
 
                 head = alt_precons.head
                 if not(type(head) == AltOperatorCondition and head.operator == "and"):
@@ -315,7 +328,7 @@ class DeleteRelaxed(Heuristic):
                     alt_precons.add_predicate_condition(self.alt_domain.get_predicate("U"), [alt_subt_name], head)
 
                 alt_m = Method(alt_name, m.get_parameters(), alt_precons, m.get_task_dict(), alt_subtasks, m.get_constraints())
-                self.alt_domain.add_method(alt_m)
+                self.alt_domain.methods[alt_m.name] = alt_m
 
     def _process_alt_preconditions(self, params, mod=None):
         def __parse_conditions(parameters, parent=None):

@@ -41,7 +41,7 @@ class Subtasks:
         if self.ordered:
             self.task_orderings.append([])
 
-    def add_subtask(self, label: str, modifier, parameters: list) -> Subtask:
+    def add_subtask(self, label: str, modifier: Modifier, parameters: list) -> Subtask:
         assert type(label) == str or label is None
         assert isinstance(modifier, Modifier) or type(modifier) == str
         assert type(parameters) == list or type(parameters) == ListParameter
