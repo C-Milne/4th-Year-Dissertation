@@ -131,6 +131,8 @@ class DeleteRelaxed(Heuristic):
 
         # Choose target('s)
         targets = self._get_target_tasks(model)
+        if type(targets) == int:
+            return targets
         return self._calculate_distance(self.solver.reproduce_model(model), modifiers, alt_state, targets)
 
     def _get_target_tasks(self, model):
@@ -140,13 +142,15 @@ class DeleteRelaxed(Heuristic):
             return model.ranking
         elif type(next_mod) != Task:
             i = -1
-            op = model.operations_taken[i].action
-            while type(op) != Task:
+            op = model.operations_taken[i]
+            op_task = op.action
+            while type(op_task) != Task:
                 i -= 1
-                op = model.operations_taken[i].action
-            assert type(op) == Task
-            targets.append(op.name)
-            raise NotImplementedError
+                op = model.operations_taken[i]
+                op_task = op.action
+            assert type(op_task) == Task
+            targets.append("U-" + op_task.name +
+                           self._concat_param_object_names([op.parameters_used[x] for x in op.parameters_used]))
         else:
             # We have all tasks
             pass
