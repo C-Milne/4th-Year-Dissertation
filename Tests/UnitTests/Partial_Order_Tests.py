@@ -2,6 +2,7 @@ import unittest
 from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Internal_Representation.subtasks import Subtasks
+from Solver.Heuristics.breadth_first_by_operations_with_partial_order_pruning import BreadthFirstOperationsPartialOrderPruning
 
 
 class PartialOrderTests(unittest.TestCase):
@@ -71,3 +72,11 @@ class PartialOrderTests(unittest.TestCase):
         # [0, 2, 4, 1, 3, 5, 6], [0, 4, 1, 2, 3, 5, 6], [0, 4, 2, 1, 3, 5, 6], [2, 0, 1, 3, 4, 5, 6], [2, 0, 1, 4, 3, 5, 6]
         # [2, 0, 4, 1, 3, 5, 6], [2, 4, 0, 1, 3, 5, 6], [4, 0, 1, 2, 3, 5, 6], [4, 0, 2, 1, 3, 5, 6], [4, 2, 0, 1, 3, 5, 6]
         self.assertEqual(15, len(res))
+
+    def test_partial_order_pruning(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_path + "domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
+        solver.set_heuristic(BreadthFirstOperationsPartialOrderPruning)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
