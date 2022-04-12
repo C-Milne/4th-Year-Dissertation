@@ -5,6 +5,9 @@
 4. Remove the requirements variable from modifier class. Move Requirement class to heuristic folder
 5. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
 6. Implement writing plan to file
+7. Make solver an inheritable class like heuristics - One for total order one for partial order
+8. Hamming distance
+
 
 # Things to Test
 1. Models created and solving times with and without the precondition optimisations (checking some preconditions before selecting parameters)
