@@ -108,8 +108,22 @@ class AltPrecondition(Precondition):
         return con
 
 
-class DeleteRelaxed(Heuristic):
+class ModelStore:
+    def __init__(self, model_num: int):
+        self.model_num = model_num
+        self.previous_modifiers = []
+        self.other_modifiers = []
+        self.ranking = None
 
+    def reproduce(self, new_model_num: int) -> 'ModelStore':
+        new_model_store = ModelStore(new_model_num)
+        new_model_store.previous_modifiers = [x for x in self.previous_modifiers]
+        new_model_store.other_modifiers = [x for x in self.other_modifiers]
+        new_model_store.ranking = copy.deepcopy(self.ranking)
+        return new_model_store
+
+
+class DeleteRelaxed(Heuristic):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
         self.low_target = True
@@ -118,7 +132,7 @@ class DeleteRelaxed(Heuristic):
         self.alt_domain = None
         self.alt_problem = None
         self.parameter_selector = AllParameters(self.solver)
-        self.model_rankings = {}
+        self.model_stores = {}
 
     def ranking(self, model: Model) -> float:
         # Create duplicate state
@@ -129,34 +143,36 @@ class DeleteRelaxed(Heuristic):
         else:
             prev_action = False
 
-        if model.model_number not in self.model_rankings and model.parent_model_number is not None and \
-                model.parent_model_number in self.model_rankings:
-            self.model_rankings[model.model_number] = copy.deepcopy(self.model_rankings[model.parent_model_number])
+        if model.model_number not in self.model_stores and model.parent_model_number is not None and \
+                model.parent_model_number in self.model_stores:
+            self.model_stores[model.model_number] = self.model_stores[model.parent_model_number].reproduce(model.model_number)
 
-        if model.model_number not in self.model_rankings or prev_action:
+        if model.model_number not in self.model_stores:
+            self.model_stores[model.model_number] = ModelStore(model.model_number)
             # Create list with all possible actions and methods
-            modifiers = []
             for a in self.alt_domain.get_all_actions():
-                modifiers.append(a)
+                self.model_stores[model.model_number].previous_modifiers.append(a)
             for m in self.alt_domain.get_all_methods():
-                modifiers.append(m)
+                self.model_stores[model.model_number].previous_modifiers.append(m)
 
             # Choose target('s)
             targets = self._get_target_tasks(model)
-            if type(targets) == int:
-                return targets
-            res = self._calculate_distance(self.solver.reproduce_model(model), modifiers, alt_state, targets)
-            self.model_rankings[model.model_number] = res
-            return res
+            res = self._calculate_distance(self.solver.reproduce_model(model), self.model_stores[model.model_number], alt_state, targets)
+            self.model_stores[model.model_number].ranking = res
+            return len(model.operations_taken)/3 + res
+        elif prev_action:
+            targets = self._get_target_tasks(model)
+            res = self._calculate_distance(self.solver.reproduce_model(model), self.model_stores[model.model_number],
+                                           alt_state, targets)
+            self.model_stores[model.model_number].ranking = res
+            return len(model.operations_taken)/3 + res
         else:
-            return self.model_rankings[model.model_number]
+            return len(model.operations_taken)/3 + self.model_stores[model.model_number].ranking
 
     def _get_target_tasks(self, model):
         targets = []
         next_mod = model.search_modifiers[0].task
-        if type(next_mod) != Task and model.ranking is not None:
-            return model.ranking
-        elif type(next_mod) != Task:
+        if type(next_mod) != Task:
             i = -1
             op = model.operations_taken[i]
             op_task = op.action
@@ -175,7 +191,7 @@ class DeleteRelaxed(Heuristic):
             if type(m.task) == Task:
                 targets.append("U-" + m.task.name + self._concat_param_object_names([m.given_params[x] for x in m.given_params]))
         for m in model.waiting_subtasks:
-            if type(m) == Task:
+            if type(m.task) == Task:
                 targets.append("U-" + m.task.name + self._concat_param_object_names([m.given_params[x] for x in m.given_params]))
         return targets
 
@@ -200,9 +216,11 @@ class DeleteRelaxed(Heuristic):
                 obs.append(name[start:end])
         return obs
 
-    def _calculate_distance(self, model: Model, modifiers: list, alt_state: State, targets: list) -> int:
+    def _calculate_distance(self, model: Model, model_store: ModelStore, alt_state: State, targets: list) -> int:
         model.current_state = alt_state
         iteration = 0
+        modifiers = [x for x in model_store.previous_modifiers]
+        applied_modifiers = []
         while True:
             iteration += 1
             applicable_modifiers = []
@@ -261,17 +279,24 @@ class DeleteRelaxed(Heuristic):
                 else:
                     raise TypeError
                 # Remove modifiers from list
+                applied_modifiers.append(modifiers[modifiers.index(m)])
                 del modifiers[modifiers.index(m)]
 
             # Check exit conditions
             if self._check_targets(model, targets):
+                model_store.previous_modifiers = [x for x in applied_modifiers]
                 return iteration
+            elif len(modifiers) == 0 and len(model_store.previous_modifiers) > 0:
+                modifiers = [x for x in model_store.previous_modifiers]
             elif len(applicable_modifiers) == 0:
                 return False
 
     def _check_targets(self, model: Model, targets: list) -> bool:
         occurrences = model.current_state.get_indexes("U")
         occurrences = [model.current_state.get_element_index(x) for x in occurrences]
+
+        if type(targets) == int:
+            raise TypeError
 
         for t in targets:
             found = False
