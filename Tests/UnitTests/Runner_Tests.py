@@ -1,6 +1,8 @@
 import subprocess
 import unittest
 import os
+from Tests.UnitTests.TestTools.env_setup import env_setup
+from Tests.Evaluation.output_plan_reader import read_plan, display_plan
 from runner import Runner
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
@@ -93,6 +95,25 @@ pickup - banjo
 Search Models Created During Search: 3
 """, output)
         self.assertTrue(os.path.exists("output/runner_test_basic_p1"))
+
+    def test_file_writing_and_reading(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
+        res = solver.solve()
+        Runner.output_result_file(res, "runner_test_basic_p1")
+        plan = read_plan("../../output/runner_test_basic_p1")
+
+        self.assertEqual(res.model_number, plan.model_number)
+        self.assertEqual(len(res.operations_taken), len(plan.operations_taken))
+        i = 0
+        while i < len(res.operations_taken):
+            self.assertEqual(res.operations_taken[i], plan.operations_taken[i])
+            i += 1
+        self.assertEqual(res.operations_taken, plan.operations_taken)
+        self.assertEqual(res.actions_taken, plan.actions_taken)
+        self.assertEqual(res.num_models_used, plan.model_counter)
+        self.assertEqual(res.current_state, plan.current_state)
 
     def test_runner_command_line_incorrect_args(self):
         original_dir = os.getcwd()

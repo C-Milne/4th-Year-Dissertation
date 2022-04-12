@@ -52,7 +52,8 @@ class Runner:
     def output_result(self, search_result):
         self.solver.output(search_result)
 
-    def output_result_file(self, result, write_file):
+    @staticmethod
+    def output_result_file(result, write_file):
         # Check output folder exists
         if not os.path.isdir("output"):
             os.mkdir("output")
