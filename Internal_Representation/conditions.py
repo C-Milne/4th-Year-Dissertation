@@ -22,11 +22,17 @@ class PredicateCondition(Condition):
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         p_list = []
         for i in self.parameter_name:
-            try:
-                p_list.append(param_dict[i])
-            except:
-                raise KeyError
+            p_list.append(param_dict[i])
+
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+
+    def __eq__(self, other):
+        try:
+            if self.pred == other.pred and self.parameter_name == other.parameter_name:
+                return True
+            return False
+        except:
+            return False
 
 
 class GoalPredicateCondition(Condition):
@@ -80,10 +86,7 @@ class OperatorCondition(Condition):
                     return True
             return False
         elif self.operator == "not":
-            try:
-                assert len(children_eval) == 1 and type(children_eval[0]) == bool
-            except:
-                raise TypeError
+            assert len(children_eval) == 1 and type(children_eval[0]) == bool
             return not children_eval[0]
         elif self.operator == "=":
             v = children_eval[0]

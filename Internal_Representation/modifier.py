@@ -13,7 +13,7 @@ class Modifier:
         for p in parameters:
             assert isinstance(p, Parameter)
         self.parameters = parameters
-        assert type(preconditions) == Precondition or preconditions is None
+        assert isinstance(preconditions, Precondition) or preconditions is None
         self.preconditions = preconditions
         self.requirements = None
 
@@ -61,7 +61,7 @@ class Modifier:
         # Evaluate preconditions
         if self.preconditions is None:
             return True
-        assert type(self.preconditions) == Precondition
+        assert isinstance(self.preconditions, Precondition)
         return self.preconditions.evaluate(param_dict, model, problem)
 
     def evaluate_preconditions_conditions_given_params(self, param_dict, search_model, problem) -> bool:

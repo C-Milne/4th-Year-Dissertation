@@ -52,7 +52,9 @@ class RequirementSelection(ParameterSelector):
         :parameter param_dict:    : parameters already set - {'?objective': Object, '?mode': Object}
         :return: list of possible combinations of parameters
         """
-        assert type(model) == Model and type(given_requirements) == dict and type(param_dict) == dict
+        assert type(model) == Model
+        assert type(given_requirements) == dict
+        assert type(param_dict) == dict
         for required_param_name in given_requirements:
             if required_param_name.startswith('forall-'):
                 inner = given_requirements[required_param_name]

@@ -319,7 +319,7 @@ class SolvingTests(unittest.TestCase):
         RovEx.execution_prep(problem, solver)
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
         model = solver.search_models._SearchQueue__Q[0]
-        self.assertEqual(3, len(model.search_modifiers))
+        self.assertEqual(3, len(model.search_modifiers) + len(model.waiting_subtasks))
         self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
         self.assertEqual(domain.tasks['get_image_data'], model.search_modifiers[0].task)
         self.assertEqual(2, len(model.search_modifiers[0].given_params))
@@ -335,7 +335,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
         for i in range(4):
             model = solver.search_models._SearchQueue__Q[i]
-            self.assertEqual(3, len(model.search_modifiers))
+            self.assertEqual(3, len(model.search_modifiers) + len(model.waiting_subtasks))
             self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
             self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].task)
             self.assertEqual(problem.objects["waypoint" + str(i)], model.search_modifiers[0].given_params['?waypoint'])
