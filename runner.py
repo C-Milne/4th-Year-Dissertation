@@ -1,5 +1,6 @@
-import sys
+import argparse
 import os
+import pickle
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
 from Solver.solver import Solver
@@ -8,7 +9,7 @@ from Internal_Representation.problem import Problem
 
 
 class Runner:
-    def __init__(self, domain_path, problem_path):
+    def __init__(self, domain_path, problem_path, **kwargs):
         # Necessary variables
         self.parser = None
         self.suffix = None
@@ -51,6 +52,16 @@ class Runner:
     def output_result(self, search_result):
         self.solver.output(search_result)
 
+    def output_result_file(self, result, write_file):
+        # Check output folder exists
+        if not os.path.isdir("output"):
+            os.mkdir("output")
+
+        # Pickle output and write to file
+        file = open("output/" + write_file, "wb")
+        file.write(pickle.dumps(result))
+        file.close()
+
     @staticmethod
     def __check_file_exists(file_path, file_purpose=None):
         if not os.path.exists(file_path):
@@ -58,7 +69,6 @@ class Runner:
                 raise FileNotFoundError("File {} could not be found".format(file_path))
             else:
                 raise FileNotFoundError("{} file entered could not be found. ({})".format(file_purpose, file_path))
-
 
     @staticmethod
     def __get_suffix(path):
@@ -69,13 +79,25 @@ class Runner:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        controller = Runner(sys.argv[1], sys.argv[2])
+    argparser = argparse.ArgumentParser(exit_on_error=False)
+    argparser.add_argument("Domain_File", metavar='D', type=str, nargs="?", help='File path to Domain File', default=None)
+    argparser.add_argument("Problem_File", metavar='P', type=str, nargs="?", help='File path to Problem File', default=None)
+    argparser.add_argument("-w", type=str, help='File path to Write Resulting Plan File', default=None)
+    argparser.format_help()
+    args = argparser.parse_args()
+
+    domain_file = args.Domain_File
+    problem_file = args.Problem_File
+    write_file = args.w
+
+    if domain_file is not None and problem_file is not None:
+        controller = Runner(domain_file, problem_file)
         controller.parse_domain()
         controller.parse_problem()
         result = controller.solve()
         controller.output_result(result)
+        if write_file is not None:
+            controller.output_result_file(result, write_file)
     else:
         # Incorrect usage of program
-        raise IOError("Expected 3 arguments, got {}.\nCorrect usage 'python runner.py <domain.suffix> <problem.suffix>'"
-                      .format(len(sys.argv)))
+        argparser.error("Incorrect Usage. Correct usage 'python runner.py <domain.suffix> <problem.suffix>'")
