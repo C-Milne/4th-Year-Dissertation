@@ -21,22 +21,4 @@ def setup():
 
 
 def execution_prep(problem, solver):
-    task_counter = 0
-    subtasks = problem.subtasks.get_tasks()
-    list_subT = []
-    num_tasks = len(subtasks)
-    while task_counter < num_tasks:
-        subT = subtasks[task_counter]
-        if subT == "and" or subT == "or":
-            del subtasks[task_counter]
-            num_tasks -= 1
-            continue
-
-        # Create initial search model
-        param_dict = solver._Solver__generate_param_dict(subT.task, subT.parameters)
-        subT.add_given_parameters(param_dict)
-        list_subT.append(subT)
-        task_counter += 1
-
-    initial_model = Model(State.reproduce(problem.initial_state), list_subT, problem)
-    solver.search_models.add(initial_model)
+    solver.solve(search=False)

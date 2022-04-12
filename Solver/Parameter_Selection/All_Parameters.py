@@ -16,6 +16,7 @@ class AllParameters(ParameterSelector):
         super().__init__(solver)
 
     def get_potential_parameters(self, modifier: Modifier, parameters: dict, search_model: Model) -> list:
+        assert isinstance(modifier, Modifier)
         parameters_to_select = [x for x in modifier.parameters if x.name not in parameters]
         parameter_options = self.solver.reproduce_dict(parameters)
 

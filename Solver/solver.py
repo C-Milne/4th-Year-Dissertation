@@ -18,6 +18,7 @@ from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
+from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Solver.Parameter_Selection.All_Parameters import AllParameters
@@ -52,39 +53,51 @@ class Solver:
         assert isinstance(selector, ParameterSelector)
         self.parameter_selector = selector
 
-    def solve(self):
+    def solve(self, **kwargs):
         self.parameter_selector.presolving_processing(self.domain, self.problem)
         self.search_models.heuristic.presolving_processing()
-        task_counter = 0
-        subtasks = self.problem.subtasks.get_tasks()
-        list_subT = []
-        num_tasks = len(subtasks)
-        while task_counter < num_tasks:
-            subT = subtasks[task_counter]
-            if subT == "and" or subT == "or":
-                del subtasks[task_counter]
-                num_tasks -= 1
-                continue
+        subtasks_orderings = self.problem.subtasks.get_task_orderings()
 
-            print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
+        printed_subtasks = False
 
-            # Create initial search model
-            param_dict = self.__generate_param_dict(subT.task, subT.parameters)
-            subT.add_given_parameters(param_dict)
-            list_subT.append(subT)
-            task_counter += 1
+        for subtasks in subtasks_orderings:
+            list_subT = []
+            num_tasks = len(subtasks)
+            task_counter = 0
+            while task_counter < num_tasks:
+                subT = subtasks[task_counter]
+                if subT == "and" or subT == "or":
+                    del subtasks[task_counter]
+                    num_tasks -= 1
+                    continue
 
-        if len(list_subT) == 1:
-            waiting_subT = []
+                if not printed_subtasks:
+                    print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
+
+                # Create initial search model
+                param_dict = self.__generate_param_dict(subT.task, subT.parameters)
+                subT.add_given_parameters(param_dict)
+                list_subT.append(subT)
+                task_counter += 1
+            printed_subtasks = True
+
+            if len(list_subT) == 1:
+                waiting_subT = []
+            else:
+                waiting_subT = list_subT[1:]
+                list_subT = [list_subT[0]]
+
+            initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem, waiting_subT)
+
+            self.search_models.add(initial_model)
+
+        if "search" in kwargs:
+            search = kwargs["search"]
         else:
-            waiting_subT = list_subT[1:]
-            list_subT = [list_subT[0]]
+            search = True
 
-        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem, waiting_subT)
-
-        self.search_models.add(initial_model)
-
-        return self.__search()
+        if search != False:
+            return self.__search()
 
     def __search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
@@ -147,6 +160,7 @@ class Solver:
                     subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
                     new_model = self.reproduce_model(search_model, [subT] + search_model.search_modifiers)
+                    new_model.set_parent_model_number(search_model.get_model_number())
                     new_model.add_operation(subtask.task, subtask.given_params)
                     self.search_models.add(new_model)
 
@@ -157,36 +171,41 @@ class Solver:
             search_model.add_operation(subtask.task, subtask.given_params)
             self.search_models.add(search_model)
             return
-        for mod in subtask.task.subtasks.tasks:
-            try:
-                assert type(mod.task) == Action or type(mod.task) == Task
-            except:
-                if mod.task is None:
-                    continue
 
-            mod = Subtasks.Subtask(mod.task, mod.parameters)
+        for subtask_option in subtask.task.subtasks.task_orderings:
+            mod_num = search_model.model_number
+            search_mod = self.reproduce_model(search_model)
+            search_mod.set_parent_model_number(mod_num)
+            for mod in subtask_option:
+                try:
+                    assert type(mod.task) == Action or type(mod.task) == Task
+                except:
+                    if mod.task is None:
+                        continue
 
-            # Check parameter count
-            parameters = {}
-            param_keys = [p.name for p in mod.parameters]
-            action_keys = [p.name for p in mod.task.parameters]
-            if len(action_keys) > 0:
-                for j in range(len(action_keys)):
-                    try:
-                        parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
-                    except IndexError:
-                        pass
-            else:
-                for j in range(len(param_keys)):
-                    parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
+                mod = Subtasks.Subtask(mod.task, mod.parameters)
 
-            mod.add_given_parameters(parameters)
+                # Check parameter count
+                parameters = {}
+                param_keys = [p.name for p in mod.parameters]
+                action_keys = [p.name for p in mod.task.parameters]
+                if len(action_keys) > 0:
+                    for j in range(len(action_keys)):
+                        try:
+                            parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+                        except IndexError:
+                            pass
+                else:
+                    for j in range(len(param_keys)):
+                        parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
 
-            # Add mod to search_model
-            search_model.insert_modifier(mod, i)
-            i += 1
-        search_model.add_operation(subtask.task, subtask.given_params)
-        self.search_models.add(search_model)
+                mod.add_given_parameters(parameters)
+
+                # Add mod to search_model
+                search_mod.insert_modifier(mod, i)
+                i += 1
+            search_mod.add_operation(subtask.task, subtask.given_params)
+            self.search_models.add(search_mod)
 
     def __expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action

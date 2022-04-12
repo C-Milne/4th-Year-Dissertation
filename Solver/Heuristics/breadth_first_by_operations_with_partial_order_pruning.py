@@ -1,11 +1,11 @@
-from Solver.Heuristics.pruning import Pruning
+from Solver.Heuristics.partial_order_pruning import PartialOrderPruning
 
 """This is an extension to the breadth first search.
 Search can be initialised with multiple subtasks. After a model fully expands one subtask its current state is logged.
 If another model completes the same subtask and has the same current state, it is pruned."""
 
 
-class BreadthFirstOperationsPruning(Pruning):
+class BreadthFirstOperationsPartialOrderPruning(PartialOrderPruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
         self.low_target = True

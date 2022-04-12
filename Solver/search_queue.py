@@ -32,6 +32,8 @@ class SearchQueue:
 
     def __add_model(self, model):
         ranking = self.heuristic.ranking(model)
+        if ranking is None:
+            return  # Do not add to search queue
         model.set_ranking(ranking)
 
         added = False
