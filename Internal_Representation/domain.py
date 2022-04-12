@@ -76,6 +76,9 @@ class Domain:
             return self.tasks[name]
         return None
 
+    def get_all_tasks(self):
+        return self.tasks
+
     def get_task_methods(self, task: str):
         if type(task) == str:
             task = self.get_task(task)

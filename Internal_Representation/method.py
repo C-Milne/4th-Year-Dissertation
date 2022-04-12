@@ -40,3 +40,9 @@ class Method(Modifier):
 
     def get_constraints(self):
         return self.constraints
+
+    def get_subtasks(self):
+        return self.subtasks
+
+    def get_task_dict(self):
+        return self.task

@@ -1,6 +1,7 @@
 import sys
 from Internal_Representation.conditions import Condition, PredicateCondition, OperatorCondition, VariableCondition, \
     ForAllCondition, GoalPredicateCondition
+Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 
 
 class Precondition:
@@ -15,19 +16,19 @@ class Precondition:
         assert isinstance(parent, Condition) or parent is None
 
         con = OperatorCondition(operator)
-        self.__final_condition_addition_checks(con, parent)
+        self._final_condition_addition_checks(con, parent)
         return con
 
-    def add_predicate_condition(self, pred, parameter_names: list, parent: Condition) -> PredicateCondition:
+    def add_predicate_condition(self, pred: Predicate, parameter_names: list, parent: Condition) -> PredicateCondition:
         assert isinstance(parent, Condition) or parent is None
         con = PredicateCondition(pred, parameter_names)
-        self.__final_condition_addition_checks(con, parent)
+        self._final_condition_addition_checks(con, parent)
         return con
 
     def add_variable_condition(self, parameter_name: str, parent: Condition) -> VariableCondition:
         assert isinstance(parent, Condition) or parent is None
         con = VariableCondition(parameter_name)
-        self.__final_condition_addition_checks(con, parent)
+        self._final_condition_addition_checks(con, parent)
         return con
 
     def add_forall_condition(self, selector, satisfier: Condition, parent) -> ForAllCondition:
@@ -46,13 +47,13 @@ class Precondition:
             selected_cons = selector[1]
 
         con = ForAllCondition(selected_variable, selected_cons, satisfier)
-        self.__final_condition_addition_checks(con, parent)
+        self._final_condition_addition_checks(con, parent)
         return con
 
     def add_goal_predicate_condition(self, pred, parameter_names: list, parent: Condition) -> GoalPredicateCondition:
         assert isinstance(parent, Condition) or parent is None
         con = GoalPredicateCondition(pred, parameter_names)
-        self.__final_condition_addition_checks(con, parent)
+        self._final_condition_addition_checks(con, parent)
         return con
 
     def add_given_params_predicate_condition(self, pred, parameter_names, parent=None):
@@ -71,7 +72,7 @@ class Precondition:
             self.conditions_given_params.add_operator_condition("and", None)
         return self.conditions_given_params.add_operator_condition(operator, self.conditions_given_params.head)
 
-    def __final_condition_addition_checks(self, con, parent):
+    def _final_condition_addition_checks(self, con, parent):
         if self.head is None:
             self.head = con
         if parent is not None:
@@ -96,8 +97,19 @@ class Precondition:
         self.requirements = sys.modules['Internal_Representation.requirements'].Requirements([], self)
         self.requirements.prepare_requirements()
 
+    def get_conditions(self):
+        return self.conditions
+
     @staticmethod
     def merge_dictionaries(a, b):
         c = a.copy()
         c.update(b)
         return c
+
+    def __eq__(self, other):
+        try:
+            if self.conditions == other.conditions:
+                return True
+            return False
+        except:
+            return False

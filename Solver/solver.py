@@ -156,6 +156,7 @@ class Solver:
                     subT.add_given_parameters(param_option)
                     # Create new model and add to search_models
                     new_model = self.reproduce_model(search_model, [subT] + search_model.search_modifiers)
+                    new_model.set_parent_model_number(search_model.get_model_number())
                     new_model.add_operation(subtask.task, subtask.given_params)
                     self.search_models.add(new_model)
 
@@ -168,7 +169,9 @@ class Solver:
             return
 
         for subtask_option in subtask.task.subtasks.task_orderings:
+            mod_num = search_model.model_number
             search_mod = self.reproduce_model(search_model)
+            search_mod.set_parent_model_number(mod_num)
             for mod in subtask_option:
                 try:
                     assert type(mod.task) == Action or type(mod.task) == Task

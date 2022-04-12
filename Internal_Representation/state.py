@@ -28,6 +28,12 @@ class State:
         else:
             return None
 
+    def get_element_index(self, index: int) -> ProblemPredicate:
+        assert type(index) == int
+        if len(self.elements) > index:
+            return self.elements[index]
+        return None
+
     def remove_element(self, predicate: Predicate, predicate_objects=None):
         assert type(predicate) == Predicate
         if predicate_objects is None or len(predicate_objects) == 0:
