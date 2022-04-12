@@ -58,6 +58,8 @@ class Solver:
         self.search_models.heuristic.presolving_processing()
         subtasks_orderings = self.problem.subtasks.get_task_orderings()
 
+        printed_subtasks = False
+
         for subtasks in subtasks_orderings:
             list_subT = []
             num_tasks = len(subtasks)
@@ -69,13 +71,15 @@ class Solver:
                     num_tasks -= 1
                     continue
 
-                print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
+                if not printed_subtasks:
+                    print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
                 # Create initial search model
                 param_dict = self.__generate_param_dict(subT.task, subT.parameters)
                 subT.add_given_parameters(param_dict)
                 list_subT.append(subT)
                 task_counter += 1
+            printed_subtasks = True
 
             if len(list_subT) == 1:
                 waiting_subT = []
