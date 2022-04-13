@@ -80,7 +80,7 @@ class Runner:
 
 
 if __name__ == "__main__":
-    argparser = argparse.ArgumentParser(exit_on_error=False)
+    argparser = argparse.ArgumentParser()
     argparser.add_argument("Domain_File", metavar='D', type=str, nargs="?", help='File path to Domain File', default=None)
     argparser.add_argument("Problem_File", metavar='P', type=str, nargs="?", help='File path to Problem File', default=None)
     argparser.add_argument("-w", type=str, help='File path to Write Resulting Plan File', default=None)

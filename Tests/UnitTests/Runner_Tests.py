@@ -105,14 +105,6 @@ Search Models Created During Search: 3
         plan = read_plan("../../output/runner_test_basic_p1")
 
         self.assertEqual(res.model_number, plan.model_number)
-        self.assertEqual(len(res.operations_taken), len(plan.operations_taken))
-        i = 0
-        while i < len(res.operations_taken):
-            self.assertEqual(res.operations_taken[i], plan.operations_taken[i])
-            i += 1
-        self.assertEqual(res.operations_taken, plan.operations_taken)
-        self.assertEqual(res.actions_taken, plan.actions_taken)
-        self.assertEqual(res.num_models_used, plan.model_counter)
         self.assertEqual(res.current_state, plan.current_state)
 
     def test_runner_command_line_incorrect_args(self):
