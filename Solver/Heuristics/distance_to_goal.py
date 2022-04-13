@@ -20,10 +20,11 @@ class PredicateDistanceToGoal(Pruning):
         return cost_so_far + distance_to_goal
 
     def presolving_processing(self) -> None:
-        for i in self.problem.goal_conditions.conditions:
-            if type(i) == list:
-                if len(i) == 1:
-                    self.goal_cons.append(ProblemPredicate(self.domain.get_predicate(i[0], [])))
-                else:
-                    obs = [self.problem.get_object(x) for x in i[1:]]
-                    self.goal_cons.append(ProblemPredicate(self.domain.get_predicate(i[0]), obs))
+        if self.problem.goal_conditions is not None:
+            for i in self.problem.goal_conditions.conditions:
+                if type(i) == list:
+                    if len(i) == 1:
+                        self.goal_cons.append(ProblemPredicate(self.domain.get_predicate(i[0], [])))
+                    else:
+                        obs = [self.problem.get_object(x) for x in i[1:]]
+                        self.goal_cons.append(ProblemPredicate(self.domain.get_predicate(i[0]), obs))

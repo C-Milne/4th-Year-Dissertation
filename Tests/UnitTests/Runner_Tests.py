@@ -7,6 +7,8 @@ from runner import Runner
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
+from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.tree_distance import TreeDistance
 
 
 class RunnerTests(unittest.TestCase):
@@ -117,7 +119,11 @@ Search Models Created During Search: 3
             output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
-            self.assertEqual("usage: runner.py [-h] [-w W] [D] [P]\r\nrunner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffix> <problem.suffix>'\r\n", msg)
+            # msg = msg[434:]   # This is for debugger inspection only
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffix> <problem.suffix>'\r
+""", msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
         os.chdir(original_dir)
@@ -126,13 +132,59 @@ Search Models Created During Search: 3
         os.chdir("../..")
         res = os.popen("python ./runner.py -h")
         output = res.read()
-        self.assertEqual("""usage: runner.py [-h] [-w W] [D] [P]
+        self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]
+                 [D] [P]
 
 positional arguments:
-  D           File path to Domain File
-  P           File path to Problem File
+  D                     File path to Domain File
+  P                     File path to Problem File
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -w W        File path to Write Resulting Plan File
+  -h, --help            show this help message and exit
+  -w W                  File path to Write Resulting Plan File
+  -heuModName HEUMODNAME
+                        File path to Heuristic File
+  -heuPath HEUPATH      File path to Heuristic File
 """, output)
+
+    def test_runner_command_line_heupath_or_heuname_only(self):
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/distance_to_goal.py
+        os.chdir("../..")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal",
+                                          stderr=subprocess.PIPE)
+            output, error = res.communicate()
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/distance_to_goal.py",
+                                          stderr=subprocess.PIPE)
+            output, error = res.communicate()
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+    def test_runner_setting_heuristic_from_path(self):
+        controller = Runner(self.basic_domain_path, self.basic_pb1_path)
+        controller.parse_domain()
+        controller.parse_problem()
+        controller.set_heuristic_from_file('PredicateDistanceToGoal', '../../Solver/Heuristics/distance_to_goal.py')
+        self.assertEqual(PredicateDistanceToGoal.__name__, type(controller.solver.search_models.heuristic).__name__)
+
+        controller.set_heuristic_from_file('TreeDistance', '../../Solver/Heuristics/tree_distance.py')
+        self.assertEqual(TreeDistance.__name__, type(controller.solver.search_models.heuristic).__name__)
