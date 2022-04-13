@@ -10,10 +10,11 @@ from Solver.solver import Solver
 from Solver.Heuristics.Heuristic import Heuristic
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
+from Solver.model import Model
 
 
 class Runner:
-    def __init__(self, domain_path, problem_path, **kwargs):
+    def __init__(self, domain_path, problem_path):
         # Necessary variables
         self.parser = None
         self.suffix = None
@@ -24,7 +25,7 @@ class Runner:
         self.domain_path = domain_path
         self.problem_path = problem_path
 
-    def parse_domain(self):
+    def parse_domain(self) -> None:
         self.__check_file_exists(self.domain_path, "Domain")
         # Check for valid suffix
         self.suffix = self.__get_suffix(self.domain_path)
@@ -36,7 +37,7 @@ class Runner:
             raise TypeError("Unknown descriptor type ({})".format(self.suffix))
         self.parser.parse_domain(self.domain_path)
 
-    def parse_problem(self):
+    def parse_problem(self) -> None:
         self.__check_file_exists(self.problem_path, "Problem")
         suffix = self.__get_suffix(self.problem_path)
         if suffix == self.suffix:
@@ -44,10 +45,10 @@ class Runner:
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
 
-    def set_heuristic(self, heuristic: type(Heuristic)):
+    def set_heuristic(self, heuristic: type(Heuristic)) -> None:
         self.solver.set_heuristic(heuristic)
 
-    def set_heuristic_from_file(self, module_name: str, file_path: str):
+    def set_heuristic_from_file(self, module_name: str, file_path: str) -> None:
         # Load Class
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         module = importlib.util.module_from_spec(spec)
@@ -58,17 +59,17 @@ class Runner:
                 self.set_heuristic(obj)
                 break
 
-    def set_early_task_precon_checker(self, v: bool):
+    def set_early_task_precon_checker(self, v: bool) -> None:
         self.solver.task_expansion_given_param_check = v
 
-    def solve(self):
+    def solve(self) -> Model:
         return self.solver.solve()
 
-    def output_result(self, search_result):
+    def output_result(self, search_result: Model) -> None:
         self.solver.output(search_result)
 
     @staticmethod
-    def output_result_file(result, write_file):
+    def output_result_file(result: Model, write_file: str) -> None:
         # Check output folder exists
         if not os.path.isdir("output"):
             os.mkdir("output")
@@ -79,7 +80,7 @@ class Runner:
         file.close()
 
     @staticmethod
-    def __check_file_exists(file_path, file_purpose=None):
+    def __check_file_exists(file_path: str, file_purpose: str = None) -> None:
         if not os.path.exists(file_path):
             if file_purpose is None:
                 raise FileNotFoundError("File {} could not be found".format(file_path))
@@ -87,7 +88,7 @@ class Runner:
                 raise FileNotFoundError("{} file entered could not be found. ({})".format(file_purpose, file_path))
 
     @staticmethod
-    def __get_suffix(path):
+    def __get_suffix(path: str) -> str:
         try:
             return path[path.rindex(".") + 1:]
         except ValueError:
