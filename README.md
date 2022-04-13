@@ -4,9 +4,9 @@
 3. Remove the requirements variable from modifier class. Move Requirement class to heuristic folder
 4. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
 5. Set heuristic from command line
+6. Set parameter types and return types for methods
 
 # Things to Test
-1. Models created and solving times with and without the precondition optimisations (checking some preconditions before selecting parameters)
 
 # Running Configurations
 1. -m cProfile
