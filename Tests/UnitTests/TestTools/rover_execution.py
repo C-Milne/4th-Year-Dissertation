@@ -6,7 +6,7 @@ from Internal_Representation.state import State
 from Parsers.HDDL_Parser import HDDLParser
 
 
-def setup():
+def setup() -> [Domain, Problem, Solver]:
     domain = Domain(None)
     problem = Problem(domain)
     domain.add_problem(problem)
@@ -20,5 +20,5 @@ def setup():
     return domain, problem, solver
 
 
-def execution_prep(problem, solver):
+def execution_prep(problem, solver) -> None:
     solver.solve(search=False)
