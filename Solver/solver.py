@@ -22,7 +22,7 @@ from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Solver.Parameter_Selection.All_Parameters import AllParameters
-from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection, Requirements
 """Importing from sys modules"""
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 ForallCondition = sys.modules['Internal_Representation.conditions'].ForAllCondition

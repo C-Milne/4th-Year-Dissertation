@@ -8,7 +8,6 @@ class Precondition:
     def __init__(self, conditions: str):
         self.head = None
         self.conditions = conditions
-        self.requirements = None
         self.conditions_given_params = None     # This is the conditions that only include parameters given by the task (not selected parameters)
 
     def add_operator_condition(self, operator: str, parent: Condition) -> OperatorCondition:
@@ -92,10 +91,6 @@ class Precondition:
         if result:
             return self.evaluate_given_params_conditions(param_dict, search_model, problem)
         return result
-
-    def load_requirements(self):
-        self.requirements = sys.modules['Internal_Representation.requirements'].Requirements([], self)
-        self.requirements.prepare_requirements()
 
     def get_conditions(self):
         return self.conditions

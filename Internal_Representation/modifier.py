@@ -1,6 +1,8 @@
+import sys
 from typing import List
-from Internal_Representation.precondition import Precondition
+# from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
+Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 
 
 class Modifier:

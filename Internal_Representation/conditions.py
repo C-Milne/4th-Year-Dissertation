@@ -102,6 +102,7 @@ class ForAllCondition(Condition):
         assert isinstance(satisfier, Condition)
         self.selected_variable = selected_variable
         self.selector = selector
+        self.selector_requirements = None
         self.satisfier = satisfier
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
@@ -118,11 +119,12 @@ class ForAllCondition(Condition):
         elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):
             obs = problem.get_all_objects()
 
-            if self.selector.requirements is None:
-                self.selector.load_requirements()
+            if self.selector_requirements is None:
+                self.selector_requirements = sys.modules['Solver.solver'].Requirements([], self.selector)
+                self.selector_requirements.prepare_requirements()
 
             # Check there is only one unknown variable
-            req_keys = list(self.selector.requirements.requirements.keys())
+            req_keys = list(self.selector_requirements.requirements.keys())
             given_keys = list(param_dict.keys())
             i = 0
             while i < len(req_keys):

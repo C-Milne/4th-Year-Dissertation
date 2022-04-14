@@ -1,5 +1,7 @@
+import sys
+# from Internal_Representation.modifier import Modifier
 from Internal_Representation.subtasks import Subtasks
-from Internal_Representation.modifier import Modifier
+Modifier = sys.modules['Internal_Representation.modifier'].Modifier
 
 
 class Method(Modifier):
