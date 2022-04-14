@@ -1,7 +1,6 @@
 # TODO
 1. Add and test a depth first approach - this will get stuck in recursion
-3. When expanding JSHOP tasks we need to use an if-else approach (if the first methods preconditions are satisifed we don't bother with the second)
-4. Select parameter selector from command line - same as heuristic
+2. Select parameter selector from command line - same as heuristic
 
 # Things to Test
 

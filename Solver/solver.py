@@ -1,4 +1,3 @@
-import re
 import sys
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
