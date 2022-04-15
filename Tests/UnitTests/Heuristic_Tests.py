@@ -3,6 +3,7 @@ from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Solver.Heuristics.tree_distance import TreeDistance
 from Solver.Heuristics.delete_relaxed import DeleteRelaxed, AltPrecondition, AltOperatorCondition
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Internal_Representation.conditions import PredicateCondition
 from Solver.model import Model
 from Internal_Representation.state import State
@@ -217,5 +218,21 @@ class HeuristicTests(unittest.TestCase):
         parser.parse_domain(self.rover_path + "domain.hddl")
         parser.parse_problem(self.rover_path + "p01.hddl")
         solver.set_heuristic(DeleteRelaxed)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    def test_Hamming_Distance_basic(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_path + "basic.hddl")
+        parser.parse_problem(self.basic_path + "pb1.hddl")
+        solver.set_heuristic(HammingDistance)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    def test_Hamming_Distance_rover(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_path + "domain.hddl")
+        parser.parse_problem(self.rover_path + "p01.hddl")
+        solver.set_heuristic(HammingDistance)
         res = solver.solve()
         self.assertNotEqual(None, res)

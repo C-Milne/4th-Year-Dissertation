@@ -7,7 +7,7 @@ from runner import Runner
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Heuristics.tree_distance import TreeDistance
 from Solver.Parameter_Selection.All_Parameters import AllParameters
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
@@ -158,7 +158,7 @@ optional arguments:
 """, output)
 
     def test_runner_command_line_heupath_or_heuname_only(self):
-        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/distance_to_goal.py
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/hamming_distance.py
         os.chdir("../..")
 
         error_raised = False
@@ -179,7 +179,7 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
 
         error_raised = False
         try:
-            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/distance_to_goal.py",
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/hamming_distance.py",
                                           stderr=subprocess.PIPE)
             output, error = res.communicate()
         except Exception as e:
@@ -197,8 +197,8 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         controller = Runner(self.basic_domain_path, self.basic_pb1_path)
         controller.parse_domain()
         controller.parse_problem()
-        controller.set_heuristic_from_file('PredicateDistanceToGoal', '../../Solver/Heuristics/distance_to_goal.py')
-        self.assertEqual(PredicateDistanceToGoal.__name__, type(controller.solver.search_models.heuristic).__name__)
+        controller.set_heuristic_from_file('HammingDistance', '../../Solver/Heuristics/hamming_distance.py')
+        self.assertEqual(HammingDistance.__name__, type(controller.solver.search_models.heuristic).__name__)
 
         controller.set_heuristic_from_file('TreeDistance', '../../Solver/Heuristics/tree_distance.py')
         self.assertEqual(TreeDistance.__name__, type(controller.solver.search_models.heuristic).__name__)
@@ -208,8 +208,8 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         os.chdir("../..")
         error_raised = False
         try:
-            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal"
-                                          "  -heuPath Solver/Heuristics/distance_to_goal.py",
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName HammingDistance"
+                                          "  -heuPath Solver/Heuristics/hamming_distance.py",
                                           stderr=subprocess.PIPE)
         except Exception as e:
             msg = e.stderr.decode("utf-8")  # This is for debugger inspection only
@@ -244,7 +244,7 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         os.chdir(original_dir)
 
     def test_runner_command_line_heupath_or_heuname_only(self):
-        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/distance_to_goal.py
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/hamming_distance.py
         os.chdir("../..")
 
         error_raised = False
@@ -267,7 +267,7 @@ runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSel
         error_raised = False
         try:
             res = subprocess.check_output(
-                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectPath Solver/Heuristics/distance_to_goal.py",
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectPath Solver/Heuristics/hamming_distance.py",
                 stderr=subprocess.PIPE)
             output, error = res.communicate()
         except Exception as e:

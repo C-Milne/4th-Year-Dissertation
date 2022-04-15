@@ -9,7 +9,7 @@ os.chdir("../../..")
 sys.path.append(os.getcwd())
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from runner import Runner
 os.chdir(working_dir)
 

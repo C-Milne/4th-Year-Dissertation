@@ -1,8 +1,10 @@
 from Solver.Heuristics.pruning import Pruning
 from Internal_Representation.problem_predicate import ProblemPredicate
 
+"""This is based on the idea of Hamming Distance. https://www.sciencedirect.com/topics/engineering/hamming-distance"""
 
-class PredicateDistanceToGoal(Pruning):
+
+class HammingDistance(Pruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
         self.low_target = True

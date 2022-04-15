@@ -12,7 +12,7 @@ from Internal_Representation.state import State
 from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
@@ -403,6 +403,6 @@ class SolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
-        solver.set_heuristic(PredicateDistanceToGoal)
+        solver.set_heuristic(HammingDistance)
         res = solver.solve()
         self.assertNotEqual(None, res)

@@ -17,7 +17,7 @@ from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
 from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Solver.Parameter_Selection.All_Parameters import AllParameters

@@ -3,7 +3,7 @@ from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
 from Solver.solver import Solver
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Tests.UnitTests.TestTools.env_setup import env_setup, solver_setup
 
 
@@ -148,7 +148,7 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
-        solver.set_heuristic(PredicateDistanceToGoal)
+        solver.set_heuristic(HammingDistance)
         solver = Solver(domain, problem)
 
         # I think this one is not solvable
