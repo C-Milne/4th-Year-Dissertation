@@ -1,10 +1,7 @@
 import unittest
-from runner import Runner
-from Internal_Representation.precondition import Precondition
 from Solver.model import Model
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 from Parsers.HDDL_Parser import HDDLParser
-from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.subtasks import Subtasks
@@ -16,7 +13,6 @@ from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
-from Tests.UnitTests.TestTools.rover_execution import execution_prep
 
 
 class SolvingTests(unittest.TestCase):

@@ -3,7 +3,7 @@ from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
 from Parsers.parser import Parser
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 
 
 def env_setup(HDDL: bool) -> [Domain, Problem, Parser, Solver]:

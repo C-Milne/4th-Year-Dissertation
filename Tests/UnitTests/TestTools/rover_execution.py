@@ -1,8 +1,6 @@
-from Solver.solver import Solver
-from Solver.model import Model
+from Solver.Solving_Algorithms.solver import Solver
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
-from Internal_Representation.state import State
 from Parsers.HDDL_Parser import HDDLParser
 
 

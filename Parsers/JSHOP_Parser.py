@@ -11,7 +11,7 @@ from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.derived_predicate import DerivedPredicate
 from Internal_Representation.parameter import Parameter
-from Solver.solver import Requirements
+from Solver.Solving_Algorithms.solver import Requirements
 
 
 class JSHOPParser(Parser):

@@ -1,13 +1,10 @@
 import unittest
-from runner import Runner
-from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 from Parsers.HDDL_Parser import HDDLParser
-from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.modifier import Modifier
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate

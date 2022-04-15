@@ -6,7 +6,7 @@ import importlib.util
 import inspect
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Internal_Representation.domain import Domain

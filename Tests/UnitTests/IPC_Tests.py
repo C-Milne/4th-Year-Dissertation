@@ -1,10 +1,7 @@
 import unittest
-from Internal_Representation.domain import Domain
-from Internal_Representation.problem import Problem
-from Parsers.HDDL_Parser import HDDLParser
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 from Solver.Heuristics.hamming_distance import HammingDistance
-from Tests.UnitTests.TestTools.env_setup import env_setup, solver_setup
+from Tests.UnitTests.TestTools.env_setup import env_setup
 
 
 class IPCTests(unittest.TestCase):
