@@ -1,10 +1,11 @@
+from __future__ import annotations
 import sys
 """Import already imported modules from sys.modules"""
-Modifier = sys.modules["Internal_Representation.modifier"].Modifier
-Method = sys.modules["Internal_Representation.method"].Method
-Action = sys.modules["Internal_Representation.action"].Action
-Task = sys.modules["Internal_Representation.task"].Task
-Model = sys.modules["Solver.model"].Model
+from Solver.model import Model
+# Model = sys.modules["Solver.model"].Model
+# Method = sys.modules["Solver.model"].Method
+# Action = sys.modules["Solver.model"].Action
+# Task = sys.modules["Solver.model"].Task
 Object = sys.modules["Internal_Representation.Object"].Object
 ListParameter = sys.modules["Internal_Representation.list_parameter"].ListParameter
 Type = sys.modules["Internal_Representation.Type"].Type
@@ -14,7 +15,7 @@ class ParameterSelector:
     def __init__(self, solver):
         self.solver = solver
 
-    def get_potential_parameters(self, modifier: Modifier, parameters: dict, search_model: Model) -> list:
+    def get_potential_parameters(self, modifier: 'Modifier', parameters: dict, search_model: Model) -> list:
         """
         :param modifier: Task / Method / Action that is being executed
         :param parameters: The parameters that are already selected - {'param1': Object ...}
@@ -26,14 +27,14 @@ class ParameterSelector:
     def presolving_processing(self, domain, problem):
         pass
 
-    def compare_parameters(self, method: Modifier, parameters: dict) -> list:
+    def compare_parameters(self, method: 'Modifier', parameters: dict) -> list:
         """ Compares if all the parameters required for a method are given
         :parameter  - method : Method
         :parameter  - parameters : {'?objective1': Object, '?mode': Object}
         :returns    - [True] : if parameters match what is required by method
         :returns    - [False, missing_params] : otherwise. missing_params = ["name1", "name2" ... ]
         """
-        assert isinstance(method, Modifier)
+        assert isinstance(method, sys.modules['Internal_Representation.modifier'].Modifier)
         assert type(parameters) == dict
         for p in parameters:
             assert type(parameters[p]) == Object or type(parameters[p]) == ListParameter

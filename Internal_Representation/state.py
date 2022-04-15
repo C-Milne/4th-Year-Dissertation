@@ -123,15 +123,14 @@ class State:
         return True
 
     def __eq__(self, other):
-        try:
-            if len(self.elements) != len(other.elements):
-                return False
-            for el in self.elements:
-                if el not in other.elements:
-                    return False
-            return True
-        except:
+        if type(self) != type(other):
             return False
+        if len(self.elements) != len(other.elements):
+            return False
+        for el in self.elements:
+            if el not in other.elements:
+                return False
+        return True
 
     def __len__(self):
         return len(self.elements)

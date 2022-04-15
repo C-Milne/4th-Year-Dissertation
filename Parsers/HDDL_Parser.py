@@ -1,3 +1,5 @@
+from Internal_Representation.precondition import Precondition
+from Internal_Representation.modifier import Modifier
 from Internal_Representation.action import Action
 from Internal_Representation.method import Method
 from Internal_Representation.predicate import Predicate
@@ -8,9 +10,7 @@ from Parsers.parser import Parser
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.effects import Effects
 from Internal_Representation.subtasks import Subtasks
-from Internal_Representation.modifier import Modifier
 from Internal_Representation.problem_predicate import ProblemPredicate
-from Internal_Representation.precondition import Precondition
 
 
 class HDDLParser(Parser):

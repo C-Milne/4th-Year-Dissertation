@@ -12,5 +12,14 @@ class Object:
         assert type(t) == Type
         self.type = t
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        elif self.name != other.name:
+            return False
+        elif self.type != other.type:
+            return False
+        return True
+
     def __str__(self):
         return self.name

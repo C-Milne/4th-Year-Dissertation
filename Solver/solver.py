@@ -1,4 +1,3 @@
-import re
 import sys
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
@@ -22,7 +21,7 @@ from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Solver.Parameter_Selection.All_Parameters import AllParameters
-from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
+from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection, Requirements
 """Importing from sys modules"""
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 ForallCondition = sys.modules['Internal_Representation.conditions'].ForAllCondition
@@ -362,7 +361,8 @@ class Solver:
         new_model.populate_operations_taken(Model.reproduce_operations_list(model))
         return new_model
 
-    def output(self, resulting_model: Model):
+    @staticmethod
+    def output(resulting_model: Model):
         assert type(resulting_model) == Model or resulting_model is None
 
         if not resulting_model is None:
@@ -379,6 +379,6 @@ class Solver:
             # print("\nFinal State:")
             # print(resulting_model.current_state)
 
-            print("\nSearch Models Created During Search: {}".format(Model.model_counter))
+            print("\nSearch Models Created During Search: {}".format(resulting_model.num_models_used))
         else:
             print("plan not found")

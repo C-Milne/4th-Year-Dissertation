@@ -1,10 +1,11 @@
+import sys
 from typing import List
-from Internal_Representation.precondition import Precondition
+# from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
+Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 
 
 class Modifier:
-    Precondition = Precondition
 
     def __init__(self, name, parameters: List[Parameter], preconditions: Precondition = None):
         assert type(name) == str
@@ -15,7 +16,6 @@ class Modifier:
         self.parameters = parameters
         assert isinstance(preconditions, Precondition) or preconditions is None
         self.preconditions = preconditions
-        self.requirements = None
 
     def add_parameter(self, parameter: Parameter):
         assert isinstance(parameter, Parameter)
