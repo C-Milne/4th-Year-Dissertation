@@ -2,10 +2,11 @@ import sys
 # from Internal_Representation.modifier import Modifier
 from Internal_Representation.subtasks import Subtasks
 Modifier = sys.modules['Internal_Representation.modifier'].Modifier
+Precondition = sys.modules['Internal_Representation.modifier'].Precondition
 
 
 class Method(Modifier):
-    def __init__(self, name, parameters, preconditions: Modifier.Precondition, task: dict, subtasks, constraints):
+    def __init__(self, name, parameters, preconditions: Precondition, task: dict, subtasks, constraints):
         """
         :param name:
         :param parameters:
@@ -19,7 +20,7 @@ class Method(Modifier):
         self.task = task
         assert type(subtasks) == Subtasks or subtasks is None
         self.subtasks = subtasks
-        assert type(constraints) == Modifier.Precondition or constraints is None
+        assert type(constraints) == Precondition or constraints is None
         self.constraints = constraints
 
     def evaluate_preconditions(self, model, param_dict, problem) -> bool:

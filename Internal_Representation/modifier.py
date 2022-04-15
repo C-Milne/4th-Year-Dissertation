@@ -6,7 +6,6 @@ Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 
 
 class Modifier:
-    Precondition = Precondition
 
     def __init__(self, name, parameters: List[Parameter], preconditions: Precondition = None):
         assert type(name) == str
