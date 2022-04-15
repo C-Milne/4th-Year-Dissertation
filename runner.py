@@ -8,6 +8,7 @@ from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
 from Solver.solver import Solver
 from Solver.Heuristics.Heuristic import Heuristic
+from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Solver.model import Model
@@ -45,10 +46,7 @@ class Runner:
         else:
             raise TypeError("Problem file type ({}) does not match domain file type ({})".format(suffix, self.suffix))
 
-    def set_heuristic(self, heuristic: type(Heuristic)) -> None:
-        self.solver.set_heuristic(heuristic)
-
-    def set_heuristic_from_file(self, module_name: str, file_path: str) -> None:
+    def _get_module_from_file(self, module_name: str, file_path: str):
         # Load Class
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         module = importlib.util.module_from_spec(spec)
@@ -56,8 +54,19 @@ class Runner:
         spec.loader.exec_module(module)
         for name, obj in inspect.getmembers(module):
             if inspect.isclass(obj) and name == module_name:
-                self.set_heuristic(obj)
-                break
+                return obj
+
+    def set_heuristic(self, heuristic: type(Heuristic)) -> None:
+        self.solver.set_heuristic(heuristic)
+
+    def set_heuristic_from_file(self, module_name: str, file_path: str) -> None:
+        self.set_heuristic(self._get_module_from_file(module_name, file_path))
+
+    def set_parameter_selector(self, param_selector: type(ParameterSelector)) -> None:
+        self.solver.set_parameter_selector(param_selector)
+
+    def set_parameter_selector_from_file(self, module_name: str, file_path: str) -> None:
+        self.set_parameter_selector(self._get_module_from_file(module_name, file_path))
 
     def set_early_task_precon_checker(self, v: bool) -> None:
         self.solver.task_expansion_given_param_check = v
@@ -100,8 +109,10 @@ if __name__ == "__main__":
     argparser.add_argument("Domain_File", metavar='D', type=str, nargs="?", help='File path to Domain File', default=None)
     argparser.add_argument("Problem_File", metavar='P', type=str, nargs="?", help='File path to Problem File', default=None)
     argparser.add_argument("-w", type=str, help='File path to Write Resulting Plan File', default=None)
-    argparser.add_argument("-heuModName", type=str, help='File path to Heuristic File', default=None)
+    argparser.add_argument("-heuModName", type=str, help='Name of Heuristic Class', default=None)
     argparser.add_argument("-heuPath", type=str, help='File path to Heuristic File', default=None)
+    argparser.add_argument("-paramSelectName", type=str, help='Name of Parameter Selector Class', default=None)
+    argparser.add_argument("-paramSelectPath", type=str, help='File path to Parameter Selector File', default=None)
     argparser.format_help()
     args = argparser.parse_args()
 
@@ -110,10 +121,16 @@ if __name__ == "__main__":
     write_file = args.w
     heuristic_mod_name = args.heuModName
     heuristic_file = args.heuPath
+    param_mod_name = args.paramSelectName
+    param_file = args.paramSelectPath
 
     if heuristic_mod_name is not None and heuristic_file is None or \
             heuristic_mod_name is None and heuristic_file is not None:
         argparser.error("Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty")
+    elif param_mod_name is not None and param_file is None or \
+            param_mod_name is None and param_file is not None:
+        argparser.error(
+            "Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set of both need to be empty")
 
     if domain_file is not None and problem_file is not None:
         # Setup runner object
@@ -126,6 +143,10 @@ if __name__ == "__main__":
         # Heuristic selection
         if heuristic_mod_name is not None and heuristic_file is not None:
             controller.set_heuristic_from_file(heuristic_mod_name, heuristic_file)
+
+        # Parameter Selection
+        if param_mod_name is not None and param_file is not None:
+            controller.set_parameter_selector_from_file(param_mod_name, param_file)
 
         # Initiate solving
         result = controller.solve()

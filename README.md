@@ -1,6 +1,7 @@
 # TODO
 1. Add and test a depth first approach - this will get stuck in recursion
 2. Select parameter selector from command line - same as heuristic
+3. Remove requirement attribute from modifiers
 
 # Things to Test
 
