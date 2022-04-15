@@ -96,9 +96,9 @@ class Solver:
             search = True
 
         if search != False:
-            return self.__search()
+            return self._search()
 
-    def __search(self, step_control=False):
+    def _search(self, step_control=False):
         """:parameter   - step_control  - If True, then loop will only execute once"""
         while True:
             # New model to operate on

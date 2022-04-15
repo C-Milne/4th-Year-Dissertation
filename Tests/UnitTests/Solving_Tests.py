@@ -202,7 +202,7 @@ class SolvingTests(unittest.TestCase):
         solver.search_models.add(initial_model)
 
         # Execute Step 1
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect task to be expanded
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -217,7 +217,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(None, solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0].type)
 
         # Execute step 2
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect method to be expanded - should be tasks drop and pickup in the place of the method
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -234,7 +234,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(None, model.current_state.elements[0].objects[0].type)
 
         # Execute step 3
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect the drop action to be carried out
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -244,7 +244,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual([], model.current_state.elements)
 
         # Execute step 4
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect the pickup action to be carried out
         self.assertEqual(0, len(solver.search_models._SearchQueue__Q))
@@ -325,7 +325,7 @@ class SolvingTests(unittest.TestCase):
         domain, problem, solver = RovEx.setup()
         RovEx.execution_prep(problem, solver)
         solver.parameter_selector.presolving_processing(domain, problem)
-        solver._Solver__search(True)
+        solver._search(True)
         # Check searchModels has 4 search nodes each with a different ?waypoint parameter
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
         for i in range(4):
@@ -389,7 +389,7 @@ class SolvingTests(unittest.TestCase):
         solver.search_models.add(initial_model)
 
         # Expand
-        solver._Solver__search(True)
+        solver._search(True)
         search_models = solver.search_models._SearchQueue__Q
 
         model = search_models[0]
