@@ -1,5 +1,4 @@
 import unittest
-from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Solver.action_tracker import ActionTracker
 from Solver.Parameter_Selection.All_Parameters import AllParameters
@@ -17,7 +16,6 @@ class ParameterSelectionTests(unittest.TestCase):
         solver.set_parameter_selector(AllParameters)
         parser.parse_domain(self.basic_path_HDDL + "basic.hddl")
         parser.parse_problem(self.basic_path_HDDL + "pb1.hddl")
-        execution_prep(problem, solver)
         res = solver.solve()
         self.assertNotEqual(None, res)
         self.assertEqual(ActionTracker(domain.tasks['swap'], {'?x': problem.objects['banjo'],
@@ -36,6 +34,14 @@ class ParameterSelectionTests(unittest.TestCase):
         solver.set_parameter_selector(AllParameters)
         parser.parse_domain(self.rover_path_HDDL + "domain.hddl")
         parser.parse_problem(self.rover_path_HDDL + "p01.hddl")
-        execution_prep(problem, solver)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    # @unittest.skip
+    def test_select_requirement_selector_rover1_hddl(self):
+        domain, problem, parser, solver = env_setup(True)
+        solver.set_parameter_selector(RequirementSelection)
+        parser.parse_domain(self.rover_path_HDDL + "domain.hddl")
+        parser.parse_problem(self.rover_path_HDDL + "p01.hddl")
         res = solver.solve()
         self.assertNotEqual(None, res)

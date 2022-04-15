@@ -17,7 +17,6 @@ class Modifier:
         self.parameters = parameters
         assert isinstance(preconditions, Precondition) or preconditions is None
         self.preconditions = preconditions
-        self.requirements = None
 
     def add_parameter(self, parameter: Parameter):
         assert isinstance(parameter, Parameter)
