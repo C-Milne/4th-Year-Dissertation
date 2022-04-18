@@ -1,8 +1,7 @@
-from Solver.solver import Solver
-from Solver.model import Model
+from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
-from Internal_Representation.state import State
 from Parsers.HDDL_Parser import HDDLParser
 
 
@@ -16,7 +15,7 @@ def setup() -> [Domain, Problem, Solver]:
     parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
 
     # Initialise solver
-    solver = Solver(domain, problem)
+    solver = PartialOrderSolver(domain, problem)
     return domain, problem, solver
 
 

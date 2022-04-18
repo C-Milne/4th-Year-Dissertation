@@ -1,7 +1,5 @@
 # TODO
 1. Add and test a depth first approach - this will get stuck in recursion
-2. Make solver an inheritable class like heuristics - One for total order one for partial order
-3. Hamming distance
 
 # Things to Test
 

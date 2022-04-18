@@ -4,9 +4,11 @@ import pickle
 import sys
 import importlib.util
 import inspect
+from abc import ABCMeta
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Internal_Representation.domain import Domain
@@ -22,7 +24,7 @@ class Runner:
         self.domain = Domain(None)
         self.problem = Problem(self.domain)
         self.domain.add_problem(self.problem)
-        self.solver = Solver(self.domain, self.problem)
+        self.solver = PartialOrderSolver(self.domain, self.problem)
         self.domain_path = domain_path
         self.problem_path = problem_path
 
@@ -55,6 +57,15 @@ class Runner:
         for name, obj in inspect.getmembers(module):
             if inspect.isclass(obj) and name == module_name:
                 return obj
+
+    def set_solver(self, solver: type(Solver)) -> None:
+        if type(solver) == type or type(solver) == ABCMeta:
+            solver = solver(self.domain, self.problem)
+        assert isinstance(solver, Solver)
+        self.solver = solver
+
+    def set_solver_from_file(self, module_name: str, file_path: str) -> None:
+        self.set_solver(self._get_module_from_file(module_name, file_path))
 
     def set_heuristic(self, heuristic: type(Heuristic)) -> None:
         self.solver.set_heuristic(heuristic)
@@ -109,6 +120,8 @@ if __name__ == "__main__":
     argparser.add_argument("Domain_File", metavar='D', type=str, nargs="?", help='File path to Domain File', default=None)
     argparser.add_argument("Problem_File", metavar='P', type=str, nargs="?", help='File path to Problem File', default=None)
     argparser.add_argument("-w", type=str, help='File path to Write Resulting Plan File', default=None)
+    argparser.add_argument("-solverModName", type=str, help='Name of Solver Class', default=None)
+    argparser.add_argument("-solverPath", type=str, help='File path to Solver File', default=None)
     argparser.add_argument("-heuModName", type=str, help='Name of Heuristic Class', default=None)
     argparser.add_argument("-heuPath", type=str, help='File path to Heuristic File', default=None)
     argparser.add_argument("-paramSelectName", type=str, help='Name of Parameter Selector Class', default=None)
@@ -119,18 +132,24 @@ if __name__ == "__main__":
     domain_file = args.Domain_File
     problem_file = args.Problem_File
     write_file = args.w
+    solver_mod_name = args.solverModName
+    solver_file = args.solverPath
     heuristic_mod_name = args.heuModName
     heuristic_file = args.heuPath
     param_mod_name = args.paramSelectName
     param_file = args.paramSelectPath
 
-    if heuristic_mod_name is not None and heuristic_file is None or \
+    if solver_mod_name is not None and solver_file is None or \
+            solver_mod_name is None and solver_file is not None:
+        argparser.error(
+            "Incorrect Usage. Either both '-solverModName' and '-solverPath' need to be set or both need to be empty")
+    elif heuristic_mod_name is not None and heuristic_file is None or \
             heuristic_mod_name is None and heuristic_file is not None:
-        argparser.error("Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty")
+        argparser.error("Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set or both need to be empty")
     elif param_mod_name is not None and param_file is None or \
             param_mod_name is None and param_file is not None:
         argparser.error(
-            "Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set of both need to be empty")
+            "Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty")
 
     if domain_file is not None and problem_file is not None:
         # Setup runner object
@@ -139,6 +158,10 @@ if __name__ == "__main__":
         # Parse domain and problem
         controller.parse_domain()
         controller.parse_problem()
+
+        # Solver Selection
+        if solver_mod_name is not None and solver_file is not None:
+            controller.set_solver_from_file(solver_mod_name, solver_file)
 
         # Heuristic selection
         if heuristic_mod_name is not None and heuristic_file is not None:

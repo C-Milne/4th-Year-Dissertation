@@ -7,10 +7,11 @@ from runner import Runner
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Heuristics.tree_distance import TreeDistance
 from Solver.Parameter_Selection.All_Parameters import AllParameters
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
+from Solver.Solving_Algorithms.total_order import TotalOrderSolver
 
 
 class RunnerTests(unittest.TestCase):
@@ -122,8 +123,9 @@ Search Models Created During Search: 3
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             # msg = msg[434:]   # This is for debugger inspection only
-            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
-                 [-paramSelectName PARAMSELECTNAME]\r
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffix> <problem.suffix>'\r
@@ -136,8 +138,9 @@ runner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffi
         os.chdir("../..")
         res = os.popen("python ./runner.py -h")
         output = res.read()
-        self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]
-                 [-paramSelectName PARAMSELECTNAME]
+        self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]
                  [-paramSelectPath PARAMSELECTPATH]
                  [D] [P]
 
@@ -148,6 +151,10 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -w W                  File path to Write Resulting Plan File
+  -solverModName SOLVERMODNAME
+                        Name of Solver Class
+  -solverPath SOLVERPATH
+                        File path to Solver File
   -heuModName HEUMODNAME
                         Name of Heuristic Class
   -heuPath HEUPATH      File path to Heuristic File
@@ -158,7 +165,7 @@ optional arguments:
 """, output)
 
     def test_runner_command_line_heupath_or_heuname_only(self):
-        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/distance_to_goal.py
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/hamming_distance.py
         os.chdir("../..")
 
         error_raised = False
@@ -168,27 +175,29 @@ optional arguments:
             output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
-            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
-                 [-paramSelectName PARAMSELECTNAME]\r
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
                  [D] [P]\r
-runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty\r
+runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set or both need to be empty\r
 """, msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
 
         error_raised = False
         try:
-            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/distance_to_goal.py",
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/hamming_distance.py",
                                           stderr=subprocess.PIPE)
             output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
-            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
-                 [-paramSelectName PARAMSELECTNAME]\r
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
                  [D] [P]\r
-runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set of both need to be empty\r
+runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set or both need to be empty\r
 """, msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
@@ -197,8 +206,8 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         controller = Runner(self.basic_domain_path, self.basic_pb1_path)
         controller.parse_domain()
         controller.parse_problem()
-        controller.set_heuristic_from_file('PredicateDistanceToGoal', '../../Solver/Heuristics/distance_to_goal.py')
-        self.assertEqual(PredicateDistanceToGoal.__name__, type(controller.solver.search_models.heuristic).__name__)
+        controller.set_heuristic_from_file('HammingDistance', '../../Solver/Heuristics/hamming_distance.py')
+        self.assertEqual(HammingDistance.__name__, type(controller.solver.search_models.heuristic).__name__)
 
         controller.set_heuristic_from_file('TreeDistance', '../../Solver/Heuristics/tree_distance.py')
         self.assertEqual(TreeDistance.__name__, type(controller.solver.search_models.heuristic).__name__)
@@ -208,8 +217,8 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         os.chdir("../..")
         error_raised = False
         try:
-            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal"
-                                          "  -heuPath Solver/Heuristics/distance_to_goal.py",
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName HammingDistance"
+                                          "  -heuPath Solver/Heuristics/hamming_distance.py",
                                           stderr=subprocess.PIPE)
         except Exception as e:
             msg = e.stderr.decode("utf-8")  # This is for debugger inspection only
@@ -243,8 +252,8 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         self.assertFalse(error_raised, "An Error Was Raised When Running the Command")
         os.chdir(original_dir)
 
-    def test_runner_command_line_heupath_or_heuname_only(self):
-        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/distance_to_goal.py
+    def test_runner_command_line_parampath_or_paramname_only(self):
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/hamming_distance.py
         os.chdir("../..")
 
         error_raised = False
@@ -255,11 +264,12 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
             output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
-            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
-                 [-paramSelectName PARAMSELECTNAME]\r
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
                  [D] [P]\r
-runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set of both need to be empty\r
+runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty\r
 """, msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
@@ -267,16 +277,79 @@ runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSel
         error_raised = False
         try:
             res = subprocess.check_output(
-                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectPath Solver/Heuristics/distance_to_goal.py",
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectPath Solver/Heuristics/hamming_distance.py",
                 stderr=subprocess.PIPE)
             output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
-            self.assertEqual("""usage: runner.py [-h] [-w W] [-heuModName HEUMODNAME] [-heuPath HEUPATH]\r
-                 [-paramSelectName PARAMSELECTNAME]\r
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
                  [D] [P]\r
-runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set of both need to be empty\r
+runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty\r
 """, msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+    def test_runner_command_line_solverpath_or_solvername_only(self):
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal -heuPath Solver/Heuristics/hamming_distance.py
+        os.chdir("../..")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output(
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -solverModName PredicateDistanceToGoal",
+                stderr=subprocess.PIPE)
+            output, error = res.communicate()
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
+                 [-paramSelectPath PARAMSELECTPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath' need to be set or both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output(
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -solverPath Solver/Heuristics/hamming_distance.py",
+                stderr=subprocess.PIPE)
+            output, error = res.communicate()
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
+                 [-paramSelectPath PARAMSELECTPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath' need to be set or both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+    def test_runner_setting_solver_from_path(self):
+        controller = Runner(self.basic_domain_path, self.basic_pb1_path)
+        controller.parse_domain()
+        controller.parse_problem()
+        controller.set_solver_from_file('TotalOrderSolver', '../../Solver/Solving_Algorithms/total_order.py')
+        self.assertEqual(TotalOrderSolver.__name__, type(controller.solver).__name__)
+
+    def test_runner_setting_solver_from_command_line(self):
+        original_dir = os.getcwd()
+        os.chdir("../..")
+        error_raised = False
+        try:
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -solverModName TotalOrderSolver"
+                                          " -solverPath Solver/Solving_Algorithms/total_order.py",
+                                          stderr=subprocess.PIPE)
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")  # This is for debugger inspection only
+            print(msg)
+            error_raised = True
+        self.assertFalse(error_raised, "An Error Was Raised When Running the Command")
+        os.chdir(original_dir)

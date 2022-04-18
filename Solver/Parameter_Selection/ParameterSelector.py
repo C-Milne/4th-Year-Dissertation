@@ -1,5 +1,6 @@
 from __future__ import annotations
 import sys
+from abc import ABC, abstractmethod
 """Import already imported modules from sys.modules"""
 from Solver.model import Model
 # Model = sys.modules["Solver.model"].Model
@@ -11,10 +12,11 @@ ListParameter = sys.modules["Internal_Representation.list_parameter"].ListParame
 Type = sys.modules["Internal_Representation.Type"].Type
 
 
-class ParameterSelector:
+class ParameterSelector(ABC):
     def __init__(self, solver):
         self.solver = solver
 
+    @abstractmethod
     def get_potential_parameters(self, modifier: 'Modifier', parameters: dict, search_model: Model) -> list:
         """
         :param modifier: Task / Method / Action that is being executed

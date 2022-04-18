@@ -73,15 +73,15 @@ class JSHOPSolvingTests(unittest.TestCase):
                       model.current_state.elements)
 
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_method(subT, model)
+        solver._expand_method(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(2, len(search_models))
@@ -161,18 +161,18 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver.parameter_selector.presolving_processing(domain, problem)
         # res = solver.solve()
 
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
+        solver._search(True)
+        solver._search(True)
+        solver._search(True)
         solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
         solver.search_models._SearchQueue__Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
         search_models = solver.search_models._SearchQueue__Q
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        res = solver._Solver__search()
-        # solver._Solver__search(True)
-        # solver._Solver__search(True)
+        solver._search(True)
+        solver._search(True)
+        solver._search(True)
+        res = solver._search()
+        # solver._search(True)
+        # solver._search(True)
         search_models = solver.search_models._SearchQueue__Q
         self.assertNotEqual(None, res)
         solver.output(res)

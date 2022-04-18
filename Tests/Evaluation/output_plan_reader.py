@@ -2,7 +2,7 @@ import argparse
 import os.path
 import pickle
 from Solver.model import Model
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
 """Plans can be output and stored as pickle objects. This file opens the file and prints the contents"""
 
 

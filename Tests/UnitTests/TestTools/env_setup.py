@@ -3,10 +3,11 @@ from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
 from Parsers.parser import Parser
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 
 
-def env_setup(HDDL: bool) -> [Domain, Problem, Parser, Solver]:
+def env_setup(HDDL: bool) -> [Domain, Problem, Parser, PartialOrderSolver]:
     domain = Domain(None)
     problem = Problem(domain)
     domain.add_problem(problem)
@@ -14,7 +15,7 @@ def env_setup(HDDL: bool) -> [Domain, Problem, Parser, Solver]:
         parser = HDDLParser(domain, problem)
     else:
         parser = JSHOPParser(domain, problem)
-    solver = Solver(domain, problem)
+    solver = PartialOrderSolver(domain, problem)
     return domain, problem, parser, solver
 
 

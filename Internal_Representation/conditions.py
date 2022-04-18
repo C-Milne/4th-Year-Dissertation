@@ -120,7 +120,7 @@ class ForAllCondition(Condition):
             obs = problem.get_all_objects()
 
             if self.selector_requirements is None:
-                self.selector_requirements = sys.modules['Solver.solver'].Requirements([], self.selector)
+                self.selector_requirements = sys.modules['Solver.Solving_Algorithms.solver'].Requirements([], self.selector)
                 self.selector_requirements.prepare_requirements()
 
             # Check there is only one unknown variable

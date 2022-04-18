@@ -1,13 +1,11 @@
 import unittest
-from runner import Runner
-from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 from Parsers.HDDL_Parser import HDDLParser
-from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.modifier import Modifier
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.state import State
 from Internal_Representation.problem_predicate import ProblemPredicate
@@ -87,7 +85,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Blocksworld/Blocksworld_test_domain_2.hddl")
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
         solver.parameter_selector.presolving_processing(domain, problem)
 
         # Add some assertions for this - seems too work (perhaps not for 'forall' methods)
@@ -130,14 +128,13 @@ class HDDLGroundingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test02_forall/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test02_forall/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertIsNotNone(plan)
         self.assertEqual(1, len(plan.actions_taken))
 
         problem.initial_state.remove_element(domain.predicates['foo'], [problem.objects['a']])
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertIsNone(plan)
@@ -273,7 +270,7 @@ class HDDLGroundingTests(unittest.TestCase):
 
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.test_tools_path + "Rover/domain2.hddl")
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
         solver.parameter_selector.presolving_processing(domain, problem)
 
         # Check action requirements
