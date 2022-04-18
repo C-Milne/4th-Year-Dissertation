@@ -13,7 +13,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test01_empty_method/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test01_empty_method/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
 
@@ -25,7 +24,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test02_forall/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test02_forall/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertIsNotNone(plan)
@@ -35,7 +33,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test03_forall1/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test03_forall1/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, len(plan.actions_taken))
@@ -46,7 +43,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test04_no_abstracts/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test04_no_abstracts/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
 
@@ -61,7 +57,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test05_constants_in_domain/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test05_constants_in_domain/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, len(plan.actions_taken))
@@ -73,7 +68,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test06_synonymes/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test06_synonymes/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(8, len(plan.actions_taken))
@@ -85,7 +79,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "test07_arguments/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "test07_arguments/problem.hddl")
-        solver = Solver(domain, problem)
 
         self.assertEqual(2, len(domain.actions['noop'].parameters))
         for p in domain.actions['noop'].parameters:
@@ -103,7 +96,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "satellite01/domain2.hddl")
         parser.parse_problem(self.IPC_Tests_path + "satellite01/1obs-1sat-1mod.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
 
@@ -146,7 +138,6 @@ class IPCTests(unittest.TestCase):
         parser.parse_domain(self.IPC_Tests_path + "transport01/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "transport01/pfile01.hddl")
         solver.set_heuristic(HammingDistance)
-        solver = Solver(domain, problem)
 
         # I think this one is not solvable
         plan = solver.solve()
@@ -158,7 +149,6 @@ class IPCTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.IPC_Tests_path + "um-translog01/domain.hddl")
         parser.parse_problem(self.IPC_Tests_path + "um-translog01/problem.hddl")
-        solver = Solver(domain, problem)
         plan = solver.solve()
         solver.output(plan)
 

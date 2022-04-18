@@ -1,6 +1,7 @@
 import unittest
 from Solver.model import Model
 from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
@@ -154,7 +155,7 @@ class SolvingTests(unittest.TestCase):
         # Execute action on model[7]
         subT = Subtasks.Subtask(domain.actions['visit'], [RegParameter('?from')])
         subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
-        solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
+        solver._expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(8, len(search_models))
@@ -192,7 +193,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual([problem.objects['banjo'], problem.objects['kiwi']], task.parameters)
 
         # Initialise solver
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
 
         # Create initial model
         solver.search_models.clear()
@@ -361,7 +362,7 @@ class SolvingTests(unittest.TestCase):
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
         plan = solver.solve()
         self.assertEqual(True, problem.evaluate_goal(plan))
 
@@ -378,7 +379,6 @@ class SolvingTests(unittest.TestCase):
         task = problem.subtasks.get_tasks()[0]
 
         # Initialise solver
-        solver = Solver(domain, problem)
         solver.parameter_selector.presolving_processing(domain, problem)
 
         # Create initial model

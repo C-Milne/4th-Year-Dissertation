@@ -2,6 +2,7 @@
 1. Add and test a depth first approach - this will get stuck in recursion
 2. Make solver an inheritable class like heuristics - One for total order one for partial order
 3. Make solving algorithms selectable from command line
+4. Add abstract methods to heuristic and parameter selection
 
 # Things to Test
 

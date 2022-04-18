@@ -73,15 +73,15 @@ class JSHOPSolvingTests(unittest.TestCase):
                       model.current_state.elements)
 
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_method(subT, model)
+        solver._expand_method(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(2, len(search_models))

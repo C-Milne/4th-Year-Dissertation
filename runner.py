@@ -7,6 +7,7 @@ import inspect
 from Parsers.HDDL_Parser import HDDLParser
 from Parsers.JSHOP_Parser import JSHOPParser
 from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Internal_Representation.domain import Domain
@@ -22,7 +23,7 @@ class Runner:
         self.domain = Domain(None)
         self.problem = Problem(self.domain)
         self.domain.add_problem(self.problem)
-        self.solver = Solver(self.domain, self.problem)
+        self.solver = PartialOrderSolver(self.domain, self.problem)
         self.domain_path = domain_path
         self.problem_path = problem_path
 
