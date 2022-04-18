@@ -1,5 +1,6 @@
 import sys
 import copy
+from Internal_Representation.precondition import Precondition
 from Internal_Representation.method import Method
 from Internal_Representation.action import Action
 from Internal_Representation.task import Task
