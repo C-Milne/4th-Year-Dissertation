@@ -1,7 +1,9 @@
 import unittest
+from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 from Solver.Solving_Algorithms.solver import Solver
 from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
+from Solver.Solving_Algorithms.total_order import TotalOrderSolver
 from Parsers.HDDL_Parser import HDDLParser
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
@@ -197,7 +199,7 @@ class SolvingTests(unittest.TestCase):
 
         # Create initial model
         solver.search_models.clear()
-        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        param_dict = solver._generate_param_dict(task.task, task.parameters)
         task.add_given_parameters(param_dict)
         initial_model = Model(problem.initial_state, [task], problem)
         solver.search_models.add(initial_model)
@@ -383,7 +385,7 @@ class SolvingTests(unittest.TestCase):
 
         # Create initial model
         solver.search_models.clear()
-        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        param_dict = solver._generate_param_dict(task.task, task.parameters)
         task.add_given_parameters(param_dict)
         initial_model = Model(problem.initial_state, [task], problem)
         solver.search_models.add(initial_model)
@@ -400,5 +402,48 @@ class SolvingTests(unittest.TestCase):
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
         solver.set_heuristic(HammingDistance)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    def test_total_order_rover(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain("../Examples/IPC_Tests/Rover/rover-domain.hddl")
+        parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
+
+        # Initialise solver
+        solver = TotalOrderSolver(domain, problem)
+        solver.set_heuristic(BreadthFirstActions)
+
+        res = solver.solve()
+        image_data = domain.actions['communicate_image_data']
+        soil_data = domain.actions['communicate_soil_data']
+        rock_data = domain.actions['communicate_rock_data']
+        necessary_actions = [image_data, soil_data, rock_data]
+        for a in necessary_actions:
+            print("Testing {}".format(a))
+            found = False
+            for ac in res.actions_taken:
+                if a == ac.action:
+                    found = True
+                    break
+            self.assertEqual(True, found)
+
+    def test_total_order_basic(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain("../Examples/IPC_Tests/Rover/rover-domain.hddl")
+        parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
+
+        # Initialise solver
+        solver = TotalOrderSolver(domain, problem)
+        solver.set_heuristic(BreadthFirstActions)
+
         res = solver.solve()
         self.assertNotEqual(None, res)

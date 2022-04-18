@@ -76,7 +76,7 @@ class Solver(ABC):
                     print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
                 # Create initial search model
-                param_dict = self.__generate_param_dict(subT.task, subT.parameters)
+                param_dict = self._generate_param_dict(subT.task, subT.parameters)
                 subT.add_given_parameters(param_dict)
                 list_subT.append(subT)
                 task_counter += 1
@@ -161,7 +161,7 @@ class Solver(ABC):
         This method needs to be expanded to accommodate processing actions"""
         raise NotImplementedError
 
-    def __generate_param_dict(self, modifier, params):
+    def _generate_param_dict(self, modifier, params):
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task
         # Check number of params is the amount expected
         if type(params) == ListParameter:

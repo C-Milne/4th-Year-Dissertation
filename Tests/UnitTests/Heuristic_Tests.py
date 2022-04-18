@@ -193,7 +193,7 @@ class HeuristicTests(unittest.TestCase):
                 continue
 
             # Create initial search model
-            param_dict = solver._Solver__generate_param_dict(subT.task, subT.parameters)
+            param_dict = solver._generate_param_dict(subT.task, subT.parameters)
             subT.add_given_parameters(param_dict)
             list_subT.append(subT)
             task_counter += 1

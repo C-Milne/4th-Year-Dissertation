@@ -5,6 +5,7 @@ from Solver.Solving_Algorithms.solver import Subtasks
 from Solver.Solving_Algorithms.solver import ProblemPredicate
 from Solver.Solving_Algorithms.solver import ForallCondition
 from Solver.Solving_Algorithms.solver import Action
+from Solver.Solving_Algorithms.solver import Task
 from Solver.Solving_Algorithms.solver import Effects
 
 
@@ -36,7 +37,7 @@ class TotalOrderSolver(Solver):
                 print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
 
             # Create initial search model
-            param_dict = self.__generate_param_dict(subT.task, subT.parameters)
+            param_dict = self._generate_param_dict(subT.task, subT.parameters)
             subT.add_given_parameters(param_dict)
             list_subT.append(subT)
             task_counter += 1
@@ -99,40 +100,40 @@ class TotalOrderSolver(Solver):
             self.search_models.add(search_model)
             return
 
-        for subtask_option in subtask.task.subtasks.task_orderings:
-            mod_num = search_model.model_number
-            search_mod = self.reproduce_model(search_model)
-            search_mod.set_parent_model_number(mod_num)
-            for mod in subtask_option:
-                try:
-                    assert type(mod.task) == Action or type(mod.task) == Task
-                except:
-                    if mod.task is None:
-                        continue
+        subtask_option = subtask.task.subtasks.task_orderings[0]
+        mod_num = search_model.model_number
+        search_mod = self.reproduce_model(search_model)
+        search_mod.set_parent_model_number(mod_num)
+        for mod in subtask_option:
+            try:
+                assert type(mod.task) == Action or type(mod.task) == Task
+            except:
+                if mod.task is None:
+                    continue
 
-                mod = Subtasks.Subtask(mod.task, mod.parameters)
+            mod = Subtasks.Subtask(mod.task, mod.parameters)
 
-                # Check parameter count
-                parameters = {}
-                param_keys = [p.name for p in mod.parameters]
-                action_keys = [p.name for p in mod.task.parameters]
-                if len(action_keys) > 0:
-                    for j in range(len(action_keys)):
-                        try:
-                            parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
-                        except IndexError:
-                            pass
-                else:
-                    for j in range(len(param_keys)):
-                        parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
+            # Check parameter count
+            parameters = {}
+            param_keys = [p.name for p in mod.parameters]
+            action_keys = [p.name for p in mod.task.parameters]
+            if len(action_keys) > 0:
+                for j in range(len(action_keys)):
+                    try:
+                        parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
+                    except IndexError:
+                        pass
+            else:
+                for j in range(len(param_keys)):
+                    parameters[param_keys[j]] = subtask.given_params[param_keys[j]]
 
-                mod.add_given_parameters(parameters)
+            mod.add_given_parameters(parameters)
 
-                # Add mod to search_model
-                search_mod.insert_modifier(mod, i)
-                i += 1
-            search_mod.add_operation(subtask.task, subtask.given_params)
-            self.search_models.add(search_mod)
+            # Add mod to search_model
+            search_mod.insert_modifier(mod, i)
+            i += 1
+        search_mod.add_operation(subtask.task, subtask.given_params)
+        self.search_models.add(search_mod)
 
     def _expand_action(self, subtask: Subtasks.Subtask, search_model: Model):
         assert type(subtask) == Subtasks.Subtask and type(subtask.task) == Action
