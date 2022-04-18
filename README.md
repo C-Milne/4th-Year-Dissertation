@@ -1,6 +1,5 @@
 # TODO
 1. Add and test a depth first approach - this will get stuck in recursion
-2. Add abstract methods to heuristic and parameter selection
 
 # Things to Test
 

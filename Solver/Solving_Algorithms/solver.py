@@ -1,5 +1,5 @@
 import sys
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from Internal_Representation.precondition import Precondition
 from Solver.model import Model
 from Solver.search_queue import SearchQueue
@@ -43,13 +43,13 @@ class Solver(ABC):
         self.task_expansion_given_param_check = True
 
     def set_heuristic(self, heuristic):
-        if type(heuristic) == type:
+        if type(heuristic) == type or type(heuristic) == ABCMeta:
             heuristic = heuristic(self.domain, self.problem, self, self.search_models)
         assert isinstance(heuristic, Heuristic)
         self.search_models.add_heuristic(heuristic)
 
     def set_parameter_selector(self, selector):
-        if type(selector) == type:
+        if type(selector) == type or type(selector) == ABCMeta:
             selector = selector(self)
         assert isinstance(selector, ParameterSelector)
         self.parameter_selector = selector
