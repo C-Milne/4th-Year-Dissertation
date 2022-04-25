@@ -56,3 +56,6 @@ class Effects:
             assert isinstance(e, self.Effect)
             for_ef.add_effect(e)
         self.effects.append(for_ef)
+
+    def __len__(self):
+        return len(self.effects)

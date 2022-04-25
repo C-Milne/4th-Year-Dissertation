@@ -8,7 +8,8 @@ class Precondition:
     def __init__(self, conditions: str):
         self.head = None
         self.conditions = conditions
-        self.conditions_given_params = None     # This is the conditions that only include parameters given by the task (not selected parameters)
+        self.conditions_given_params = None # This is the conditions that only include parameters given by the task (not selected parameters)
+        self._num_conditions = 0
 
     def add_operator_condition(self, operator: str, parent: Condition) -> OperatorCondition:
         assert type(operator) == str
@@ -77,6 +78,7 @@ class Precondition:
         if parent is not None:
             parent.add_child(con)
         con.parent = parent
+        self._num_conditions += 1
 
     def evaluate_given_params_conditions(self, param_dict, search_model, problem) -> bool:
         if self.conditions_given_params is None:
@@ -100,6 +102,11 @@ class Precondition:
         c = a.copy()
         c.update(b)
         return c
+
+    def __len__(self):
+        if self.conditions_given_params is not None:
+            return len(self.conditions) + self._num_conditions
+        return self._num_conditions
 
     def __eq__(self, other):
         try:
