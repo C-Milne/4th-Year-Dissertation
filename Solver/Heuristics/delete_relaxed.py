@@ -8,9 +8,22 @@ Method = sys.modules['Internal_Representation.method'].Method
 Action = sys.modules['Internal_Representation.action'].Action
 Subtasks = sys.modules['Internal_Representation.subtasks'].Subtasks
 Subtask = sys.modules['Internal_Representation.subtasks'].Subtasks.Subtask
-Model = sys.modules['Solver.model'].Model
-Domain = sys.modules['Internal_Representation.domain'].Domain
-Problem = sys.modules['Internal_Representation.problem'].Problem
+
+if 'Solver.Model' in sys.modules:
+    Model = sys.modules['Solver.model'].Model
+else:
+    from Solver.model import Model
+
+if 'Internal_Representation.domain' in sys.modules:
+    Domain = sys.modules['Internal_Representation.domain'].Domain
+else:
+    from Internal_Representation.domain import Domain
+
+if 'Internal_Representation.problem' in sys.modules:
+    Problem = sys.modules['Internal_Representation.problem'].Problem
+else:
+    from Internal_Representation.problem import Problem
+
 State = sys.modules['Internal_Representation.state'].State
 Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 RegParameter = sys.modules['Internal_Representation.reg_parameter'].RegParameter

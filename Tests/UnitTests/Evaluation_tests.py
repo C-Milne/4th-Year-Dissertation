@@ -7,6 +7,7 @@ class IPCTests(unittest.TestCase):
     def setUp(self) -> None:
         self.basic_path = "../Examples/Basic/"
         self.rover_path = "../Examples/Rover/"
+        self.depot_path = "../Examples/Depots/"
         self.write_path = "../Evaluation/Heuristic_Evaluation/problem_sizes.pickle"
 
     def test_calculating_basic_size(self):
@@ -39,4 +40,16 @@ class IPCTests(unittest.TestCase):
 
     def test_calculating_rover_7_size(self):
         res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p07.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_depot_1_size(self):
+        res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p01.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_depot_2_size(self):
+        res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p02.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_depot_3_size(self):
+        res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p03.hddl", self.write_path)
         print(res)
