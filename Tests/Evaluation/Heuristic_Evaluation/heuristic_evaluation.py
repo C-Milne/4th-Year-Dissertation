@@ -127,8 +127,8 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
+# # ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
 # run_tests(tests, strats, "Rover", False)
 
@@ -173,6 +173,6 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p06.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p07.hddl")]
 #
-# strats = [Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
+# strats = [Strat("Hamming_Distance", HammingDistance)]
 #
 # run_tests(tests, strats, "Rover")
