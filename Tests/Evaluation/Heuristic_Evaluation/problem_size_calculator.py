@@ -4,10 +4,14 @@ import re
 from runner import Runner
 """This file is used to calculate the size of a parsed problem.
 The results are stored in a common pickled dictionary."""
+global pickle_file_name
 pickle_file_name = "problem_sizes.pickle"
 
 
-def calculate_size(domain_file: str, problem_file: str) -> int:
+def calculate_size(domain_file: str, problem_file: str, file_path=pickle_file_name) -> int:
+    global pickle_file_name
+    pickle_file_name = file_path
+
     controller = Runner(domain_file, problem_file)
     controller.parse_domain()
     controller.parse_problem()
