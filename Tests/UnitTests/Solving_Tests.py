@@ -1,10 +1,10 @@
 import unittest
-from runner import Runner
 from Internal_Representation.precondition import Precondition
 from Solver.model import Model
-from Solver.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
+from Solver.Solving_Algorithms.total_order import TotalOrderSolver
 from Parsers.HDDL_Parser import HDDLParser
-from Internal_Representation.method import Method
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.subtasks import Subtasks
@@ -12,11 +12,10 @@ from Internal_Representation.state import State
 from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
 from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
-from Solver.Heuristics.distance_to_goal import PredicateDistanceToGoal
+from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
 from Tests.UnitTests.TestTools.env_setup import env_setup
-from Tests.UnitTests.TestTools.rover_execution import execution_prep
 
 
 class SolvingTests(unittest.TestCase):
@@ -158,7 +157,7 @@ class SolvingTests(unittest.TestCase):
         # Execute action on model[7]
         subT = Subtasks.Subtask(domain.actions['visit'], [RegParameter('?from')])
         subT.add_given_parameters({'?waypoint': problem.objects['waypoint3']})
-        solver._Solver__expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
+        solver._expand_action(subT, Model(State.reproduce(problem.initial_state), [problem.subtasks.get_tasks()[1]], problem))
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(8, len(search_models))
@@ -196,17 +195,17 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual([problem.objects['banjo'], problem.objects['kiwi']], task.parameters)
 
         # Initialise solver
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
 
         # Create initial model
         solver.search_models.clear()
-        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        param_dict = solver._generate_param_dict(task.task, task.parameters)
         task.add_given_parameters(param_dict)
         initial_model = Model(problem.initial_state, [task], problem)
         solver.search_models.add(initial_model)
 
         # Execute Step 1
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect task to be expanded
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -221,7 +220,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(None, solver.search_models._SearchQueue__Q[0].current_state.elements[0].objects[0].type)
 
         # Execute step 2
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect method to be expanded - should be tasks drop and pickup in the place of the method
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -238,7 +237,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(None, model.current_state.elements[0].objects[0].type)
 
         # Execute step 3
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect the drop action to be carried out
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
@@ -248,7 +247,7 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual([], model.current_state.elements)
 
         # Execute step 4
-        solver._Solver__search(True)
+        solver._search(True)
 
         # Expect the pickup action to be carried out
         self.assertEqual(0, len(solver.search_models._SearchQueue__Q))
@@ -266,7 +265,6 @@ class SolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.basic_domain_path)
         parser.parse_problem(self.basic_pb1_path)
-        execution_prep(problem, solver)
         res = solver.solve()
         self.assertNotEqual(None, res)
         self.assertEqual(ActionTracker(domain.tasks['swap'], {'?x': problem.objects['banjo'],
@@ -319,7 +317,7 @@ class SolvingTests(unittest.TestCase):
         RovEx.execution_prep(problem, solver)
         self.assertEqual(1, len(solver.search_models._SearchQueue__Q))
         model = solver.search_models._SearchQueue__Q[0]
-        self.assertEqual(3, len(model.search_modifiers))
+        self.assertEqual(3, len(model.search_modifiers) + len(model.waiting_subtasks))
         self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
         self.assertEqual(domain.tasks['get_image_data'], model.search_modifiers[0].task)
         self.assertEqual(2, len(model.search_modifiers[0].given_params))
@@ -330,12 +328,12 @@ class SolvingTests(unittest.TestCase):
         domain, problem, solver = RovEx.setup()
         RovEx.execution_prep(problem, solver)
         solver.parameter_selector.presolving_processing(domain, problem)
-        solver._Solver__search(True)
+        solver._search(True)
         # Check searchModels has 4 search nodes each with a different ?waypoint parameter
         self.assertEqual(4, len(solver.search_models._SearchQueue__Q))
         for i in range(4):
             model = solver.search_models._SearchQueue__Q[i]
-            self.assertEqual(3, len(model.search_modifiers))
+            self.assertEqual(3, len(model.search_modifiers) + len(model.waiting_subtasks))
             self.assertEqual(Subtasks.Subtask, type(model.search_modifiers[0]))
             self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].task)
             self.assertEqual(problem.objects["waypoint" + str(i)], model.search_modifiers[0].given_params['?waypoint'])
@@ -366,7 +364,7 @@ class SolvingTests(unittest.TestCase):
         parser = HDDLParser(domain, problem)
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
-        solver = Solver(domain, problem)
+        solver = PartialOrderSolver(domain, problem)
         plan = solver.solve()
         self.assertEqual(True, problem.evaluate_goal(plan))
 
@@ -383,18 +381,17 @@ class SolvingTests(unittest.TestCase):
         task = problem.subtasks.get_tasks()[0]
 
         # Initialise solver
-        solver = Solver(domain, problem)
         solver.parameter_selector.presolving_processing(domain, problem)
 
         # Create initial model
         solver.search_models.clear()
-        param_dict = solver._Solver__generate_param_dict(task.task, task.parameters)
+        param_dict = solver._generate_param_dict(task.task, task.parameters)
         task.add_given_parameters(param_dict)
         initial_model = Model(problem.initial_state, [task], problem)
         solver.search_models.add(initial_model)
 
         # Expand
-        solver._Solver__search(True)
+        solver._search(True)
         search_models = solver.search_models._SearchQueue__Q
 
         model = search_models[0]
@@ -404,6 +401,49 @@ class SolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
-        solver.set_heuristic(PredicateDistanceToGoal)
+        solver.set_heuristic(HammingDistance)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    def test_total_order_rover(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain("../Examples/IPC_Tests/Rover/rover-domain.hddl")
+        parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
+
+        # Initialise solver
+        solver = TotalOrderSolver(domain, problem)
+        solver.set_heuristic(BreadthFirstActions)
+
+        res = solver.solve()
+        image_data = domain.actions['communicate_image_data']
+        soil_data = domain.actions['communicate_soil_data']
+        rock_data = domain.actions['communicate_rock_data']
+        necessary_actions = [image_data, soil_data, rock_data]
+        for a in necessary_actions:
+            print("Testing {}".format(a))
+            found = False
+            for ac in res.actions_taken:
+                if a == ac.action:
+                    found = True
+                    break
+            self.assertEqual(True, found)
+
+    def test_total_order_basic(self):
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain("../Examples/IPC_Tests/Rover/rover-domain.hddl")
+        parser.parse_problem("../Examples/IPC_Tests/Rover/pfile01.hddl")
+
+        # Initialise solver
+        solver = TotalOrderSolver(domain, problem)
+        solver.set_heuristic(BreadthFirstActions)
+
         res = solver.solve()
         self.assertNotEqual(None, res)

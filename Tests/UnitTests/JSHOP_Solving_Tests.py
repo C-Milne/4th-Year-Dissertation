@@ -1,4 +1,5 @@
 import unittest
+from Internal_Representation.precondition import Precondition
 from Tests.UnitTests.TestTools.rover_execution import execution_prep
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Internal_Representation.problem_predicate import ProblemPredicate
@@ -72,15 +73,15 @@ class JSHOPSolvingTests(unittest.TestCase):
                       model.current_state.elements)
 
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_method(subT, model)
+        solver._expand_method(subT, model)
 
         model = solver.search_models._SearchQueue__Q.pop(0)
         subT = model.search_modifiers.pop(0)
-        solver._Solver__expand_task(subT, model)
+        solver._expand_task(subT, model)
 
         search_models = solver.search_models._SearchQueue__Q
         self.assertEqual(2, len(search_models))
@@ -160,18 +161,30 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver.parameter_selector.presolving_processing(domain, problem)
         # res = solver.solve()
 
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
+        solver._search(True)
+        solver._search(True)
+        solver._search(True)
         solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
         solver.search_models._SearchQueue__Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
         search_models = solver.search_models._SearchQueue__Q
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        solver._Solver__search(True)
-        res = solver._Solver__search()
-        # solver._Solver__search(True)
-        # solver._Solver__search(True)
+        solver._search(True)
+        solver._search(True)
+        solver._search(True)
+        res = solver._search()
+        # solver._search(True)
+        # solver._search(True)
+        search_models = solver.search_models._SearchQueue__Q
+        self.assertNotEqual(None, res)
+        solver.output(res)
+
+    def test_rover_execution(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_test_path + "rover")
+        parser.parse_problem(self.rover_test_path + "problem")
+
+        execution_prep(problem, solver)
+        solver.parameter_selector.presolving_processing(domain, problem)
+        res = solver.solve()
         search_models = solver.search_models._SearchQueue__Q
         self.assertNotEqual(None, res)
         solver.output(res)
@@ -182,8 +195,3 @@ class JSHOPSolvingTests(unittest.TestCase):
         parser.parse_domain(self.block_path + "blocks")
         parser.parse_problem(self.block_path + "problem")
         self.assertEqual(1, 2)
-
-    @unittest.skip
-    def test_runtime_lists(self):
-        # Test popping from a list at run time
-        pass

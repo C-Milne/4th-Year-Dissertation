@@ -24,58 +24,6 @@ class HDDLParsingTests(unittest.TestCase):
         self.rover_col_path = "../Examples/Rover/"
         self.IPC_Tests_path = "../Examples/IPC_Tests/"
 
-    def test_load_unknown_domain(self):
-        # Test loading unknown domain file
-        with self.assertRaises(FileNotFoundError) as error:
-            cont = Runner("../Examples/WrongBasic/basic.hddl", self.basic_pb1_path)
-            cont.parse_domain()
-        self.assertEqual("Domain file entered could not be found. ({})".format("../Examples/WrongBasic/basic.hddl"),
-                         str(error.exception))
-
-    def test_load_unknown_problem(self):
-        # Test loading unknown problem file
-        with self.assertRaises(FileNotFoundError) as error:
-            cont = Runner(self.basic_domain_path, "../Examples/WrongBasic/pb1.hddl")
-            cont.parse_domain()
-            cont.parse_problem()
-        self.assertEqual("Problem file entered could not be found. ({})".format("../Examples/WrongBasic/pb1.hddl"),
-                         str(error.exception))
-
-    def test_load_known_file(self):
-        # Test loading basic domain and basic pb1
-        domain = Domain(None)
-        problem = Problem(domain)
-        domain.add_problem(problem)
-
-        parser = HDDLParser(domain, problem)
-        parser.parse_domain(self.basic_domain_path)
-        parser.parse_problem(self.basic_pb1_path)
-
-    def test_load_one_file(self):
-        # Test only passing in one file path
-        with self.assertRaises(Exception) as error:
-            Runner(self.basic_domain_path)
-        self.assertTrue("__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception) or
-                        "Runner.__init__() missing 1 required positional argument: 'problem_path'" == str(error.exception))
-
-    # def test_load_incompatible_files(self):
-    #     # Test loading incompatible files
-    #     with self.assertRaises(TypeError) as error:
-    #         Runner(self.basic_domain_path, self.basic_pb1_path_SHOP)
-    #     self.assertEqual("Problem file type (shop) does not match domain file type (hddl)", str(error.exception))
-
-    def test_load_unknown_file_type(self):
-        # Test loading a txt file
-        with self.assertRaises(TypeError) as error:
-            cont = Runner("TestTools/fakeDomain.txt", self.basic_pb1_path)
-            cont.parse_domain()
-        self.assertEqual("Unknown descriptor type (txt)", str(error.exception))
-
-        # # Load file with no suffix
-        # with self.assertRaises(IOError) as error:
-        #     Runner("TestTools/fakeDomain2", self.basic_pb1_path)
-        # self.assertEqual("File type not identified. (TestTools/fakeDomain2)", str(error.exception))
-
     def test_set_unknown_task_method(self):
         # Test again with task that is not defined at all
         domain = Domain(None)
@@ -715,30 +663,31 @@ class HDDLParsingTests(unittest.TestCase):
         self.assertEqual(domain.types['objective'], problem.objects['objective1'].type)
 
         # Check subtasks and orderings
+        self.assertEqual(1, len(problem.subtasks.task_orderings))
         self.assertEqual(3, len(problem.subtasks.tasks))
-        self.assertEqual('get_image_data', problem.subtasks.tasks[0].task.name)
-        self.assertEqual(2, len(problem.subtasks.tasks[0].parameters))
-        self.assertEqual('objective1', problem.subtasks.tasks[0].parameters[0].name)
-        self.assertEqual(domain.types['objective'], problem.subtasks.tasks[0].parameters[0].type)
-        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[0]))
-        self.assertEqual('high_res', problem.subtasks.tasks[0].parameters[1].name)
-        self.assertEqual(domain.types['mode'], problem.subtasks.tasks[0].parameters[1].type)
-        self.assertEqual(Object, type(problem.subtasks.tasks[0].parameters[1]))
-        self.assertEqual(problem.subtasks.tasks[0], problem.subtasks.labelled_tasks['task2'])
+        self.assertEqual('get_image_data', problem.subtasks.task_orderings[0][0].task.name)
+        self.assertEqual(2, len(problem.subtasks.task_orderings[0][0].parameters))
+        self.assertEqual('objective1', problem.subtasks.task_orderings[0][0].parameters[0].name)
+        self.assertEqual(domain.types['objective'], problem.subtasks.task_orderings[0][0].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.task_orderings[0][0].parameters[0]))
+        self.assertEqual('high_res', problem.subtasks.task_orderings[0][0].parameters[1].name)
+        self.assertEqual(domain.types['mode'], problem.subtasks.task_orderings[0][0].parameters[1].type)
+        self.assertEqual(Object, type(problem.subtasks.task_orderings[0][0].parameters[1]))
+        self.assertEqual(problem.subtasks.task_orderings[0][0], problem.subtasks.labelled_tasks['task2'])
 
-        self.assertEqual('get_soil_data', problem.subtasks.tasks[1].task.name)
-        self.assertEqual(1, len(problem.subtasks.tasks[1].parameters))
-        self.assertEqual('waypoint2', problem.subtasks.tasks[1].parameters[0].name)
-        self.assertEqual(domain.types['waypoint'], problem.subtasks.tasks[1].parameters[0].type)
-        self.assertEqual(Object, type(problem.subtasks.tasks[1].parameters[0]))
-        self.assertEqual(problem.subtasks.tasks[1], problem.subtasks.labelled_tasks['task0'])
+        self.assertEqual('get_soil_data', problem.subtasks.task_orderings[0][1].task.name)
+        self.assertEqual(1, len(problem.subtasks.task_orderings[0][1].parameters))
+        self.assertEqual('waypoint2', problem.subtasks.task_orderings[0][1].parameters[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.subtasks.task_orderings[0][1].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.task_orderings[0][1].parameters[0]))
+        self.assertEqual(problem.subtasks.task_orderings[0][1], problem.subtasks.labelled_tasks['task0'])
 
-        self.assertEqual('get_rock_data', problem.subtasks.tasks[2].task.name)
-        self.assertEqual(1, len(problem.subtasks.tasks[2].parameters))
-        self.assertEqual('waypoint3', problem.subtasks.tasks[2].parameters[0].name)
-        self.assertEqual(domain.types['waypoint'], problem.subtasks.tasks[2].parameters[0].type)
-        self.assertEqual(Object, type(problem.subtasks.tasks[2].parameters[0]))
-        self.assertEqual(problem.subtasks.tasks[2], problem.subtasks.labelled_tasks['task1'])
+        self.assertEqual('get_rock_data', problem.subtasks.task_orderings[0][2].task.name)
+        self.assertEqual(1, len(problem.subtasks.task_orderings[0][2].parameters))
+        self.assertEqual('waypoint3', problem.subtasks.task_orderings[0][2].parameters[0].name)
+        self.assertEqual(domain.types['waypoint'], problem.subtasks.task_orderings[0][2].parameters[0].type)
+        self.assertEqual(Object, type(problem.subtasks.task_orderings[0][2].parameters[0]))
+        self.assertEqual(problem.subtasks.task_orderings[0][2], problem.subtasks.labelled_tasks['task1'])
 
     def test_parsing_blocksworld_objects(self):
         domain = Domain(None)

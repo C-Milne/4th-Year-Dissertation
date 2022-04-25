@@ -1,3 +1,5 @@
+from Internal_Representation.precondition import Precondition
+from Internal_Representation.modifier import Modifier
 from Internal_Representation.action import Action
 from Internal_Representation.method import Method
 from Internal_Representation.task import Task
@@ -75,6 +77,9 @@ class Domain:
             # Compare parameters given with parameters of task
             return self.tasks[name]
         return None
+
+    def get_all_tasks(self):
+        return self.tasks
 
     def get_task_methods(self, task: str):
         if type(task) == str:

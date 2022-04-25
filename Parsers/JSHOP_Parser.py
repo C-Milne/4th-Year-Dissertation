@@ -10,8 +10,8 @@ from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.list_parameter import ListParameter
 from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.derived_predicate import DerivedPredicate
-from Internal_Representation.requirements import Requirements
 from Internal_Representation.parameter import Parameter
+from Solver.Solving_Algorithms.solver import Requirements
 
 
 class JSHOPParser(Parser):
@@ -390,7 +390,7 @@ class JSHOPParser(Parser):
         if len(params) == 0 or params == "nil":
             return None
         else:
-            subtasks = Subtasks()
+            subtasks = Subtasks(True)
             i = 0
             l = len(params)
             while i < l:
@@ -461,7 +461,7 @@ class JSHOPParser(Parser):
                     if not task_modifier_ob is None:
                         task_modifier = task_modifier_ob
 
-                    added_sub_task = subtasks.add_subtask(task_label, task_modifier, task_parameters, decorator)
+                    added_sub_task = subtasks.add_subtask(task_label, task_modifier, task_parameters)
 
                     if type(task_modifier) == str:
                         # Mark this method for grounding after parsing has finished

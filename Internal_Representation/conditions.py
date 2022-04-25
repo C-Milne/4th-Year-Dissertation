@@ -22,11 +22,17 @@ class PredicateCondition(Condition):
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         p_list = []
         for i in self.parameter_name:
-            try:
-                p_list.append(param_dict[i])
-            except:
-                raise KeyError
+            p_list.append(param_dict[i])
+
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+
+    def __eq__(self, other):
+        try:
+            if self.pred == other.pred and self.parameter_name == other.parameter_name:
+                return True
+            return False
+        except:
+            return False
 
 
 class GoalPredicateCondition(Condition):
@@ -80,10 +86,7 @@ class OperatorCondition(Condition):
                     return True
             return False
         elif self.operator == "not":
-            try:
-                assert len(children_eval) == 1 and type(children_eval[0]) == bool
-            except:
-                raise TypeError
+            assert len(children_eval) == 1 and type(children_eval[0]) == bool
             return not children_eval[0]
         elif self.operator == "=":
             v = children_eval[0]
@@ -99,6 +102,7 @@ class ForAllCondition(Condition):
         assert isinstance(satisfier, Condition)
         self.selected_variable = selected_variable
         self.selector = selector
+        self.selector_requirements = None
         self.satisfier = satisfier
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
@@ -115,11 +119,12 @@ class ForAllCondition(Condition):
         elif isinstance(self.selector, sys.modules['Internal_Representation.precondition'].Precondition):
             obs = problem.get_all_objects()
 
-            if self.selector.requirements is None:
-                self.selector.load_requirements()
+            if self.selector_requirements is None:
+                self.selector_requirements = sys.modules['Solver.Solving_Algorithms.solver'].Requirements([], self.selector)
+                self.selector_requirements.prepare_requirements()
 
             # Check there is only one unknown variable
-            req_keys = list(self.selector.requirements.requirements.keys())
+            req_keys = list(self.selector_requirements.requirements.keys())
             given_keys = list(param_dict.keys())
             i = 0
             while i < len(req_keys):

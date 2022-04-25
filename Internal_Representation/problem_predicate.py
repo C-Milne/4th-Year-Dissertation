@@ -16,9 +16,13 @@ class ProblemPredicate:
         self.objects = objects
 
     def __eq__(self, other):
-        if self.predicate == other.predicate and self.objects == other.objects:
-            return True
-        return False
+        if type(self) != type(other):
+            return False
+        elif self.predicate != other.predicate:
+            return False
+        elif self.objects != other.objects:
+            return False
+        return True
 
     def __str__(self):
         print_string = self.predicate.name
