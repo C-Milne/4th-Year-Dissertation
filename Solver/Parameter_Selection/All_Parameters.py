@@ -29,7 +29,7 @@ class AllParameters(ParameterSelector):
             if p.type is not None:
                 for x in self.solver.problem.objects:
                     x = self.solver.problem.objects[x]
-                    if x.type == p.type:
+                    if self.check_satisfies_type(p.type, x):
                         parameter_options[p.name].append(x)
             else:
                 for x in self.solver.problem.objects:

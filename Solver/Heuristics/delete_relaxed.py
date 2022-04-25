@@ -304,6 +304,7 @@ class DeleteRelaxed(Pruning):
                 return False
 
     def _check_targets(self, model: Model, targets: list) -> bool:
+        # Get the predicates which denote a modifier has been run. These begin with U-
         occurrences = model.current_state.get_indexes("U")
         occurrences = [model.current_state.get_element_index(x) for x in occurrences]
 
@@ -370,7 +371,7 @@ class DeleteRelaxed(Pruning):
                     alt_subtasks.add_subtask(None, s.task, [x for x in s.parameters])
 
                 head = alt_precons.head
-                if not(type(head) == AltOperatorCondition and head.operator == "and"):
+                if not(type(head) == AltOperatorCondition and head.operator == "and" or head is None):
                     raise NotImplementedError
 
                 for s in alt_subtasks.tasks:

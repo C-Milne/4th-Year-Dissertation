@@ -13,6 +13,7 @@ class HeuristicTests(unittest.TestCase):
         self.transport_path = "../Examples/IPC_Tests/transport01/"
         self.rover_path = "../Examples/Rover/"
         self.basic_path = "../Examples/Basic/"
+        self.depot_path = "../Examples/Depots/"
 
     def test_tree_distance_preprocessing(self):
         domain, problem, parser, solver = env_setup(True)
@@ -216,6 +217,15 @@ class HeuristicTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.rover_path + "domain.hddl")
         parser.parse_problem(self.rover_path + "p01.hddl")
+        solver.set_heuristic(DeleteRelaxed)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    @unittest.skip
+    def test_delete_relaxed_depot_1(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.depot_path + "domain.hddl")
+        parser.parse_problem(self.depot_path + "p01.hddl")
         solver.set_heuristic(DeleteRelaxed)
         res = solver.solve()
         self.assertNotEqual(None, res)
