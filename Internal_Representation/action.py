@@ -1,7 +1,10 @@
 import sys
 # from Internal_Representation.modifier import Modifier
 from Internal_Representation.effects import Effects
-Modifier = sys.modules['Internal_Representation.modifier'].Modifier
+if 'Internal_Representation.modifier' in sys.modules:
+    Modifier = sys.modules['Internal_Representation.modifier'].Modifier
+else:
+    from Internal_Representation.modifier import Modifier
 
 
 class Action(Modifier):
