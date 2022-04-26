@@ -88,7 +88,7 @@ def test_runner(test, heuristic, early_precon=True):
     save_to_file(test_name, heuristic, timeTaken, res)
 
 
-def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
+def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
     os.chdir("Archive")
     # Clear subfolder
     if clear_folder:
@@ -124,7 +124,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Rover", True)
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
@@ -175,10 +175,14 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
 # Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
-#           Strat("Predicate_Distance_To_Goal", PredicateDistanceToGoal)]
-# run_tests(tests, strats, "translog")
+#           Strat("Hamming_Distance", HammingDistance)]
+# run_tests(tests, strats, "translog", True)
 
-"""Create an test more rover domains (larger than p3 but smaller than p4)"""
+"""Test translog with delete relaxed"""
+# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
+#
+# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+# run_tests(tests, strats, "translog")
 
 """Test rover with all parameter selection and requirement parameter selection"""
 
@@ -202,7 +206,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Depot", True)
 
 """Test depot p1 -> p3 with breadth first operations - DONE"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
@@ -211,7 +215,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Delete Relaxed"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
@@ -220,7 +224,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Hamming Distance - DONE"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
@@ -229,7 +233,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Hamming_Distance", HammingDistance)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Tree Distance- DONE"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
@@ -238,4 +242,4 @@ def run_tests(tests, strats, sub_folder, clear_folder=True, **kwargs):
 #
 # strats = [Strat("Tree_Distance", TreeDistance)]
 #
-# run_tests(tests, strats, "Rover")
+# run_tests(tests, strats, "Depot")
