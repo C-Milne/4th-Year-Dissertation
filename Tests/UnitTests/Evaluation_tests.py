@@ -2,7 +2,7 @@ import unittest
 from Tests.Evaluation.Heuristic_Evaluation.problem_size_calculator import calculate_size
 
 
-class IPCTests(unittest.TestCase):
+class EvaluationTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.basic_path = "../Examples/Basic/"
