@@ -22,7 +22,12 @@ class PredicateCondition(Condition):
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         p_list = []
         for i in self.parameter_name:
-            p_list.append(param_dict[i])
+            if i in param_dict:
+                p_list.append(param_dict[i])
+            elif i in problem.objects:
+                p_list.append(problem.get_object(i))
+            else:
+                raise NameError("Unknown parameter value {}".format(i))
 
         return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
 
