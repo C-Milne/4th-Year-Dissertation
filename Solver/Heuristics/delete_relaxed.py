@@ -93,6 +93,7 @@ class AltPredicateCondition(PredicateCondition):
             for i in self.parameter_name:
                 p_list.append(param_dict[i])
 
+
             return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
         else:
             if len(self.parameter_name) == 1 and type(self.parameter_name[0]) == str and self.parameter_name[0][0] != "?":
@@ -286,6 +287,9 @@ class DeleteRelaxed(Pruning):
                     # If not add name of task this method expands to state
                     if not found:
                         task_name_ob = self.alt_problem.get_object(task_name)
+                        if task_name_ob is None:
+                            self.alt_problem.add_object(Object(task_name))
+                            task_name_ob = self.alt_problem.get_object(task_name)
                         model.current_state.add_element(ProblemPredicate(
                             self.alt_domain.get_predicate("U"), [task_name_ob]))
                 else:
@@ -363,13 +367,20 @@ class DeleteRelaxed(Pruning):
                 for p in params:
                     concat_param_names += "-" + params[p].name
                 alt_name = m.name + concat_param_names
-                alt_precons = self._process_alt_preconditions(m.get_precondition().get_conditions())
+                m_precond = m.get_precondition()
+                if m_precond is not None:
+                    alt_precons = self._process_alt_preconditions(m_precond.get_conditions())
+                else:
+                    alt_precons = None
 
                 alt_subtasks = Subtasks(m.subtasks.ordered)
 
                 for s in m.subtasks.tasks:
                     alt_subtasks.add_subtask(None, s.task, [x for x in s.parameters])
 
+                if alt_precons is None:
+                    alt_precons = AltPrecondition("Alternate Preconditions Unknown")
+                    alt_precons.add_operator_condition("and", None)
                 head = alt_precons.head
                 if not(type(head) == AltOperatorCondition and head.operator == "and" or head is None):
                     raise NotImplementedError
