@@ -127,12 +127,12 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Rover", True)
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
-# # ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-# run_tests(tests, strats, "Rover", False)
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
+,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+run_tests(tests, strats, "Rover", False)
 
 """Test rover p01 -> p03 with Tree Distance - DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
@@ -170,22 +170,6 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning, False)]
 # run_tests(tests, strats, "Rover_no_early_precon", False, early_precon=False)
 
-"""Test translog1 with breadth first search with and without pruning -> DONE"""
-# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
-# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
-#           Strat("Hamming_Distance", HammingDistance)]
-# run_tests(tests, strats, "translog", True)
-
-"""Test translog with delete relaxed"""
-# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
-#
-# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
-# run_tests(tests, strats, "translog")
-
-"""Test rover with all parameter selection and requirement parameter selection"""
-
 """Test rover with Hamming Distance heuristic -> DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
@@ -199,6 +183,18 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 #
 # run_tests(tests, strats, "Rover")
 
+"""###################################################################################################################"""
+"""Test translog1 with breadth first search with and without pruning -> DONE"""
+# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
+# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
+#           Strat("Hamming_Distance", HammingDistance)]
+# run_tests(tests, strats, "translog", True)
+
+"""Test rover with all parameter selection and requirement parameter selection"""
+
+"""###################################################################################################################"""
 """Test depot p1 -> p3 with breadth first operations (WITHOUT PRUNING) - DONE"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
 # ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl")]
