@@ -14,6 +14,8 @@ from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Heuristics.delete_relaxed import DeleteRelaxed
 from Solver.Heuristics.tree_distance import TreeDistance
 from runner import Runner
+from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
+from Solver.Solving_Algorithms.total_order import TotalOrderSolver
 os.chdir(working_dir)
 
 """Methods for Operation"""
@@ -69,10 +71,14 @@ def save_pickle_object(object, file_name) -> str:
     return f_name
 
 
-def test_runner(test, heuristic, early_precon=True):
+def test_runner(test, heuristic, early_precon=True, partial_order=False):
     controller = Runner(test[0], test[1])
     controller.parse_domain()
     controller.parse_problem()
+    if partial_order:
+        controller.set_solver(PartialOrderSolver)
+    else:
+        controller.set_solver(TotalOrderSolver)
     controller.set_heuristic(heuristic.class_reference)
     controller.set_early_task_precon_checker(heuristic.early_task_precon_checker)
     controller.solver.task_expansion_given_param_check = early_precon
@@ -127,12 +133,12 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Rover", True)
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
-tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
-,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
-strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-run_tests(tests, strats, "Rover", False)
+# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
+# ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+# run_tests(tests, strats, "Rover", False)
 
 """Test rover p01 -> p03 with Tree Distance - DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
@@ -239,3 +245,11 @@ run_tests(tests, strats, "Rover", False)
 # strats = [Strat("Tree_Distance", TreeDistance)]
 #
 # run_tests(tests, strats, "Depot")
+
+"""###################################################################################################################"""
+"""Test Barman with breadth first"""
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "Barman")
