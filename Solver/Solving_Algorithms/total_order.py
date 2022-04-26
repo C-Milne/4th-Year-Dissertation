@@ -123,6 +123,11 @@ class TotalOrderSolver(Solver):
                         parameters[action_keys[j]] = subtask.given_params[param_keys[j]]
                     except IndexError:
                         pass
+                    except KeyError as e:
+                        if param_keys[j][0] != "?" and param_keys[j] in self.problem.objects:
+                            parameters[action_keys[j]] = self.problem.get_object(param_keys[j])
+                        else:
+                            raise KeyError(e)
             else:
                 for j in range(len(param_keys)):
                     parameters[param_keys[j]] = subtask.given_params[param_keys[j]]

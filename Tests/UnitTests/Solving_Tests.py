@@ -261,8 +261,24 @@ class SolvingTests(unittest.TestCase):
         self.assertEqual(1, len(model.current_state.elements[0].objects))
         self.assertEqual(problem.objects['banjo'], model.current_state.elements[0].objects[0])
 
-    def test_basic_execution(self):
+    def test_basic_execution_po(self):
         domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.basic_domain_path)
+        parser.parse_problem(self.basic_pb1_path)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+        self.assertEqual(ActionTracker(domain.tasks['swap'], {'?x': problem.objects['banjo'],
+                                                              '?y': problem.objects['kiwi']}), res.operations_taken[0])
+        self.assertEqual(ActionTracker(domain.methods['have_second'], {'?x': problem.objects['banjo'],
+                                                                        '?y': problem.objects['kiwi']}),
+                         res.operations_taken[1])
+        self.assertEqual(ActionTracker(domain.actions['drop'], {'?a': problem.objects['kiwi']}),
+                         res.operations_taken[2])
+        self.assertEqual(ActionTracker(domain.actions['pickup'], {'?a': problem.objects['banjo']}),
+                         res.operations_taken[3])
+
+    def test_basic_execution_to(self):
+        domain, problem, parser, solver = env_setup(True, False)
         parser.parse_domain(self.basic_domain_path)
         parser.parse_problem(self.basic_pb1_path)
         res = solver.solve()
@@ -338,8 +354,10 @@ class SolvingTests(unittest.TestCase):
             self.assertEqual(domain.methods['m_get_image_data_ordering_0'], model.search_modifiers[0].task)
             self.assertEqual(problem.objects["waypoint" + str(i)], model.search_modifiers[0].given_params['?waypoint'])
 
-    def test_rover_execution_complete(self):
-        domain, problem, solver = RovEx.setup()
+    def test_rover_execution_complete_po(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
         solver.set_heuristic(BreadthFirstActions)
         res = solver.solve()
         image_data = domain.actions['communicate_image_data']
@@ -355,7 +373,26 @@ class SolvingTests(unittest.TestCase):
                     break
             self.assertEqual(True, found)
 
-    def test_goal_state_satisfaction(self):
+    def test_rover_execution_complete_to(self):
+        domain, problem, parser, solver = env_setup(True, False)
+        parser.parse_domain(self.rover_path + "rover-domain.hddl")
+        parser.parse_problem(self.rover_path + "pfile01.hddl")
+        solver.set_heuristic(BreadthFirstActions)
+        res = solver.solve()
+        image_data = domain.actions['communicate_image_data']
+        soil_data = domain.actions['communicate_soil_data']
+        rock_data = domain.actions['communicate_rock_data']
+        necessary_actions = [image_data, soil_data, rock_data]
+        for a in necessary_actions:
+            print("Testing {}".format(a))
+            found = False
+            for ac in res.actions_taken:
+                if a == ac.action:
+                    found = True
+                    break
+            self.assertEqual(True, found)
+
+    def test_goal_state_satisfaction_po(self):
         # Some of the rover domains have goal states defined. Check that the returned plan satisfies the goal conditions
         domain = Domain(None)
         problem = Problem(domain)
@@ -365,6 +402,24 @@ class SolvingTests(unittest.TestCase):
         parser.parse_domain(self.rover_col_path + "domain.hddl")
         parser.parse_problem(self.rover_col_path + "p01.hddl")
         solver = PartialOrderSolver(domain, problem)
+        plan = solver.solve()
+        self.assertEqual(True, problem.evaluate_goal(plan))
+
+        rock_comm_pred = domain.predicates['communicated_rock_data']
+        pred_obs = [problem.objects['waypoint0']]
+        plan.current_state.remove_element(rock_comm_pred, pred_obs)
+        self.assertEqual(False, problem.evaluate_goal(plan))
+
+    def test_goal_state_satisfaction_to(self):
+        # Some of the rover domains have goal states defined. Check that the returned plan satisfies the goal conditions
+        domain = Domain(None)
+        problem = Problem(domain)
+        domain.add_problem(problem)
+
+        parser = HDDLParser(domain, problem)
+        parser.parse_domain(self.rover_col_path + "domain.hddl")
+        parser.parse_problem(self.rover_col_path + "p01.hddl")
+        solver = TotalOrderSolver(domain, problem)
         plan = solver.solve()
         self.assertEqual(True, problem.evaluate_goal(plan))
 
