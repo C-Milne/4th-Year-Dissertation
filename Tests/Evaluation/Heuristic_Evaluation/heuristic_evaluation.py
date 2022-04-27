@@ -13,6 +13,8 @@ from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Heuristics.delete_relaxed import DeleteRelaxed
 from Solver.Heuristics.tree_distance import TreeDistance
+from Solver.Heuristics.breadth_first_by_operations_with_partial_order_pruning import BreadthFirstOperationsPartialOrderPruning
+from Solver.Heuristics.hamming_distance_partial_order import HammingDistancePartialOrder
 from runner import Runner
 from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Solver.Solving_Algorithms.total_order import TotalOrderSolver
@@ -117,107 +119,111 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
     for t in tests:
         for s in strats:
             for i in range(5):
-                test_runner(t, s, early_precon)
+                if 'partial_order' in kwargs:
+                    partial_order = kwargs['partial_order']
+                else:
+                    partial_order = False
+                test_runner(t, s, early_precon, partial_order)
     for s in strats:
         s.file.close()
     os.chdir("../..")
 
-
+"""##################################################################################################################"""
 """Test Rover p01 -> p03 with breadth first search without pruning - DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
-#
-# run_tests(tests, strats, "Rover", True)
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
+
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+
+run_tests(tests, strats, "Rover", True)
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
-# ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-# run_tests(tests, strats, "Rover", False)
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
+,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+run_tests(tests, strats, "Rover", False)
 
 """Test rover p01 -> p03 with Tree Distance - DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
-#
-# strats = [Strat("Tree_Distance", TreeDistance)]
-#
-# run_tests(tests, strats, "Rover")
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "Rover")
 
 """Test rover p01 -> p03 with Delete Relaxed - DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl")]
-# # ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl")]
-# # ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
-#
-# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
-#
-# run_tests(tests, strats, "Rover")
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl")]
+# ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl")]
+# ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
+
+strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+
+run_tests(tests, strats, "Rover")
 
 """Test Rover p01 -> p03 with breadth first search without pruning (No early precon checking) -> DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations, False)]
-#
-# run_tests(tests, strats, "Rover_no_early_precon", early_precon=False)
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")]
+
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations, False)]
+
+run_tests(tests, strats, "Rover_no_early_precon", early_precon=False)
 
 """Test Rover p01 -> p04 with breadth first search and pruning (No early precon checking) -> DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning, False)]
-# run_tests(tests, strats, "Rover_no_early_precon", False, early_precon=False)
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning, False)]
+run_tests(tests, strats, "Rover_no_early_precon", False, early_precon=False)
 
 """Test rover with Hamming Distance heuristic -> DONE"""
-# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p05.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p06.hddl"),
-# ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p07.hddl")]
-#
-# strats = [Strat("Hamming_Distance", HammingDistance)]
-#
-# run_tests(tests, strats, "Rover")
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p05.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p06.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p07.hddl")]
+
+strats = [Strat("Hamming_Distance", HammingDistance)]
+
+run_tests(tests, strats, "Rover")
 
 """###################################################################################################################"""
 """Test translog1 with breadth first search with and without pruning -> DONE"""
-# tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
-# Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
-#           Strat("Hamming_Distance", HammingDistance)]
-# run_tests(tests, strats, "translog", True)
+tests = [("../../../../Examples/IPC_Tests/um-translog01/domain.hddl", "../../../../Examples//IPC_Tests/um-translog01/problem.hddl")]
+
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations),
+Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning),
+          Strat("Hamming_Distance", HammingDistance)]
+run_tests(tests, strats, "translog", True)
 
 """Test rover with all parameter selection and requirement parameter selection"""
 
 """###################################################################################################################"""
 """Test depot p1 -> p3 with breadth first operations (WITHOUT PRUNING) - DONE"""
-# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl")]
-# # ,("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
-#
-# run_tests(tests, strats, "Depot", True)
+tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl")]
+# ,("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+
+run_tests(tests, strats, "Depot", True)
 
 """Test depot p1 -> p3 with breadth first operations - DONE"""
-# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-#
-# run_tests(tests, strats, "Depot")
+tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Delete Relaxed"""
 # tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
@@ -229,71 +235,69 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Hamming Distance - DONE"""
-# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-#
-# strats = [Strat("Hamming_Distance", HammingDistance)]
-#
-# run_tests(tests, strats, "Depot")
+tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+
+strats = [Strat("Hamming_Distance", HammingDistance)]
+
+run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Tree Distance- DONE"""
-# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-#
-# strats = [Strat("Tree_Distance", TreeDistance)]
-#
-# run_tests(tests, strats, "Depot")
+tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
+("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "Depot")
 
 """###################################################################################################################"""
 """Test Barman with breadth first (NO PRUNING) - DONE"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
-#
-# run_tests(tests, strats, "Barman", True)
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+
+run_tests(tests, strats, "Barman", True)
 
 """Test Barman with breadth first - DONE"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-#
-# run_tests(tests, strats, "Barman")
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "Barman")
 
 """Test Barman with Delete Relaxed - DONE"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-#
-# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
-#
-# run_tests(tests, strats, "Barman")
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+
+run_tests(tests, strats, "Barman")
 
 """Test Barman with Tree Distance - DONE"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-#
-# strats = [Strat("Tree_Distance", TreeDistance)]
-#
-# run_tests(tests, strats, "Barman")
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "Barman")
 
 """Test Barman with Hamming Distance - DONE"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-#
-# strats = [Strat("Hamming_Distance", HammingDistance)]
-#
-# run_tests(tests, strats, "Barman")
+tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+
+strats = [Strat("Hamming_Distance", HammingDistance)]
+
+run_tests(tests, strats, "Barman")
 
 """###################################################################################################################"""
 """Test Factories with Breadth First (NO PRUNING) - DONE"""
-# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
-# run_tests(tests, strats, "Factories", True)
+tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+run_tests(tests, strats, "Factories", True)
 
 """Test factories with Breadth First - DONE"""
-# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
-#
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
-#
-# run_tests(tests, strats, "Factories")
+tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+run_tests(tests, strats, "Factories")
 
 """Test Factories with Delete Relaxed"""
 # tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
@@ -301,11 +305,11 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Factories")
 
 """Test Factories with Tree Distance - DONE"""
-# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
-#
-# strats = [Strat("Tree_Distance", TreeDistance)]
-#
-# run_tests(tests, strats, "Factories")
+tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "Factories")
 
 """Test Factories with Hamming Distance - DONE"""
 tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
@@ -316,12 +320,63 @@ run_tests(tests, strats, "Factories")
 
 """###################################################################################################################"""
 """PARTIAL ORDER TESTS"""
+"""Test PO-Rover Breadth First (NO PRUNING) - DONE"""
+tests = [("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile01.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile02.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile03.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile04.hddl")]
 
+strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+run_tests(tests, strats, "Rover_Partial_Order", True, partial_order=True)
+
+"""Test PO-Rover Breadth First - DONE"""
+tests = [("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile01.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile02.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile03.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile04.hddl")]
+
+strats = [Strat("Breadth_First_Operations_PO_Pruning", BreadthFirstOperationsPartialOrderPruning)]
+run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
+
+"""Test Hamming Distance (Partial Order) - DONE"""
+tests = [("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile01.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile02.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile03.hddl"),
+("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile04.hddl")]
+
+strats = [Strat("Hamming_Distance_Partial_Order", HammingDistancePartialOrder)]
+run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
 
 """###################################################################################################################"""
 """TEST TOTAL ORDERED PROBLEM WITH PARTIAL ORDER SOLVER AND TOTAL ORDER SOLVER (ROVER 1 -> 4)"""
+"""Partial Order"""
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning_PO", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "Rover_PO_TO", True, partial_order=True)
+
+"""Total Order"""
+tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
+("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")]
+
+strats = [Strat("Breadth_First_Operations_Pruning_TO", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "Rover_PO_TO")
 
 """###################################################################################################################"""
 """Test JSHOP - Compare Execution times to parsing times"""
 """Test Basic HDDL vs JSHOP"""
+"""Parsing Time"""
+
+"""Total Time"""
+
 """Test Rover HDDL vs JSHOP"""
+"""Parsing Time"""
+
+"""Total Time"""
