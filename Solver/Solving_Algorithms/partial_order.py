@@ -1,4 +1,4 @@
-from Solver.Solving_Algorithms.solver import Solver
+from Solver.Solving_Algorithms.solver import Solver, Task
 from Solver.Solving_Algorithms.solver import Model
 from Solver.Solving_Algorithms.solver import State
 from Solver.Solving_Algorithms.solver import Subtasks

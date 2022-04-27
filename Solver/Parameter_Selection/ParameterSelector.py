@@ -17,7 +17,7 @@ class ParameterSelector(ABC):
         self.solver = solver
 
     @abstractmethod
-    def get_potential_parameters(self, modifier: 'Modifier', parameters: dict, search_model: Model) -> list:
+    def get_potential_parameters(self, modifier, parameters: dict, search_model: Model) -> list:
         """
         :param modifier: Task / Method / Action that is being executed
         :param parameters: The parameters that are already selected - {'param1': Object ...}
@@ -29,7 +29,7 @@ class ParameterSelector(ABC):
     def presolving_processing(self, domain, problem):
         pass
 
-    def compare_parameters(self, method: 'Modifier', parameters: dict) -> list:
+    def compare_parameters(self, method, parameters: dict) -> list:
         """ Compares if all the parameters required for a method are given
         :parameter  - method : Method
         :parameter  - parameters : {'?objective1': Object, '?mode': Object}
