@@ -247,9 +247,53 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Depot")
 
 """###################################################################################################################"""
-"""Test Barman with breadth first"""
+"""Test Barman with breadth first (NO PRUNING) - DONE"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Barman", True)
+
+"""Test Barman with breadth first - DONE"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+#
+# run_tests(tests, strats, "Barman")
+
+"""Test Barman with Delete Relaxed"""
 tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
 
-strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
 
 run_tests(tests, strats, "Barman")
+
+"""Test Barman with Tree Distance - DONE"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+#
+# run_tests(tests, strats, "Barman")
+
+"""Test Barman with Hamming Distance"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl"),
+#          ("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile02.hddl")]
+#
+# strats = [Strat("Hamming_Distance", HammingDistance)]
+#
+# run_tests(tests, strats, "Barman")
+
+"""###################################################################################################################"""
+"""Test Factories with Breadth First (NO PRUNING)"""
+# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl"),
+# ("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile02.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Factories", True)
+
+"""Test factories with Breadth First"""
+"""Test Factories with Delete Relaxed"""
+"""Test Factories with Tree Distance"""
+"""Test Factories with Hamming Distance"""
+"""###################################################################################################################"""

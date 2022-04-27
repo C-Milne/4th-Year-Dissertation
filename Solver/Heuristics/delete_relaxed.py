@@ -42,7 +42,7 @@ class AltOperatorCondition(OperatorCondition):
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         children_eval = []
-        if len(self.children) > 0 and (self.operator == "and" or self.operator == "or"):
+        if len(self.children) > 0 and (self.operator == "and" or self.operator == "or" or self.operator == "="):
             children_eval = [x.evaluate(param_dict, search_model, problem) for x in self.children]
         if self.operator == "and":
             for i in children_eval:
@@ -57,13 +57,16 @@ class AltOperatorCondition(OperatorCondition):
         elif self.operator == "not":
             assert len(self.children) == 1
             """Changes go here"""
-            # In the alt state not conditions are stored in the state under new predicates
-            # Such as (not-have, kiwi)
-            p_list = []
-            for i in self.children[0].parameter_name:
-                p_list.append(param_dict[i])
+            if type(self.children[0]) == AltOperatorCondition or type(self.children[0]) == OperatorCondition:
+                res = False
+            else:
+                # In the alt state not conditions are stored in the state under new predicates
+                # Such as (not-have, kiwi)
+                p_list = []
+                for i in self.children[0].parameter_name:
+                    p_list.append(param_dict[i])
 
-            res = search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
+                res = search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
             if res:
                 return res
             else:
@@ -73,7 +76,10 @@ class AltOperatorCondition(OperatorCondition):
                     return False
                 else:
                     # Add this new predicate to state
-                    search_model.current_state.add_element(ProblemPredicate(self.pred, p_list))
+                    try:
+                        search_model.current_state.add_element(ProblemPredicate(self.pred, p_list))
+                    except Exception as e:
+                        return False
                     return True
         elif self.operator == "=":
             v = children_eval[0]
@@ -92,7 +98,6 @@ class AltPredicateCondition(PredicateCondition):
             p_list = []
             for i in self.parameter_name:
                 p_list.append(param_dict[i])
-
 
             return search_model.current_state.check_if_predicate_value_exists(self.pred, p_list)
         else:
@@ -214,9 +219,16 @@ class DeleteRelaxed(Pruning):
             names += "-" + o.name
         return names
 
-    def _get_objects_from_alt_modifier_name(self, name: str, names_only: bool = False) -> list:
+    def _get_objects_from_alt_modifier_name(self, mod, names_only: bool = False) -> list:
+        name = mod.name
         obs = []
+
+        num_params_required = len(mod.parameters)
         occurrences = [m.start() for m in re.finditer('-', name)]
+
+        while len(occurrences) >= num_params_required + 1:
+            occurrences = occurrences[1:]
+
         while occurrences:
             start = occurrences.pop(0) + 1
             if occurrences:
@@ -224,7 +236,11 @@ class DeleteRelaxed(Pruning):
             else:
                 end = len(name)
             if not names_only:
-                obs.append(self.problem.get_object(name[start:end]))
+                ob_name = name[start:end]
+                o = self.problem.get_object(ob_name)
+                if o is None:
+                    raise TypeError
+                obs.append(o)
             else:
                 obs.append(name[start:end])
         return obs
@@ -240,7 +256,7 @@ class DeleteRelaxed(Pruning):
             # Find all modifiers which can be applied
             for m in modifiers:
                 given_params = {}
-                obs = self._get_objects_from_alt_modifier_name(m.name)
+                obs = self._get_objects_from_alt_modifier_name(m)
                 params = m.get_parameters()
                 for i in range(len(params)):
                     given_params[params[i].name] = obs[i]
@@ -265,7 +281,7 @@ class DeleteRelaxed(Pruning):
                             self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(m.name)]))
                 elif type(m) == Method:
                     # Check if name of task this method expands is already in state
-                    ob_names = self._get_objects_from_alt_modifier_name(m.name, True)
+                    ob_names = self._get_objects_from_alt_modifier_name(m, True)
                     task_name = m.task['task'].name
 
                     l = len(m.task['params'])
@@ -278,6 +294,8 @@ class DeleteRelaxed(Pruning):
 
                     occurrences = model.current_state.get_indexes("U")
                     found = False
+                    if occurrences is None:
+                        occurrences = []
                     for o in occurrences:
                         prob_pred = model.current_state.get_element_index(o)
                         if prob_pred.objects[0].name == task_name:
@@ -407,7 +425,12 @@ class DeleteRelaxed(Pruning):
                     if type(p) == str:
                         if p == "and" or p == "or" or p == "not":
                             if p == "not":
-                                pred_name = "not_" + parameters[i + 1][0]
+                                pred_name = parameters[i + 1][0]
+                                if pred_name == "=":
+                                    cons = constraints.add_operator_condition(p, parent)
+                                    __parse_conditions(parameters[i + 1], cons)
+                                    return
+                                pred_name = "not_" + pred_name
                                 pred = self.alt_domain.get_predicate(pred_name)
                                 if pred is None:
                                     raise NameError("Predicate '{}' not found in alt_domain".format(pred_name))

@@ -10,7 +10,10 @@ class ProblemPredicate:
         assert isinstance(predicate, Predicate)
         assert type(objects) == list
         for o in objects:
-            assert type(o) == Object
+            try:
+                assert type(o) == Object
+            except:
+                raise TypeError
 
         self.predicate = predicate
         self.objects = objects
