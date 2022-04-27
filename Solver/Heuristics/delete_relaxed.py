@@ -38,7 +38,7 @@ ProblemPredicate = sys.modules['Internal_Representation.problem_predicate'].Prob
 class AltOperatorCondition(OperatorCondition):
     def __init__(self, operator: str, pred: Predicate):
         super().__init__(operator)
-        self.pred = pred
+        self.pred = pred    # This is used for 'not' operators
 
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         children_eval = []
@@ -391,23 +391,30 @@ class DeleteRelaxed(Pruning):
                 else:
                     alt_precons = None
 
-                alt_subtasks = Subtasks(m.subtasks.ordered)
-
-                for s in m.subtasks.tasks:
-                    alt_subtasks.add_subtask(None, s.task, [x for x in s.parameters])
+                subTs = m.subtasks
+                if subTs is not None:
+                    alt_subtasks = Subtasks(subTs.ordered)
+                    for s in m.subtasks.tasks:
+                        alt_subtasks.add_subtask(None, s.task, [x for x in s.parameters])
+                else:
+                    alt_subtasks = None
 
                 if alt_precons is None:
                     alt_precons = AltPrecondition("Alternate Preconditions Unknown")
                     alt_precons.add_operator_condition("and", None)
                 head = alt_precons.head
                 if not(type(head) == AltOperatorCondition and head.operator == "and" or head is None):
-                    raise NotImplementedError
+                    new_op_con = AltOperatorCondition("and", None)
+                    old_head = alt_precons.head
+                    alt_precons.head = new_op_con
+                    alt_precons.add_predicate_condition(old_head.pred, old_head.parameter_name, alt_precons.head)
 
-                for s in alt_subtasks.tasks:
-                    alt_subt_name = copy.deepcopy(s.task.name)
-                    for p in s.parameters:
-                        alt_subt_name += "-" + params[p.name].name
-                    alt_precons.add_predicate_condition(self.alt_domain.get_predicate("U"), [alt_subt_name], head)
+                if alt_subtasks is not None:
+                    for s in alt_subtasks.tasks:
+                        alt_subt_name = copy.deepcopy(s.task.name)
+                        for p in s.parameters:
+                            alt_subt_name += "-" + params[p.name].name
+                        alt_precons.add_predicate_condition(self.alt_domain.get_predicate("U"), [alt_subt_name], head)
 
                 alt_m = Method(alt_name, m.get_parameters(), alt_precons, m.get_task_dict(), alt_subtasks, m.get_constraints())
                 self.alt_domain.methods[alt_m.name] = alt_m

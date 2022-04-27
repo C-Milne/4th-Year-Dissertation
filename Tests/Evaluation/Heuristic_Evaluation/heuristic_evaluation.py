@@ -261,39 +261,64 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 #
 # run_tests(tests, strats, "Barman")
 
-"""Test Barman with Delete Relaxed"""
-tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
-
-strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
-
-run_tests(tests, strats, "Barman")
+"""Test Barman with Delete Relaxed - DONE"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
+#
+# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+#
+# run_tests(tests, strats, "Barman")
 
 """Test Barman with Tree Distance - DONE"""
 # tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
 #
-# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+# strats = [Strat("Tree_Distance", TreeDistance)]
 #
 # run_tests(tests, strats, "Barman")
 
-"""Test Barman with Hamming Distance"""
-# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl"),
-#          ("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile02.hddl")]
+"""Test Barman with Hamming Distance - DONE"""
+# tests = [("../../../../Examples/Barman/domain.hddl", "../../../../Examples/Barman/pfile01.hddl")]
 #
 # strats = [Strat("Hamming_Distance", HammingDistance)]
 #
 # run_tests(tests, strats, "Barman")
 
 """###################################################################################################################"""
-"""Test Factories with Breadth First (NO PRUNING)"""
+"""Test Factories with Breadth First (NO PRUNING) - DONE"""
+# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+# run_tests(tests, strats, "Factories", True)
+
+"""Test factories with Breadth First - DONE"""
+# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+#
+# strats = [Strat("Breadth_First_Operations_Pruning", BreadthFirstOperationsPruning)]
+#
+# run_tests(tests, strats, "Factories")
+
+"""Test Factories with Delete Relaxed"""
+# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+# run_tests(tests, strats, "Factories")
+
+"""Test Factories with Tree Distance"""
+tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl"),
+("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile02.hddl")]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "Factories", True)
+
+"""Test Factories with Hamming Distance"""
 # tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl"),
 # ("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile02.hddl")]
 #
-# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+# strats = [Strat("Hamming_Distance", HammingDistance)]
 #
 # run_tests(tests, strats, "Factories", True)
 
-"""Test factories with Breadth First"""
-"""Test Factories with Delete Relaxed"""
-"""Test Factories with Tree Distance"""
-"""Test Factories with Hamming Distance"""
 """###################################################################################################################"""
+"""PARTIAL ORDER TESTS"""
+
+
+"""###################################################################################################################"""
+"""TEST TOTAL ORDERED PROBLEM WITH PARTIAL ORDER SOLVER AND TOTAL ORDER SOLVER (ROVER 1 -> 4)"""
