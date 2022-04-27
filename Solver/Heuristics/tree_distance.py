@@ -99,7 +99,10 @@ class TreeDistance(Heuristic):
         # Create bottom up reachability conditions for methods
         method_reach_conditions = {}
         for m in self.domain.get_all_methods():
-            method_reach_conditions[m.name] = list(set([x.task.name for x in m.subtasks.tasks]))
+            if m.subtasks is None:
+                method_reach_conditions[m.name] = []
+            else:
+                method_reach_conditions[m.name] = list(set([x.task.name for x in m.subtasks.tasks]))
 
         # Add methods which are bottom up reachable to the tree
         task_nodes = []

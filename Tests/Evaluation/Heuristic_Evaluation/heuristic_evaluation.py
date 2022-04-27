@@ -300,21 +300,19 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
 # run_tests(tests, strats, "Factories")
 
-"""Test Factories with Tree Distance"""
-tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl"),
-("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile02.hddl")]
-
-strats = [Strat("Tree_Distance", TreeDistance)]
-
-run_tests(tests, strats, "Factories", True)
-
-"""Test Factories with Hamming Distance"""
-# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl"),
-# ("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile02.hddl")]
+"""Test Factories with Tree Distance - DONE"""
+# tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
 #
-# strats = [Strat("Hamming_Distance", HammingDistance)]
+# strats = [Strat("Tree_Distance", TreeDistance)]
 #
-# run_tests(tests, strats, "Factories", True)
+# run_tests(tests, strats, "Factories")
+
+"""Test Factories with Hamming Distance - DONE"""
+tests = [("../../../../Examples/Factories/domain.hddl", "../../../../Examples/Factories/pfile01.hddl")]
+
+strats = [Strat("Hamming_Distance", HammingDistance)]
+
+run_tests(tests, strats, "Factories")
 
 """###################################################################################################################"""
 """PARTIAL ORDER TESTS"""
@@ -322,3 +320,8 @@ run_tests(tests, strats, "Factories", True)
 
 """###################################################################################################################"""
 """TEST TOTAL ORDERED PROBLEM WITH PARTIAL ORDER SOLVER AND TOTAL ORDER SOLVER (ROVER 1 -> 4)"""
+
+"""###################################################################################################################"""
+"""Test JSHOP - Compare Execution times to parsing times"""
+"""Test Basic HDDL vs JSHOP"""
+"""Test Rover HDDL vs JSHOP"""
