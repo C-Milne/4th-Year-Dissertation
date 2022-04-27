@@ -44,6 +44,7 @@ class DeleteRelaxedTotalPredicates(DeleteRelaxed):
     def _calculate_distance(self, model: Model, alt_state: State) -> int:
         all_actions = [self.alt_domain.actions[a] for a in self.alt_domain.actions]
         prev_num_preds = 0
+        applied_actions = []
 
         while True:
             """Get applicable actions"""
@@ -70,13 +71,14 @@ class DeleteRelaxedTotalPredicates(DeleteRelaxed):
                         model.current_state.add_element(
                             ProblemPredicate(e.predicate, [given_params[x] for x in e.parameters]))
                 """Remove action from list"""
+                applied_actions.append(a)
                 del all_actions[all_actions.index(a)]
 
             """Check exit conditions"""
             if len(model.current_state) == prev_num_preds:
                 break
             prev_num_preds = len(model.current_state)
-        return 2 ** prev_num_preds
+        return 2 ** len(applied_actions)
 
 
 def _calculate_predicate_state_size(controller: Runner) -> int:

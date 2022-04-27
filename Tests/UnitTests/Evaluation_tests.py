@@ -8,6 +8,9 @@ class EvaluationTests(unittest.TestCase):
         self.basic_path = "../Examples/Basic/"
         self.rover_path = "../Examples/Rover/"
         self.depot_path = "../Examples/Depots/"
+        self.translog_path = "../Examples/IPC_Tests/um-translog01/"
+        self.factories_path = "../Examples/Factories/"
+        self.barman_path = "../Examples/Barman/"
         self.write_path = "../Evaluation/Heuristic_Evaluation/problem_sizes.pickle"
 
     def test_calculating_basic_size(self):
@@ -52,4 +55,16 @@ class EvaluationTests(unittest.TestCase):
 
     def test_calculating_depot_3_size(self):
         res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p03.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_translog_size(self):
+        res = calculate_size(self.translog_path + "domain.hddl", self.translog_path + "problem.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_factories_1_size(self):
+        res = calculate_size(self.factories_path + "domain.hddl", self.factories_path + "pfile01.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_barman_1_size(self):
+        res = calculate_size(self.barman_path + "domain.hddl", self.barman_path + "pfile01.hddl", self.write_path)
         print(res)
