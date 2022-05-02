@@ -368,13 +368,33 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
 
 """###################################################################################################################"""
-"""Test Translog Partial Order - Breadth First (No Pruning)"""
+"""Test Translog Partial Order - Breadth First (No Pruning) -> DONE"""
+# tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
+# # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
+# ]
+# strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
+# run_tests(tests, strats, "Barman_Partial_Order", True, partial_order=True)
 
-"""Test Translog Partial Order - Breadth First (No Pruning)"""
+"""Test Translog Partial Order - Breadth First-> DONE"""
+# tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
+# # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
+# ]
+# strats = [Strat("Breadth_First_Operations_PO_Pruning", BreadthFirstOperationsPartialOrderPruning)]
+# run_tests(tests, strats, "Barman_Partial_Order", partial_order=True)
 
-"""Test Translog Partial Order - Hamming Distance"""
+"""Test Translog Partial Order - Hamming Distance -> DONE"""
+# tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
+# # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
+# ]
+# strats = [Strat("Hamming_Distance_Partial_Order", HammingDistancePartialOrder)]
+# run_tests(tests, strats, "Barman_Partial_Order", partial_order=True)
 
-"""Test Translog Partial Order - Tree Distance"""
+"""Test Translog Partial Order - Tree Distance -> DONE"""
+# tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
+# # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
+# ]
+# strats = [Strat("Tree_Distance_Partial_Order", TreeDistancePartialOrder)]
+# run_tests(tests, strats, "Barman_Partial_Order", partial_order=True)
 
 """###################################################################################################################"""
 """Test Barman partial order - Breadth First (No Pruning)"""
