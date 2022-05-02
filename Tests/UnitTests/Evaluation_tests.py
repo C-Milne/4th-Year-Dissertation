@@ -11,6 +11,7 @@ class EvaluationTests(unittest.TestCase):
         self.translog_path = "../Examples/IPC_Tests/um-translog01/"
         self.factories_path = "../Examples/Factories/"
         self.barman_path = "../Examples/Barman/"
+        self.PO_rover_path = "../Examples/Partial_Order/Rover/"
         self.write_path = "../Evaluation/Heuristic_Evaluation/problem_sizes.pickle"
 
     def test_calculating_basic_size(self):
@@ -67,4 +68,20 @@ class EvaluationTests(unittest.TestCase):
 
     def test_calculating_barman_1_size(self):
         res = calculate_size(self.barman_path + "domain.hddl", self.barman_path + "pfile01.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_PO_rover_1_size(self):
+        res = calculate_size(self.PO_rover_path + "domain.hddl", self.PO_rover_path + "pfile01.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_PO_rover_2_size(self):
+        res = calculate_size(self.PO_rover_path + "domain.hddl", self.PO_rover_path + "pfile02.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_PO_rover_3_size(self):
+        res = calculate_size(self.PO_rover_path + "domain.hddl", self.PO_rover_path + "pfile03.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_PO_rover_4_size(self):
+        res = calculate_size(self.PO_rover_path + "domain.hddl", self.PO_rover_path + "pfile04.hddl", self.write_path)
         print(res)

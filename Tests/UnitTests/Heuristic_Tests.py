@@ -1,6 +1,7 @@
 import unittest
 from Tests.UnitTests.TestTools.env_setup import env_setup
 from Solver.Heuristics.tree_distance import TreeDistance
+from Solver.Heuristics.tree_distance_partial_order import TreeDistancePartialOrder
 from Solver.Heuristics.delete_relaxed import DeleteRelaxed, AltPrecondition, AltOperatorCondition
 from Solver.Heuristics.hamming_distance import HammingDistance
 from Internal_Representation.conditions import PredicateCondition
@@ -14,6 +15,7 @@ class HeuristicTests(unittest.TestCase):
         self.rover_path = "../Examples/Rover/"
         self.basic_path = "../Examples/Basic/"
         self.depot_path = "../Examples/Depots/"
+        self.rover_PO_path = "../Examples/Partial_Order/Rover/"
 
     def test_tree_distance_preprocessing(self):
         domain, problem, parser, solver = env_setup(True)
@@ -41,6 +43,14 @@ class HeuristicTests(unittest.TestCase):
         parser.parse_domain(self.rover_path + "domain.hddl")
         parser.parse_problem(self.rover_path + "p03.hddl")
         solver.set_heuristic(TreeDistance)
+        res = solver.solve()
+        self.assertNotEqual(None, res)
+
+    def test_partial_order_tree_distance_execution(self):
+        domain, problem, parser, solver = env_setup(True)
+        parser.parse_domain(self.rover_PO_path + "domain.hddl")
+        parser.parse_problem(self.rover_PO_path + "pfile01.hddl")
+        solver.set_heuristic(TreeDistancePartialOrder)
         res = solver.solve()
         self.assertNotEqual(None, res)
 

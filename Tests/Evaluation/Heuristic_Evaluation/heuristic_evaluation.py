@@ -15,6 +15,7 @@ from Solver.Heuristics.delete_relaxed import DeleteRelaxed
 from Solver.Heuristics.tree_distance import TreeDistance
 from Solver.Heuristics.breadth_first_by_operations_with_partial_order_pruning import BreadthFirstOperationsPartialOrderPruning
 from Solver.Heuristics.hamming_distance_partial_order import HammingDistancePartialOrder
+from Solver.Heuristics.tree_distance_partial_order import TreeDistancePartialOrder
 from runner import Runner
 from Solver.Solving_Algorithms.partial_order import PartialOrderSolver
 from Solver.Solving_Algorithms.total_order import TotalOrderSolver
@@ -236,31 +237,31 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Delete Relaxed"""
-tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl")]
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl")]
-# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-
-strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
-
-run_tests(tests, strats, "Depot")
+# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl")]
+# # ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl")]
+# # ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+#
+# strats = [Strat("Delete_Relaxed", DeleteRelaxed)]
+#
+# run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Hamming Distance - DONE"""
-tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
-("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-
-strats = [Strat("Hamming_Distance", HammingDistance)]
-
-run_tests(tests, strats, "Depot")
+# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
+# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+#
+# strats = [Strat("Hamming_Distance", HammingDistance)]
+#
+# run_tests(tests, strats, "Depot")
 
 """Test depot p1 -> p3 with Tree Distance- DONE"""
-tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
-("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
-("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
-
-strats = [Strat("Tree_Distance", TreeDistance)]
-
-run_tests(tests, strats, "Depot")
+# tests = [("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p01.hddl"),
+# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p02.hddl"),
+# ("../../../../Examples/Depots/domain.hddl", "../../../../Examples/Depots/p03.hddl")]
+#
+# strats = [Strat("Tree_Distance", TreeDistance)]
+#
+# run_tests(tests, strats, "Depot")
 
 """###################################################################################################################"""
 """Test Barman with breadth first (NO PRUNING) - DONE"""
@@ -357,9 +358,36 @@ run_tests(tests, strats, "Depot")
 # strats = [Strat("Hamming_Distance_Partial_Order", HammingDistancePartialOrder)]
 # run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
 
+"""Test Tree Distance (Partial Order)"""
+# tests = [("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile01.hddl"),
+# ("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile02.hddl"),
+# ("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile03.hddl"),
+# ("../../../../Examples/Partial_Order/Rover/domain.hddl", "../../../../Examples/Partial_Order/Rover/pfile04.hddl")]
+#
+# strats = [Strat("Tree_Distance_Partial_Order", TreeDistancePartialOrder)]
+# run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
+
+"""###################################################################################################################"""
+"""Test Translog Partial Order - Breadth First (No Pruning)"""
+
+"""Test Translog Partial Order - Breadth First (No Pruning)"""
+
+"""Test Translog Partial Order - Hamming Distance"""
+
+"""Test Translog Partial Order - Tree Distance"""
+
+"""###################################################################################################################"""
+"""Test Barman partial order - Breadth First (No Pruning)"""
+
+"""Test Barman partial order - Breadth First"""
+
+"""Test Barman partial order - Hamming Distance"""
+
+"""Test Barman partial order - Tree Distance"""
+
 """###################################################################################################################"""
 """TEST TOTAL ORDERED PROBLEM WITH PARTIAL ORDER SOLVER AND TOTAL ORDER SOLVER (ROVER 1 -> 4)"""
-"""Partial Order"""
+"""Partial Order -> Done"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
@@ -369,7 +397,7 @@ run_tests(tests, strats, "Depot")
 #
 # run_tests(tests, strats, "Rover_PO_TO", True, partial_order=True)
 
-"""Total Order"""
+"""Total Order -> Done"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl"),
 # ("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl"),
