@@ -6,7 +6,9 @@ class EvaluationTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.basic_path = "../Examples/Basic/"
+        self.JSHOP_basic_path = "../Examples/JShop/basic/"
         self.rover_path = "../Examples/Rover/"
+        self.JSHOP_rover_path = "../Examples/JShop/rover/"
         self.depot_path = "../Examples/Depots/"
         self.translog_path = "../Examples/IPC_Tests/um-translog01/"
         self.factories_path = "../Examples/Factories/"
@@ -89,4 +91,28 @@ class EvaluationTests(unittest.TestCase):
 
     def test_calculating_PO_barman_1_size(self):
         res = calculate_size(self.PO_barman_path + "domain.hddl", self.PO_barman_path + "pfile01.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_basic_size(self):
+        res = calculate_size(self.JSHOP_basic_path + "basic.jshop", self.JSHOP_basic_path + "problem.jshop", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_rover_1_size(self):
+        res = calculate_size(self.JSHOP_rover_path + "rover.jshop", self.JSHOP_rover_path + "pb1.jshop", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_rover_2_size(self):
+        res = calculate_size(self.JSHOP_rover_path + "rover.jshop", self.JSHOP_rover_path + "pb2.jshop", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_rover_3_size(self):
+        res = calculate_size(self.JSHOP_rover_path + "rover.jshop", self.JSHOP_rover_path + "pb3.jshop", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_rover_4_size(self):
+        res = calculate_size(self.JSHOP_rover_path + "rover.jshop", self.JSHOP_rover_path + "pb4.jshop", self.write_path)
+        print(res)
+
+    def test_calculating_JSHOP_rover_5_size(self):
+        res = calculate_size(self.JSHOP_rover_path + "rover.jshop", self.JSHOP_rover_path + "pb5.jshop", self.write_path)
         print(res)
