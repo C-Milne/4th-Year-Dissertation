@@ -504,7 +504,7 @@ class JSHOPParser(Parser):
             if sub_tasks is None:
                 sub_tasks = subT
             else:
-                sub_tasks.tasks.append(subT.tasks[0])
+                sub_tasks.add_subtask(None, subT.tasks[0].task, subT.tasks[0].parameters)
         self.problem.add_subtasks(sub_tasks)
         self._requires_grounding.append(sub_tasks)
 

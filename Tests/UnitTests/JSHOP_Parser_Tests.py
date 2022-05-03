@@ -13,10 +13,11 @@ class JSHOPParsingTests(unittest.TestCase):
         # self.block_path = "Tests/Examples/JShop/blocks/"
         self.forall_path = "../Examples/JShop/forall/"
         self.rover_test_path = "TestTools/J-Rover/"
+        self.rover_path = "../Examples/JShop/rover/"
 
     def test_parsing_basic_domain(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.basic_path + "basic")
+        parser.parse_domain(self.basic_path + "basic.jshop")
 
         self.assertEqual(1, len(domain.predicates))
         self.assertIn('have', domain.predicates)
@@ -63,8 +64,8 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def test_parsing_basic_problem(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.basic_path + "basic")
-        parser.parse_problem(self.basic_path + "problem")
+        parser.parse_domain(self.basic_path + "basic.jshop")
+        parser.parse_problem(self.basic_path + "problem.jshop")
 
         self.assertIn("kiwi", problem.objects)
         self.assertIn("banjo", problem.objects)
@@ -83,7 +84,7 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def test_parsing_blocks_domain(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.block_path + "blocks")
+        parser.parse_domain(self.block_path + "blocks.jshop")
 
         self.assertEqual(10, len(domain.tasks))
         assertGoalTask = domain.tasks['assert-goals']
@@ -128,8 +129,8 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def test_parsing_blocks_problem(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.block_path + "blocks")
-        parser.parse_problem(self.block_path + "problem")
+        parser.parse_domain(self.block_path + "blocks.jshop")
+        parser.parse_problem(self.block_path + "problem.jshop")
 
         self.assertEqual(300, len(problem.objects))
         for i in range(1, 301):
@@ -143,7 +144,7 @@ class JSHOPParsingTests(unittest.TestCase):
         # When parsing a task with methods, check that parameters not defined in the heading but found in the
         # preconditions/effects are found
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.forall_path + "forall")
+        parser.parse_domain(self.forall_path + "forall.jshop")
         solver.parameter_selector.presolving_processing(domain, problem)
 
         method = domain.methods['method0']
@@ -154,18 +155,18 @@ class JSHOPParsingTests(unittest.TestCase):
 
     def test_parsing_method_subtask(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.forall_path + "forall")
+        parser.parse_domain(self.forall_path + "forall.jshop")
 
         self.assertEqual([RegParameter('?x'), RegParameter('?t')], domain.methods['method0'].subtasks.tasks[0].parameters)
 
-        parser.parse_problem(self.forall_path + "problem")
+        parser.parse_problem(self.forall_path + "problem.jshop")
 
         self.assertEqual([RegParameter('?x'), RegParameter('?t')],
                          domain.methods['method0'].subtasks.tasks[0].parameters)
 
     def test_parsing_subtask_method_selection(self):
         domain, problem, parser, solver = env_setup(False)
-        parser.parse_domain(self.rover_test_path + "rover")
+        parser.parse_domain(self.rover_test_path + "rover.jshop")
 
         method = domain.tasks['navigate'].tasks[0]
         req_method = domain.tasks['navigate'].tasks[1]
@@ -173,3 +174,10 @@ class JSHOPParsingTests(unittest.TestCase):
         self.assertEqual(1, len(method.methods))
         method = method.methods[0]
         self.assertEqual(3, len(method.subtasks.tasks[1].task.parameters))
+
+    def test_parsing_rover_pb1(self):
+        domain, problem, parser, solver = env_setup(False)
+        parser.parse_domain(self.rover_path + "rover.jshop")
+        parser.parse_problem(self.rover_path + "pb1.jshop")
+        self.assertEqual(1, len(problem.subtasks.task_orderings))
+        self.assertEqual(3, len(problem.subtasks.task_orderings[0]))

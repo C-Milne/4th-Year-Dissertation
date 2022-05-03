@@ -51,9 +51,16 @@ def save_to_file(test_name, strat, time, result):
     print("Writing: {}".format(time))
     # Pickle actions taken and state. Save them in the /serialised_objects folder
     pickle_test_name = test_name.replace("/", "_") + "_" + strat.name
-    actions_taken_pickle_file = save_pickle_object(result.actions_taken, pickle_test_name + "_" + "actions")
-    state_pickle_file = save_pickle_object(result.current_state, pickle_test_name + "_" + "state")
-    strat.file.write("\n" + test_name + "," + str(time) + "," + str(result.num_models_used) + "," + actions_taken_pickle_file + "," +
+
+    if result is not None:
+        actions_taken_pickle_file = save_pickle_object(result.actions_taken, pickle_test_name + "_" + "actions")
+        state_pickle_file = save_pickle_object(result.current_state, pickle_test_name + "_" + "state")
+        num_models = result.num_models_used
+    else:
+        actions_taken_pickle_file, state_pickle_file = "NONE", "NONE"
+        num_models = 0
+
+    strat.file.write("\n" + test_name + "," + str(time) + "," + str(num_models) + "," + actions_taken_pickle_file + "," +
                      state_pickle_file)
 
 
@@ -75,16 +82,31 @@ def save_pickle_object(object, file_name) -> str:
     return f_name
 
 
-def test_runner(test, heuristic, early_precon=True, partial_order=False):
+def test_runner(test, heuristic, early_precon=True, partial_order=False, search=True):
     controller = Runner(test[0], test[1])
-    controller.parse_domain()
-    controller.parse_problem()
+
+    result = [_.start() for _ in re.finditer("/", test[1])]
+    test_name = test[1][result[-2] + 1:]
+
+    if search:
+        controller.parse_domain()
+        controller.parse_problem()
+    else:
+        # If we are not timing the search we are timing the parsing
+        start_time = time.time()
+        controller.parse_domain()
+        controller.parse_problem()
+        end_time = time.time()
+        timeTaken = end_time - start_time
+        save_to_file(test_name, heuristic, timeTaken, None)
+        return
+
     if partial_order:
         controller.set_solver(PartialOrderSolver)
     else:
         controller.set_solver(TotalOrderSolver)
+
     controller.set_heuristic(heuristic.class_reference)
-    controller.set_early_task_precon_checker(heuristic.early_task_precon_checker)
     controller.solver.task_expansion_given_param_check = early_precon
     Model.model_counter = 0   # This needs to be reset for each test
 
@@ -94,8 +116,6 @@ def test_runner(test, heuristic, early_precon=True, partial_order=False):
 
     timeTaken = end_time - start_time
 
-    result = [_.start() for _ in re.finditer("/", test[1])]
-    test_name = test[1][result[-2] + 1:]
     save_to_file(test_name, heuristic, timeTaken, res)
 
 
@@ -116,6 +136,12 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
     else:
         early_precon = True
 
+    if 'search' in kwargs.keys():
+        run_search = kwargs['search']
+        assert type(run_search) == bool
+    else:
+        run_search = True
+
     # Create log csv for each strategy being assessed
     for s in strats:
         create_file(s)
@@ -126,7 +152,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
                     partial_order = kwargs['partial_order']
                 else:
                     partial_order = False
-                test_runner(t, s, early_precon, partial_order)
+                test_runner(t, s, early_precon, partial_order, run_search)
     for s in strats:
         s.file.close()
     os.chdir("../..")
@@ -158,7 +184,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 #
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
 #
-# run_tests(tests, strats, "Rover", True)
+# run_tests(tests, strats, "Test", True)
 
 """Test Rover p01 -> p04 with breadth first search and pruning - DONE"""
 # tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl"),
@@ -368,28 +394,28 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 # run_tests(tests, strats, "Rover_Partial_Order", partial_order=True)
 
 """###################################################################################################################"""
-"""Test Translog Partial Order - Breadth First (No Pruning) -> DONE"""
+"""Test Barman Partial Order - Breadth First (No Pruning) -> DONE"""
 # tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
 # # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
 # ]
 # strats = [Strat("Breadth_First_Operations", BreadthFirstOperations)]
 # run_tests(tests, strats, "Barman_Partial_Order", True, partial_order=True)
 
-"""Test Translog Partial Order - Breadth First-> DONE"""
+"""Test Barman Partial Order - Breadth First-> DONE"""
 # tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
 # # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
 # ]
 # strats = [Strat("Breadth_First_Operations_PO_Pruning", BreadthFirstOperationsPartialOrderPruning)]
 # run_tests(tests, strats, "Barman_Partial_Order", partial_order=True)
 
-"""Test Translog Partial Order - Hamming Distance -> DONE"""
+"""Test Barman Partial Order - Hamming Distance -> DONE"""
 # tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
 # # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
 # ]
 # strats = [Strat("Hamming_Distance_Partial_Order", HammingDistancePartialOrder)]
 # run_tests(tests, strats, "Barman_Partial_Order", partial_order=True)
 
-"""Test Translog Partial Order - Tree Distance -> DONE"""
+"""Test Barman Partial Order - Tree Distance -> DONE"""
 # tests = [("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile01.hddl")
 # # ,("../../../../Examples/Partial_Order/Barman/domain.hddl", "../../../../Examples/Partial_Order/Barman/pfile02.hddl")
 # ]
@@ -404,6 +430,7 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 """Test Barman partial order - Hamming Distance"""
 
 """Test Barman partial order - Tree Distance"""
+
 
 """###################################################################################################################"""
 """TEST TOTAL ORDERED PROBLEM WITH PARTIAL ORDER SOLVER AND TOTAL ORDER SOLVER (ROVER 1 -> 4)"""
@@ -431,10 +458,89 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 """Test JSHOP - Compare Execution times to parsing times"""
 """Test Basic HDDL vs JSHOP"""
 """Parsing Time"""
+"""HDDL"""
+# tests = [("../../../../Examples/Basic/basic.hddl", "../../../../Examples/Basic/pb1.hddl")]
+#
+# strats = [Strat("HDDL_Parsing", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Basic", True, search=False)
 
-"""Total Time"""
+"""JSHOP"""
+# tests = [("../../../../Examples/JShop/basic/basic.jshop", "../../../../Examples/JShop/basic/problem.jshop")]
+#
+# strats = [Strat("JSHOP_Parsing", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Basic", False, search=False)
+
+"""Solve Time"""
+"""HDDL"""
+# tests = [("../../../../Examples/Basic/basic.hddl", "../../../../Examples/Basic/pb1.hddl")]
+#
+# strats = [Strat("Breadth_First_HDDL", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Basic", False)
+
+"""JSHOP"""
+# tests = [("../../../../Examples/JShop/basic/basic.jshop", "../../../../Examples/JShop/basic/problem.jshop")]
+#
+# strats = [Strat("Breadth_First_JSHOP", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "Basic", False)
 
 """Test Rover HDDL vs JSHOP"""
 """Parsing Time"""
+"""HDDL"""
+# tests = [("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p01.hddl")
+#          ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p02.hddl")
+#          ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p03.hddl")
+#          ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p04.hddl")
+#          ,("../../../../Examples/Rover/domain.hddl", "../../../../Examples/Rover/p05.hddl")
+#          ]
+#
+# strats = [Strat("Breadth_First_HDDL", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "HDDL_JSHOP_Rover", True, search=False)
+
+"""JSHOP"""
+# tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb5.jshop")
+#          ]
+#
+# strats = [Strat("Breadth_First_JSHOP", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "HDDL_JSHOP_Rover", False, search=False)
 
 """Total Time"""
+"""JSHOP"""
+"""Breadth First (No Pruning)"""
+tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+         ]
+
+strats = [Strat("Breadth_First", BreadthFirstOperations)]
+
+run_tests(tests, strats, "JSHOP_Rover", True)
+
+"""Breadth First"""
+tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
+         ]
+
+strats = [Strat("Breadth_First_Pruning", BreadthFirstOperationsPruning)]
+
+run_tests(tests, strats, "JSHOP_Rover")
+
+"""Tree Distance"""
+tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
+         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
+         ]
+
+strats = [Strat("Tree_Distance", TreeDistance)]
+
+run_tests(tests, strats, "JSHOP_Rover")

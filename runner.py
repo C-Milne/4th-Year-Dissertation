@@ -34,7 +34,7 @@ class Runner:
         self.suffix = self.__get_suffix(self.domain_path)
         if self.suffix == "hddl":
             self.parser = HDDLParser(self.domain, self.problem)
-        elif self.suffix is None:
+        elif self.suffix == "jshop":
             self.parser = JSHOPParser(self.domain, self.problem)
         else:
             raise TypeError("Unknown descriptor type ({})".format(self.suffix))
