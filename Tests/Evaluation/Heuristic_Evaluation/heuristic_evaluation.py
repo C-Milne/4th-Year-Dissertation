@@ -516,31 +516,31 @@ def run_tests(tests, strats, sub_folder, clear_folder=False, **kwargs):
 """Total Time"""
 """JSHOP"""
 """Breadth First (No Pruning)"""
-tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
-         ]
-
-strats = [Strat("Breadth_First", BreadthFirstOperations)]
-
-run_tests(tests, strats, "JSHOP_Rover", True)
+# tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+#          ]
+#
+# strats = [Strat("Breadth_First", BreadthFirstOperations)]
+#
+# run_tests(tests, strats, "JSHOP_Rover", True)
 
 """Breadth First"""
-tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
-         ]
-
-strats = [Strat("Breadth_First_Pruning", BreadthFirstOperationsPruning)]
-
-run_tests(tests, strats, "JSHOP_Rover")
+# tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
+#          ]
+#
+# strats = [Strat("Breadth_First_Pruning", BreadthFirstOperationsPruning)]
+#
+# run_tests(tests, strats, "JSHOP_Rover")
 
 """Tree Distance"""
-tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
-         ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
-         ]
-
-strats = [Strat("Tree_Distance", TreeDistance)]
-
-run_tests(tests, strats, "JSHOP_Rover")
+# tests = [("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb1.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb2.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb3.jshop")
+#          ,("../../../../Examples/JShop/rover/rover.jshop", "../../../../Examples/JShop/rover/pb4.jshop")
+#          ]
+#
+# strats = [Strat("Tree_Distance", TreeDistance)]
+#
+# run_tests(tests, strats, "JSHOP_Rover")
