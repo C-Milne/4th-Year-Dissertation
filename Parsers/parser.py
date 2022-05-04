@@ -1,5 +1,6 @@
 import re
 import sys
+from abc import ABC, abstractmethod
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Internal_Representation.reg_parameter import RegParameter
@@ -11,7 +12,7 @@ from Internal_Representation.list_parameter import ListParameter
 Predicate = sys.modules['Internal_Representation.predicate'].Predicate
 
 
-class Parser:
+class Parser(ABC):
     def __init__(self, domain, problem):
         assert type(domain) == Domain
         self.domain = domain
@@ -26,9 +27,11 @@ class Parser:
         self.problem_name = None
         self.problem_path = None
 
+    @abstractmethod
     def parse_domain(self, *args):
         raise NotImplementedError
 
+    @abstractmethod
     def parse_problem(self, *args):
         raise NotImplementedError
 
