@@ -12,3 +12,9 @@ class BreadthFirstActions(Heuristic):
 
     def ranking(self, model) -> float:
         return len(model.actions_taken)
+
+    def presolving_processing(self) -> None:
+        pass
+
+    def task_milestone(self, model) -> bool:
+        return True

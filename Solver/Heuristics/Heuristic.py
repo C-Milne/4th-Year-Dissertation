@@ -16,8 +16,10 @@ class Heuristic(ABC):
     def ranking(self, model) -> float:
         raise NotImplementedError
 
+    @abstractmethod
     def presolving_processing(self) -> None:
-        pass
+        raise NotImplementedError
 
+    @abstractmethod
     def task_milestone(self, model) -> bool:
-        return True
+        raise NotImplementedError
