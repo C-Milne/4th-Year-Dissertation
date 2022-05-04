@@ -25,7 +25,7 @@ def calculate_size(domain_file: str, problem_file: str, file_path=pickle_file_na
     controller.parse_problem()
 
     size = _calculate_domain_size(controller) + _calculate_problem_size(controller)
-    # size = _calculate_predicate_state_size(controller)
+    # print(_calculate_predicate_state_size(controller))
 
     size_dict = _open_pickled_dictionary()
 
@@ -51,7 +51,7 @@ class DeleteRelaxedTotalPredicates(DeleteRelaxed):
             applicable_actions = []
             for a in all_actions:
                 given_params = {}
-                obs = self._get_objects_from_alt_modifier_name(a.name)
+                obs = self._get_objects_from_alt_modifier_name(a)
                 params = a.get_parameters()
                 for i in range(len(params)):
                     given_params[params[i].name] = obs[i]
