@@ -1,12 +1,14 @@
 import sys
+from abc import ABC, abstractmethod
 from Internal_Representation.predicate import Predicate
 from Internal_Representation.Object import Object
 
 
-class Condition:
+class Condition(ABC):
     def __init__(self):
         parent = None
 
+    @abstractmethod
     def evaluate(self, param_dict: dict, search_model, problem) -> bool:
         raise NotImplementedError
 
