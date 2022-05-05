@@ -100,7 +100,7 @@ class RequirementSelection(ParameterSelector):
         if not comparison_result[0] and not comparison_result[1]:
             return []
         elif not comparison_result[0]:
-            found_params = self.__find_satisfying_parameters(search_model, modifier.requirements, parameters)
+            found_params = self._find_satisfying_parameters(search_model, modifier.requirements, parameters)
             if found_params is False:
                 found_params = []
         else:
@@ -121,7 +121,7 @@ class RequirementSelection(ParameterSelector):
                 return_list.append(param_option)
         return return_list
 
-    def __find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict = {}):
+    def _find_satisfying_parameters(self, model: Model, given_requirements: dict, param_dict: dict = {}):
         """Find parameters to satisfy a modifier
         :parameter model:
         :parameter requirements: {'type': Type/None, 'predicates': {}}

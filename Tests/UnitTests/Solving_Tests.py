@@ -315,7 +315,7 @@ class SolvingTests(unittest.TestCase):
         solver.parameter_selector.presolving_processing(domain, problem)
         model = solver.search_models.pop()
         method = domain.methods['m_get_image_data_ordering_0']
-        found_params = solver.parameter_selector._RequirementSelection__find_satisfying_parameters(model,
+        found_params = solver.parameter_selector._find_satisfying_parameters(model,
                                                     method.requirements, model.search_modifiers[0].given_params)
         self.assertEqual(4, len(found_params))
         for combo in found_params:

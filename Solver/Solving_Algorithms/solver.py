@@ -34,12 +34,12 @@ class Solver(ABC):
         self.domain = domain
         self.problem = problem
 
-        self.has_goal_conditions = self.problem.has_goal_conditions()
-
         self.search_models = SearchQueue()
         heuristic = BreadthFirstOperationsPruning(self.domain, self.problem, self, self.search_models)
         self.search_models.add_heuristic(heuristic)
+
         self.parameter_selector = RequirementSelection(self)
+        self._requirement_parameter_selector = RequirementSelection(self)
         self.task_expansion_given_param_check = True
 
     def set_heuristic(self, heuristic):
@@ -162,6 +162,11 @@ class Solver(ABC):
         raise NotImplementedError
 
     def _generate_param_dict(self, modifier, params):
+        """
+        :param modifier: Modifier
+        :param params: List [Object]
+        :return: dict [Object]
+        """
         assert type(modifier) == Method or type(modifier) == Action or type(modifier) == Task
         # Check number of params is the amount expected
         if type(params) == ListParameter:
@@ -197,7 +202,7 @@ class Solver(ABC):
 
             for j in range(len(pred.conditions)):
                 # Choose variables
-                found_params = self.__find_satisfying_parameters(search_model, pred.cond_requirements[j])
+                found_params = self._requirement_parameter_selector._find_satisfying_parameters(search_model, pred.cond_requirements[j])
                 for param_option in found_params:
                     # Evaluate predicate
                     result = pred.conditions[j].evaluate(param_option, search_model, self.problem)
@@ -207,7 +212,7 @@ class Solver(ABC):
                         search_model.current_state.add_element(ProblemPredicate(pred, obs))
 
     @staticmethod
-    def check_duplicate_values_dictionary(d: dict):
+    def check_duplicate_values_dictionary(d: dict) -> bool:
         """https://www.geeksforgeeks.org/python-find-keys-with-duplicate-values-in-dictionary/
         :returns True if a duplicate is present
         :returns False if there is no duplicates"""
@@ -246,6 +251,11 @@ class Solver(ABC):
         return State.reproduce(state)
 
     def reproduce_model(self, model, search_mods=None):
+        """
+        :param model: Model
+        :param search_mods: List [Subtasks.Subtask]
+        :return: Model
+        """
         if search_mods is None:
             new_model = Model(State.reproduce(model.current_state),
                   model.search_modifiers, self.problem, [])
