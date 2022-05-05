@@ -70,10 +70,10 @@ class TreeDistance(Heuristic):
             return model.ranking
         elif type(next_mod) != Task:
             i = -1
-            op = model.operations_taken[i].action
+            op = model.operations_taken[i].mod
             while type(op) != Task:
                 i -= 1
-                op = model.operations_taken[i].action
+                op = model.operations_taken[i].mod
             assert type(op) == Task
             return len(model.operations_taken) + self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
         else:

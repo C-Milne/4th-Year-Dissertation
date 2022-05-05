@@ -156,7 +156,7 @@ class DeleteRelaxed(Pruning):
         # Create duplicate state
         alt_state = State.reproduce(model.current_state)
 
-        if len(model.operations_taken) == 0 or type(model.operations_taken[-1].action) == Action:
+        if len(model.operations_taken) == 0 or type(model.operations_taken[-1].mod) == Action:
             prev_action = True
         else:
             prev_action = False
@@ -193,11 +193,11 @@ class DeleteRelaxed(Pruning):
         if type(next_mod) != Task:
             i = -1
             op = model.operations_taken[i]
-            op_task = op.action
+            op_task = op.mod
             while type(op_task) != Task:
                 i -= 1
                 op = model.operations_taken[i]
-                op_task = op.action
+                op_task = op.mod
             assert type(op_task) == Task
             targets.append("U-" + op_task.name +
                            self._concat_param_object_names([op.parameters_used[x] for x in op.parameters_used]))

@@ -368,7 +368,7 @@ class SolvingTests(unittest.TestCase):
             print("Testing {}".format(a))
             found = False
             for ac in res.actions_taken:
-                if a == ac.action:
+                if a == ac.mod:
                     found = True
                     break
             self.assertEqual(True, found)
@@ -387,7 +387,7 @@ class SolvingTests(unittest.TestCase):
             print("Testing {}".format(a))
             found = False
             for ac in res.actions_taken:
-                if a == ac.action:
+                if a == ac.mod:
                     found = True
                     break
             self.assertEqual(True, found)
@@ -482,7 +482,7 @@ class SolvingTests(unittest.TestCase):
             print("Testing {}".format(a))
             found = False
             for ac in res.actions_taken:
-                if a == ac.action:
+                if a == ac.mod:
                     found = True
                     break
             self.assertEqual(True, found)

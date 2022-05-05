@@ -48,8 +48,8 @@ class IPCTests(unittest.TestCase):
 
         self.assertEqual(1, len(plan.actions_taken))
         self.assertEqual(1, len(plan.operations_taken))
-        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].action)
-        self.assertEqual(domain.actions['noop'], plan.operations_taken[0].action)
+        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].mod)
+        self.assertEqual(domain.actions['noop'], plan.operations_taken[0].mod)
         self.assertEqual("State is empty.", str(plan.current_state))
         self.assertEqual(0, len(plan.search_modifiers))
 
@@ -60,7 +60,7 @@ class IPCTests(unittest.TestCase):
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, len(plan.actions_taken))
-        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].action)
+        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].mod)
         self.assertEqual(1, len(plan.actions_taken[0].parameters_used))
         self.assertEqual(problem.objects['a'], plan.actions_taken[0].parameters_used['?a'])
 
@@ -72,8 +72,8 @@ class IPCTests(unittest.TestCase):
         solver.output(plan)
         self.assertEqual(8, len(plan.actions_taken))
         for i in range(4):
-            self.assertEqual(domain.actions['noop1'], plan.actions_taken[i * 2].action)
-            self.assertEqual(domain.actions['noop2'], plan.actions_taken[(i * 2) + 1].action)
+            self.assertEqual(domain.actions['noop1'], plan.actions_taken[i * 2].mod)
+            self.assertEqual(domain.actions['noop2'], plan.actions_taken[(i * 2) + 1].mod)
 
     def test_7_arguments(self):
         domain, problem, parser, solver = env_setup(True)
@@ -87,7 +87,7 @@ class IPCTests(unittest.TestCase):
         plan = solver.solve()
         solver.output(plan)
         self.assertEqual(1, len(plan.actions_taken))
-        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].action)
+        self.assertEqual(domain.actions['noop'], plan.actions_taken[0].mod)
         self.assertEqual(2, len(plan.actions_taken[0].parameters_used))
         self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used['?a'])
         self.assertEqual(problem.objects['b'], plan.actions_taken[0].parameters_used['?b'])
@@ -102,30 +102,30 @@ class IPCTests(unittest.TestCase):
         self.assertNotEqual(None, plan)
         self.assertEqual(5, len(plan.actions_taken))
 
-        self.assertEqual(domain.actions['switch_on'], plan.actions_taken[0].action)
+        self.assertEqual(domain.actions['switch_on'], plan.actions_taken[0].mod)
         self.assertEqual(2, len(plan.actions_taken[0].parameters_used))
         self.assertEqual(problem.objects['instrument0'], plan.actions_taken[0].parameters_used['?so_i'])
         self.assertEqual(problem.objects['satellite0'], plan.actions_taken[0].parameters_used['?so_s'])
 
-        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[1].action)
+        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[1].mod)
         self.assertEqual(3, len(plan.actions_taken[1].parameters_used))
         self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[1].parameters_used['?t_d_new'])
         self.assertEqual(problem.objects['satellite0'], plan.actions_taken[1].parameters_used['?t_s'])
         self.assertEqual(problem.objects['phenomenon6'], plan.actions_taken[1].parameters_used['?t_d_prev'])
 
-        self.assertEqual(domain.actions['calibrate'], plan.actions_taken[2].action)
+        self.assertEqual(domain.actions['calibrate'], plan.actions_taken[2].mod)
         self.assertEqual(3, len(plan.actions_taken[2].parameters_used))
         self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[2].parameters_used['?c_d'])
         self.assertEqual(problem.objects['satellite0'], plan.actions_taken[2].parameters_used['?c_s'])
         self.assertEqual(problem.objects['instrument0'], plan.actions_taken[2].parameters_used['?c_i'])
 
-        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[3].action)
+        self.assertEqual(domain.actions['turn_to'], plan.actions_taken[3].mod)
         self.assertEqual(3, len(plan.actions_taken[3].parameters_used))
         self.assertEqual(problem.objects['groundstation2'], plan.actions_taken[3].parameters_used['?t_d_prev'])
         self.assertEqual(problem.objects['satellite0'], plan.actions_taken[3].parameters_used['?t_s'])
         self.assertEqual(problem.objects['phenomenon4'], plan.actions_taken[3].parameters_used['?t_d_new'])
 
-        self.assertEqual(domain.actions['take_image'], plan.actions_taken[4].action)
+        self.assertEqual(domain.actions['take_image'], plan.actions_taken[4].mod)
         self.assertEqual(4, len(plan.actions_taken[4].parameters_used))
         self.assertEqual(problem.objects['instrument0'], plan.actions_taken[4].parameters_used['?ti_i'])
         self.assertEqual(problem.objects['satellite0'], plan.actions_taken[4].parameters_used['?ti_s'])
