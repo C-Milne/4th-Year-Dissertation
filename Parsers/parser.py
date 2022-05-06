@@ -28,11 +28,11 @@ class Parser(ABC):
         self.problem_path = None
 
     @abstractmethod
-    def parse_domain(self, *args):
+    def parse_domain(self, file_path: str):
         raise NotImplementedError
 
     @abstractmethod
-    def parse_problem(self, *args):
+    def parse_problem(self, file_path: str):
         raise NotImplementedError
 
     def _parse_type(self, *args):

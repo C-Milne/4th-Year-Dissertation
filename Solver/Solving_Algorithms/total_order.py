@@ -13,54 +13,6 @@ class TotalOrderSolver(Solver):
     def __init__(self, domain, problem):
         super().__init__(domain, problem)
 
-    def solve(self, **kwargs):
-        self.parameter_selector.presolving_processing(self.domain, self.problem)
-        self.search_models.heuristic.presolving_processing()
-        subtasks_orderings = self.problem.subtasks.get_task_orderings()
-
-        printed_subtasks = False
-        if len(subtasks_orderings) == 0:
-            return None
-
-        subtasks = subtasks_orderings[0]
-        list_subT = []
-        num_tasks = len(subtasks)
-        task_counter = 0
-        while task_counter < num_tasks:
-            subT = subtasks[task_counter]
-            if subT == "and" or subT == "or":
-                del subtasks[task_counter]
-                num_tasks -= 1
-                continue
-
-            if not printed_subtasks:
-                print("Subtask:", task_counter, "-", subT.get_name() + str([p.name for p in subT.parameters]))
-
-            # Create initial search model
-            param_dict = self._generate_param_dict(subT.task, subT.parameters)
-            subT.add_given_parameters(param_dict)
-            list_subT.append(subT)
-            task_counter += 1
-        printed_subtasks = True
-
-        if len(list_subT) == 1:
-            waiting_subT = []
-        else:
-            waiting_subT = list_subT[1:]
-            list_subT = [list_subT[0]]
-
-        initial_model = Model(State.reproduce(self.problem.initial_state), list_subT, self.problem, waiting_subT)
-
-        self.search_models.add(initial_model)
-
-        if "search" in kwargs:
-            search = kwargs["search"]
-        else:
-            search = True
-
-        if search != False:
-            return self._search()
-
     def _expand_task(self, subtask: Subtasks.Subtask, search_model: Model):
         if len(subtask.task.tasks) != 0:
             for new_task in subtask.task.tasks:
