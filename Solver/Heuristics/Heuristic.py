@@ -1,7 +1,4 @@
 from abc import ABC, abstractmethod
-"""The 'low_target' value MUST be set by any instance of this class.
-If 'low_target' is True then models with a low ranking will be prioritised over those with a high score.
-If 'low_target' is False then models with a high ranking will be given priority over those with a low score"""
 
 
 class Heuristic(ABC):
@@ -10,7 +7,6 @@ class Heuristic(ABC):
         self.problem = problem
         self.solver = solver
         self.search_models = search_models
-        self.low_target = None
 
     @abstractmethod
     def ranking(self, model) -> float:

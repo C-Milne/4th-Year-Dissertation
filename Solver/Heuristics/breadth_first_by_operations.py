@@ -8,7 +8,6 @@ This is essentially the same search strategy as 'breadth_first_by_actions' but b
 class BreadthFirstOperations(Heuristic):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
 
     def ranking(self, model) -> float:
         return len(model.operations_taken)

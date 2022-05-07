@@ -7,7 +7,6 @@ from Internal_Representation.problem_predicate import ProblemPredicate
 class HammingDistance(Pruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
         self.goal_cons = []
 
     def ranking(self, model) -> float:

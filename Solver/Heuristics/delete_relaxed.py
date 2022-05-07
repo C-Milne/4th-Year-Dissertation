@@ -145,7 +145,6 @@ class ModelStore:
 class DeleteRelaxed(Pruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
 
         self.alt_domain = None
         self.alt_problem = None

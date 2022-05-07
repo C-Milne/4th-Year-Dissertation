@@ -8,7 +8,6 @@ If another model completes the same subtask and has the same current state, it i
 class BreadthFirstOperationsPruning(Pruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
 
     def ranking(self, model) -> float:
         return len(model.operations_taken)
