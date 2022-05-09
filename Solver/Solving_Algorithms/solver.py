@@ -1,29 +1,24 @@
 import sys
 from abc import ABC, abstractmethod, ABCMeta
-from Internal_Representation.precondition import Precondition
 from Solver.model import Model
-from Solver.search_queue import SearchQueue
+from Solver.Search_Queues.search_queue import SearchQueue
 from Internal_Representation.method import Method
-from Internal_Representation.action import Action
+from Internal_Representation.action import Action, Effects
 from Internal_Representation.task import Task
 from Internal_Representation.reg_parameter import RegParameter
 from Internal_Representation.subtasks import Subtasks
-from Internal_Representation.Object import Object
 from Internal_Representation.problem_predicate import ProblemPredicate
 from Internal_Representation.state import State
-from Internal_Representation.Type import Type
 from Internal_Representation.list_parameter import ListParameter
-from Internal_Representation.effects import Effects
+
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
-from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
-from Solver.Heuristics.breadth_first_by_operations import BreadthFirstOperations
 from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
-from Solver.Heuristics.hamming_distance import HammingDistance
+
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
-from Solver.Parameter_Selection.All_Parameters import AllParameters
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection, Requirements
+
 """Importing from sys modules"""
 Precondition = sys.modules['Internal_Representation.precondition'].Precondition
 ForallCondition = sys.modules['Internal_Representation.conditions'].ForAllCondition

@@ -2,6 +2,10 @@ from Solver.model import Model
 from Internal_Representation.state import State
 from Solver.Heuristics.Heuristic import Heuristic
 
+"""
+This SearchQueue ranks models using the A* principle (Cost thus far + estimated cost)
+"""
+
 
 class SearchQueue:
     def __init__(self):
@@ -31,7 +35,8 @@ class SearchQueue:
         self.__completed_models.append(model)
 
     def __add_model(self, model):
-        ranking = self.heuristic.ranking(model)
+        ranking = len(model.operations_taken) + self.heuristic.ranking(model)
+
         if ranking is None:
             return  # Do not add to search queue
         model.set_ranking(ranking)

@@ -76,10 +76,10 @@ class TreeDistancePartialOrder(PartialOrderPruning):
                 i -= 1
                 op = model.operations_taken[i].mod
             assert type(op) == Task
-            return len(model.operations_taken) + self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
+            return self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
         else:
             # We have all tasks
-            return len(model.operations_taken) + self._calculate_distance_tasks(model)
+            return self._calculate_distance_tasks(model)
 
     def _calculate_distance_tasks(self, model: Model):
         distance = 0

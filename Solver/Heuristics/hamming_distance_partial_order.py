@@ -10,15 +10,12 @@ class HammingDistancePartialOrder(PartialOrderPruning):
         self.goal_cons = []
 
     def ranking(self, model) -> float:
-        # Consider cost thus far
-        cost_so_far = len(model.operations_taken) / 3
-
         # Consider distance to goal
         distance_to_goal = 0
         for i in self.goal_cons:
             if i not in model.current_state.elements:
                 distance_to_goal += 5
-        return cost_so_far + distance_to_goal
+        return distance_to_goal
 
     def presolving_processing(self) -> None:
         if self.problem.goal_conditions is not None:

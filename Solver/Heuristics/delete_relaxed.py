@@ -182,9 +182,9 @@ class DeleteRelaxed(Pruning):
             res = self._calculate_distance(self.solver.reproduce_model(model), self.model_stores[model.model_number],
                                            alt_state, targets)
             self.model_stores[model.model_number].ranking = res
-            return len(model.operations_taken)/3 + res
+            return res
         else:
-            return len(model.operations_taken)/3 + self.model_stores[model.model_number].ranking
+            return self.model_stores[model.model_number].ranking
 
     def _get_target_tasks(self, model):
         targets = []
