@@ -14,6 +14,7 @@ from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
 from Internal_Representation.domain import Domain
 from Internal_Representation.problem import Problem
 from Solver.model import Model
+from Solver.Search_Queues.search_queue import SearchQueue
 
 
 class Runner:
@@ -79,6 +80,12 @@ class Runner:
     def set_parameter_selector_from_file(self, module_name: str, file_path: str) -> None:
         self.set_parameter_selector(self._get_module_from_file(module_name, file_path))
 
+    def set_search_queue(self, search_queue: type(SearchQueue)) -> None:
+        self.solver.set_search_queue(search_queue)
+
+    def set_search_queue_from_file(self, module_name: str, file_path: str) -> None:
+        self.set_search_queue(self._get_module_from_file(module_name, file_path))
+
     def set_early_task_precon_checker(self, v: bool) -> None:
         self.solver.task_expansion_given_param_check = v
 
@@ -126,6 +133,8 @@ if __name__ == "__main__":
     argparser.add_argument("-heuPath", type=str, help='File path to Heuristic File', default=None)
     argparser.add_argument("-paramSelectName", type=str, help='Name of Parameter Selector Class', default=None)
     argparser.add_argument("-paramSelectPath", type=str, help='File path to Parameter Selector File', default=None)
+    argparser.add_argument("-searchQueueName", type=str, help='Name of SearchQueue Class', default=None)
+    argparser.add_argument("-searchQueuePath", type=str, help='File path to SearchQueue File', default=None)
     argparser.format_help()
     args = argparser.parse_args()
 
@@ -138,6 +147,8 @@ if __name__ == "__main__":
     heuristic_file = args.heuPath
     param_mod_name = args.paramSelectName
     param_file = args.paramSelectPath
+    searchQueue_mod_name = args.searchQueueName
+    searchQueue_file = args.searchQueuePath
 
     if solver_mod_name is not None and solver_file is None or \
             solver_mod_name is None and solver_file is not None:
@@ -150,6 +161,10 @@ if __name__ == "__main__":
             param_mod_name is None and param_file is not None:
         argparser.error(
             "Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty")
+    elif searchQueue_mod_name is not None and searchQueue_file is None or \
+            searchQueue_mod_name is None and searchQueue_file is not None:
+        argparser.error(
+            "Incorrect Usage. Either both '-searchQueueName' and '-searchQueuePath' need to be set or both need to be empty")
 
     if domain_file is not None and problem_file is not None:
         # Setup runner object
@@ -167,9 +182,13 @@ if __name__ == "__main__":
         if heuristic_mod_name is not None and heuristic_file is not None:
             controller.set_heuristic_from_file(heuristic_mod_name, heuristic_file)
 
-        # Parameter Selection
+        # Parameter Selector Selection
         if param_mod_name is not None and param_file is not None:
             controller.set_parameter_selector_from_file(param_mod_name, param_file)
+
+        # SearchQueue Selection
+        if searchQueue_mod_name is not None and searchQueue_file is not None:
+            controller.set_search_queue_from_file(searchQueue_mod_name, searchQueue_file)
 
         # Initiate solving
         result = controller.solve()

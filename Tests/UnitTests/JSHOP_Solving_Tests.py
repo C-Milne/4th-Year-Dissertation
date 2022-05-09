@@ -24,7 +24,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         parser.parse_problem(self.block_path + "problem")
         execution_prep(problem, solver)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
 
         solver.compute_derived_predicates(model)
         self.assertEqual(1, 2)
@@ -38,7 +38,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         self.assertEqual(['forall', ['?v'], [['p', '?v']], [['q', '?v'], ['q', '?v'], ['not', ['w', '?v']]]],
                          domain.methods['method0'].preconditions.conditions)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
         res = domain.methods['method0'].preconditions.evaluate({}, model, problem)
 
         # Test Running this example
@@ -50,7 +50,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         parser.parse_problem(self.forall_test_path + "problem.jshop")
         execution_prep(problem, solver)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
 
         method = domain.methods['method0']
         cons = method.preconditions.head
@@ -66,7 +66,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         execution_prep(problem, solver)
         solver.parameter_selector.presolving_processing(domain, problem)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
 
         # Test applying forall effect method
         self.assertIn(ProblemPredicate(domain.predicates['in'], [problem.objects['p3'], problem.objects['t2']]),
@@ -75,15 +75,15 @@ class JSHOPSolvingTests(unittest.TestCase):
         subT = model.search_modifiers.pop(0)
         solver._expand_task(subT, model)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
         subT = model.search_modifiers.pop(0)
         solver._expand_method(subT, model)
 
-        model = solver.search_models._SearchQueue__Q.pop(0)
+        model = solver.search_models._Q.pop(0)
         subT = model.search_modifiers.pop(0)
         solver._expand_task(subT, model)
 
-        search_models = solver.search_models._SearchQueue__Q
+        search_models = solver.search_models._Q
         self.assertEqual(2, len(search_models))
 
         model = search_models[0]
@@ -164,16 +164,16 @@ class JSHOPSolvingTests(unittest.TestCase):
         solver._search(True)
         solver._search(True)
         solver._search(True)
-        solver.search_models._SearchQueue__Q = [solver.search_models._SearchQueue__Q[0]]
-        solver.search_models._SearchQueue__Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
-        search_models = solver.search_models._SearchQueue__Q
+        solver.search_models._Q = [solver.search_models._Q[0]]
+        solver.search_models._Q[0].search_modifiers[0].given_params['?to'] = problem.objects['waypoint5']
+        search_models = solver.search_models._Q
         solver._search(True)
         solver._search(True)
         solver._search(True)
         res = solver._search()
         # solver._search(True)
         # solver._search(True)
-        search_models = solver.search_models._SearchQueue__Q
+        search_models = solver.search_models._Q
         self.assertNotEqual(None, res)
         solver.output(res)
 
@@ -185,7 +185,7 @@ class JSHOPSolvingTests(unittest.TestCase):
         execution_prep(problem, solver)
         solver.parameter_selector.presolving_processing(domain, problem)
         res = solver.solve()
-        search_models = solver.search_models._SearchQueue__Q
+        search_models = solver.search_models._Q
         self.assertNotEqual(None, res)
         solver.output(res)
 

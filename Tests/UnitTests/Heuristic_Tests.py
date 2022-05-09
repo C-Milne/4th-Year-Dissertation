@@ -179,7 +179,7 @@ class HeuristicTests(unittest.TestCase):
         parser.parse_problem(self.basic_path + "pb1.hddl")
         solver.set_heuristic(DeleteRelaxed)
         solver.solve(search=False)
-        search_models = solver.search_models._SearchQueue__Q
+        search_models = solver.search_models._Q
         self.assertEqual(1, len(search_models))
         self.assertEqual(2, search_models[0].ranking)
 

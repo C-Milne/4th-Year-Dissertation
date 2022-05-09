@@ -49,6 +49,14 @@ class Solver(ABC):
         assert isinstance(selector, ParameterSelector)
         self.parameter_selector = selector
 
+    def set_search_queue(self, search_queue):
+        if type(search_queue) == type or type(search_queue) == ABCMeta:
+            search_queue = search_queue()
+        assert isinstance(search_queue, SearchQueue)
+        heu = self.search_models.heuristic
+        self.search_models = search_queue
+        self.search_models.add_heuristic(heu)
+
     def solve(self, **kwargs):
         self.parameter_selector.presolving_processing(self.domain, self.problem)
         self.search_models.heuristic.presolving_processing()

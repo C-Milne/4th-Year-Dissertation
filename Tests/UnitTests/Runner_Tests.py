@@ -9,9 +9,11 @@ from Internal_Representation.problem import Problem
 from Parsers.HDDL_Parser import HDDLParser
 from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Heuristics.tree_distance import TreeDistance
+from Solver.Heuristics.delete_relaxed import DeleteRelaxed
 from Solver.Parameter_Selection.All_Parameters import AllParameters
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 from Solver.Solving_Algorithms.total_order import TotalOrderSolver
+from Solver.Search_Queues.Greedy_Best_First_Search_Queue import GBFSSearchQueue
 
 
 class RunnerTests(unittest.TestCase):
@@ -127,6 +129,8 @@ Search Models Created During Search: 3
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffix> <problem.suffix>'\r
 """, msg)
@@ -142,6 +146,8 @@ runner.py: error: Incorrect Usage. Correct usage 'python runner.py <domain.suffi
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]
                  [-paramSelectPath PARAMSELECTPATH]
+                 [-searchQueueName SEARCHQUEUENAME]
+                 [-searchQueuePath SEARCHQUEUEPATH]
                  [D] [P]
 
 positional arguments:
@@ -162,6 +168,10 @@ optional arguments:
                         Name of Parameter Selector Class
   -paramSelectPath PARAMSELECTPATH
                         File path to Parameter Selector File
+  -searchQueueName SEARCHQUEUENAME
+                        Name of SearchQueue Class
+  -searchQueuePath SEARCHQUEUEPATH
+                        File path to SearchQueue File
 """, output)
 
     def test_runner_command_line_heupath_or_heuname_only(self):
@@ -172,13 +182,14 @@ optional arguments:
         try:
             res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuModName PredicateDistanceToGoal",
                                           stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set or both need to be empty\r
 """, msg)
@@ -189,13 +200,14 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
         try:
             res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -heuPath Solver/Heuristics/hamming_distance.py",
                                           stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need to be set or both need to be empty\r
 """, msg)
@@ -261,13 +273,14 @@ runner.py: error: Incorrect Usage. Either both '-heuModName' and '-heuPath' need
             res = subprocess.check_output(
                 "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectName PredicateDistanceToGoal",
                 stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty\r
 """, msg)
@@ -279,13 +292,14 @@ runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSel
             res = subprocess.check_output(
                 "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -paramSelectPath Solver/Heuristics/hamming_distance.py",
                 stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSelectPath' need to be set or both need to be empty\r
 """, msg)
@@ -301,13 +315,14 @@ runner.py: error: Incorrect Usage. Either both '-paramSelectName' and '-paramSel
             res = subprocess.check_output(
                 "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -solverModName PredicateDistanceToGoal",
                 stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath' need to be set or both need to be empty\r
 """, msg)
@@ -319,15 +334,58 @@ runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath
             res = subprocess.check_output(
                 "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -solverPath Solver/Heuristics/hamming_distance.py",
                 stderr=subprocess.PIPE)
-            output, error = res.communicate()
         except Exception as e:
             msg = e.stderr.decode("utf-8")
             self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
                  [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
                  [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
                  [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
                  [D] [P]\r
 runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath' need to be set or both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+    def test_runner_command_line_searchQueueName_or_searchQueuePath_only(self):
+        # Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -searchQueueName GBFSSearchQueue -searchQueuePath Solver/Search_Queues/Greedy_Best_First_Search_Queue.py
+        os.chdir("../..")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output(
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -searchQueueName GBFSSearchQueue",
+                stderr=subprocess.PIPE)
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
+                 [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-searchQueueName' and '-searchQueuePath' need to be set or both need to be empty\r
+""", msg)
+            error_raised = True
+        self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
+
+        error_raised = False
+        try:
+            res = subprocess.check_output(
+                "python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl -searchQueuePath Solver/Search_Queues/Greedy_Best_First_Search_Queue.py",
+                stderr=subprocess.PIPE)
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")
+            self.assertEqual("""usage: runner.py [-h] [-w W] [-solverModName SOLVERMODNAME]\r
+                 [-solverPath SOLVERPATH] [-heuModName HEUMODNAME]\r
+                 [-heuPath HEUPATH] [-paramSelectName PARAMSELECTNAME]\r
+                 [-paramSelectPath PARAMSELECTPATH]\r
+                 [-searchQueueName SEARCHQUEUENAME]\r
+                 [-searchQueuePath SEARCHQUEUEPATH]\r
+                 [D] [P]\r
+runner.py: error: Incorrect Usage. Either both '-searchQueueName' and '-searchQueuePath' need to be set or both need to be empty\r
 """, msg)
             error_raised = True
         self.assertTrue(error_raised, "An Error Was not Raised When Running the Command")
@@ -353,3 +411,39 @@ runner.py: error: Incorrect Usage. Either both '-solverModName' and '-solverPath
             error_raised = True
         self.assertFalse(error_raised, "An Error Was Raised When Running the Command")
         os.chdir(original_dir)
+
+    def test_runner_setting_SearchQueue_from_path(self):
+        controller = Runner(self.basic_domain_path, self.basic_pb1_path)
+        controller.parse_domain()
+        controller.parse_problem()
+        controller.set_search_queue_from_file('GBFSSearchQueue', '../../Solver/Search_Queues/Greedy_Best_First_Search_Queue.py')
+        self.assertEqual(GBFSSearchQueue.__name__, type(controller.solver.search_models).__name__)
+
+    def test_runner_setting_SearchQueue_from_command_line(self):
+        original_dir = os.getcwd()
+        os.chdir("../..")
+        error_raised = False
+        try:
+            res = subprocess.check_output("python ./runner.py Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl "
+                                          "-searchQueueName GBFSSearchQueue -searchQueuePath Solver/Search_Queues/Greedy_Best_First_Search_Queue.py",
+                                          stderr=subprocess.PIPE)
+        except Exception as e:
+            msg = e.stderr.decode("utf-8")  # This is for debugger inspection only
+            print(msg)
+            error_raised = True
+        self.assertFalse(error_raised, "An Error Was Raised When Running the Command")
+        os.chdir(original_dir)
+
+    def test_runner_setting_heu_paramselec_solver_searchQueue(self):
+        controller = Runner(self.rover_col_path + "domain.hddl", self.rover_col_path + "p02.hddl")
+        controller.parse_domain()
+        controller.parse_problem()
+        controller.set_solver(TotalOrderSolver)
+        controller.set_heuristic(DeleteRelaxed)
+        controller.set_parameter_selector(AllParameters)
+        controller.set_search_queue(GBFSSearchQueue)
+
+        self.assertEqual(TotalOrderSolver.__name__, type(controller.solver).__name__)
+        self.assertEqual(DeleteRelaxed.__name__, type(controller.solver.search_models.heuristic).__name__)
+        self.assertEqual(AllParameters.__name__, type(controller.solver.parameter_selector).__name__)
+        self.assertEqual(GBFSSearchQueue.__name__, type(controller.solver.search_models).__name__)
