@@ -24,18 +24,33 @@ class HeuristicTests(unittest.TestCase):
         solver.set_heuristic(TreeDistance)
         solver.search_models.heuristic.presolving_processing()
         heu = solver.search_models.heuristic
-        self.assertEqual(8, len(heu.tree.nodes))
+        self.assertEqual(14, len(heu.tree.nodes))
 
         node = heu.tree.nodes['deliver']
-        self.assertEqual(8, node.distance)
+        self.assertEqual(14, node.distance)
 
         node = heu.tree.nodes['get_to']
         self.assertEqual(3, node.distance)
 
         node = heu.tree.nodes['unload']
-        self.assertEqual(2, node.distance)
+        self.assertEqual(3, node.distance)
 
         node = heu.tree.nodes['load']
+        self.assertEqual(3, node.distance)
+
+        node = heu.tree.nodes['m_unload_ordering_0']
+        self.assertEqual(2, node.distance)
+
+        node = heu.tree.nodes['m_load_ordering_0']
+        self.assertEqual(2, node.distance)
+
+        node = heu.tree.nodes['m_i_am_there_ordering_0']
+        self.assertEqual(2, node.distance)
+
+        node = heu.tree.nodes['m_drive_to_via_ordering_0']
+        self.assertEqual(5, node.distance)
+
+        node = heu.tree.nodes['m_drive_to_ordering_0']
         self.assertEqual(2, node.distance)
 
     def test_tree_distance_execution(self):
