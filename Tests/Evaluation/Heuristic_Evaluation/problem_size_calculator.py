@@ -24,8 +24,8 @@ def calculate_size(domain_file: str, problem_file: str, file_path=pickle_file_na
     controller.parse_domain()
     controller.parse_problem()
 
-    size = _calculate_domain_size(controller) + _calculate_problem_size(controller)
-    # print(_calculate_predicate_state_size(controller))
+    # size = _calculate_domain_size(controller) + _calculate_problem_size(controller)
+    size = _calculate_predicate_state_size(controller)
 
     size_dict = _open_pickled_dictionary()
 
