@@ -1,8 +1,19 @@
 import argparse
-import os.path
+import os.path, os
+import sys
 import pickle
-from Solver.model import Model
-from Solver.Solving_Algorithms.solver import Solver
+
+original_path = os.getcwd()
+try:
+    from Solver.model import Model
+    from Solver.Solving_Algorithms.solver import Solver
+except:
+    os.chdir("../..")
+    sys.path.insert(1, os.getcwd())
+    from Solver.model import Model
+    from Solver.Solving_Algorithms.solver import Solver
+    os.chdir(original_path)
+
 """Plans can be output and stored as pickle objects. This file opens the file and prints the contents"""
 
 
@@ -15,8 +26,12 @@ def read_plan(result_file_path: str) -> Model:
     return model
 
 
-def display_plan(res: Model):
-    Solver.output(res)
+def display_plan(res):
+    print("Actions Taken:")
+    for a in res:
+        print(a)
+    if len(res) == 0:
+        print("No Actions")
 
 
 if __name__ == "__main__":

@@ -49,6 +49,38 @@ class EvaluationTests(unittest.TestCase):
         res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p07.hddl", self.write_path)
         print(res)
 
+    def test_calculating_rover_8_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p08.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_9_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p09.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_10_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p10.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_11_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p11.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_12_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p12.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_13_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p13.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_14_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p14.hddl", self.write_path)
+        print(res)
+
+    def test_calculating_rover_15_size(self):
+        res = calculate_size(self.rover_path + "domain.hddl", self.rover_path + "p15.hddl", self.write_path)
+        print(res)
+
     def test_calculating_depot_1_size(self):
         res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p01.hddl", self.write_path)
         print(res)
@@ -60,6 +92,12 @@ class EvaluationTests(unittest.TestCase):
     def test_calculating_depot_3_size(self):
         res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p03.hddl", self.write_path)
         print(res)
+
+    def test_calculating_depot_4_15_size(self):
+        prob_nums = ["04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"]
+        for n in prob_nums:
+            res = calculate_size(self.depot_path + "domain.hddl", self.depot_path + "p" + n + ".hddl", self.write_path)
+            print(n, res)
 
     def test_calculating_translog_size(self):
         res = calculate_size(self.translog_path + "domain.hddl", self.translog_path + "problem.hddl", self.write_path)

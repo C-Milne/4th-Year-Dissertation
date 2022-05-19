@@ -10,6 +10,12 @@ class PartialOrderPruning(Heuristic):
         super().__init__(domain, problem, solver, search_models)
         self.seen_states = {}
 
+    def ranking(self, model) -> float:
+        return 0
+
+    def presolving_processing(self) -> None:
+        pass
+
     def task_milestone(self, model) -> bool:
         task_names = self._concat_remaining_tasks(model)
         if task_names not in self.seen_states:

@@ -2,7 +2,11 @@ import sys
 from typing import List
 # from Internal_Representation.precondition import Precondition
 from Internal_Representation.parameter import Parameter
-Precondition = sys.modules['Internal_Representation.precondition'].Precondition
+
+if 'Internal_Representation.precondition' in sys.modules:
+    Precondition = sys.modules['Internal_Representation.precondition'].Precondition
+else:
+    from Internal_Representation.precondition import Precondition
 
 
 class Modifier:

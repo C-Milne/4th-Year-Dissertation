@@ -13,7 +13,7 @@ from Internal_Representation.list_parameter import ListParameter
 
 """Space for importing heuristic functions"""
 from Solver.Heuristics.Heuristic import Heuristic
-from Solver.Heuristics.breadth_first_by_operations_with_pruning import BreadthFirstOperationsPruning
+from Solver.Heuristics.pruning import Pruning
 
 """Space for importing parameter selection functions"""
 from Solver.Parameter_Selection.ParameterSelector import ParameterSelector
@@ -30,7 +30,7 @@ class Solver(ABC):
         self.problem = problem
 
         self.search_models = SearchQueue()
-        heuristic = BreadthFirstOperationsPruning(self.domain, self.problem, self, self.search_models)
+        heuristic = Pruning(self.domain, self.problem, self, self.search_models)
         self.search_models.add_heuristic(heuristic)
 
         self.parameter_selector = RequirementSelection(self)

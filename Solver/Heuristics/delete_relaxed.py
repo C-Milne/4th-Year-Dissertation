@@ -176,7 +176,7 @@ class DeleteRelaxed(Pruning):
             targets = self._get_target_tasks(model)
             res = self._calculate_distance(self.solver.reproduce_model(model), self.model_stores[model.model_number], alt_state, targets)
             self.model_stores[model.model_number].ranking = res
-            return len(model.operations_taken)/3 + res
+            return res
         elif prev_action:
             targets = self._get_target_tasks(model)
             res = self._calculate_distance(self.solver.reproduce_model(model), self.model_stores[model.model_number],
@@ -249,6 +249,8 @@ class DeleteRelaxed(Pruning):
         iteration = 0
         modifiers = [x for x in model_store.previous_modifiers]
         applied_modifiers = []
+        found_targets = []
+        used_prev_store = False
         while True:
             iteration += 1
             applicable_modifiers = []
@@ -263,7 +265,9 @@ class DeleteRelaxed(Pruning):
                     applicable_modifiers.append((m, copy.copy(given_params)))
 
             # Add effects of these modifiers to alt_state
+            c = -1
             for m in applicable_modifiers:
+                c += 1
                 given_params = m[1]
                 m = m[0]
                 if type(m) == Action:
@@ -275,21 +279,29 @@ class DeleteRelaxed(Pruning):
                         else:
                             model.current_state.add_element(ProblemPredicate(e.predicate, [given_params[x] for x in e.parameters]))
 
-                        # Add action name to state (U-actionName)
-                        model.current_state.add_element(ProblemPredicate(
-                            self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(m.name)]))
+                    # Add action name to state (U-actionName)
+                    prob_pred = ProblemPredicate(self.alt_domain.get_predicate("U"), [self.alt_problem.get_object(m.name)])
+                    model.current_state.add_element(prob_pred)
                 elif type(m) == Method:
                     # Check if name of task this method expands is already in state
                     ob_names = self._get_objects_from_alt_modifier_name(m, True)
                     task_name = m.task['task'].name
 
-                    l = len(m.task['params'])
-                    i = 0
-                    for ob in ob_names:
-                        if i >= l:
-                            break
-                        task_name += "-" + ob
-                        i += 1
+                    for param_name in m.task['params']:
+                        try:
+                            i_params = 0
+                            l_params = len(m.parameters)
+                            found = False
+                            while i_params < l_params:
+                                if m.parameters[i_params].name == param_name.name:
+                                    found = True
+                                    break
+                                i_params += 1
+                            if not found:
+                                raise NameError
+                            task_name += "-" + ob_names[i_params]
+                        except Exception as e:
+                            raise TypeError
 
                     occurrences = model.current_state.get_indexes("U")
                     found = False
@@ -307,8 +319,12 @@ class DeleteRelaxed(Pruning):
                         if task_name_ob is None:
                             self.alt_problem.add_object(Object(task_name))
                             task_name_ob = self.alt_problem.get_object(task_name)
-                        model.current_state.add_element(ProblemPredicate(
-                            self.alt_domain.get_predicate("U"), [task_name_ob]))
+                        prob_pred = ProblemPredicate(self.alt_domain.get_predicate("U"), [task_name_ob])
+                        model.current_state.add_element(prob_pred)
+                        # Check if prob_pred in targets
+                        task_string = str(prob_pred).replace(" ", "")
+                        if task_string in targets:
+                            found_targets.append(task_string)
                 else:
                     raise TypeError
                 # Remove modifiers from list
@@ -316,31 +332,20 @@ class DeleteRelaxed(Pruning):
                 del modifiers[modifiers.index(m)]
 
             # Check exit conditions
-            if self._check_targets(model, targets):
+            if self._check_targets(targets, found_targets):
                 model_store.previous_modifiers = [x for x in applied_modifiers]
+                model_store.other_modifiers = [x for x in modifiers]
                 return iteration
-            elif len(modifiers) == 0 and len(model_store.previous_modifiers) > 0:
-                modifiers = [x for x in model_store.previous_modifiers]
+            elif len(modifiers) == 0 and len(model_store.other_modifiers) > 0 and not used_prev_store:
+                modifiers = [x for x in model_store.other_modifiers]
+                used_prev_store = True
             elif len(applicable_modifiers) == 0:
                 return False
 
-    def _check_targets(self, model: Model, targets: list) -> bool:
-        # Get the predicates which denote a modifier has been run. These begin with U-
-        occurrences = model.current_state.get_indexes("U")
-        occurrences = [model.current_state.get_element_index(x) for x in occurrences]
-
-        if type(targets) == int:
-            raise TypeError
-
-        for t in targets:
-            found = False
-            for element in occurrences:
-                if element.objects[0].name == t[2:]:
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
+    def _check_targets(self, targets: list, found_targets: list) -> bool:
+        if len(targets) == len(found_targets):
+            return True
+        return False
 
     def presolving_processing(self) -> None:
         self.alt_domain = Domain(None)
@@ -406,7 +411,16 @@ class DeleteRelaxed(Pruning):
                     new_op_con = AltOperatorCondition("and", None)
                     old_head = alt_precons.head
                     alt_precons.head = new_op_con
-                    alt_precons.add_predicate_condition(old_head.pred, old_head.parameter_name, alt_precons.head)
+                    head = alt_precons.head
+
+                    if type(old_head) == AltPredicateCondition:
+                        alt_precons.add_predicate_condition(old_head.pred, old_head.parameter_name, alt_precons.head)
+                    elif type(old_head) == AltOperatorCondition:
+                        oh = alt_precons.add_operator_condition(old_head.operator, old_head.parent, old_head.pred)
+                        for c in old_head.children:
+                            oh.add_child(c)
+                    else:
+                        raise TypeError("Unsupported type {}".format(type(old_head)))
 
                 if alt_subtasks is not None:
                     for s in alt_subtasks.tasks:

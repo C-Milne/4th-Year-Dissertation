@@ -1,5 +1,4 @@
 import sys
-from Solver.Heuristics.Heuristic import Heuristic
 from Solver.Heuristics.partial_order_pruning import PartialOrderPruning
 Task = sys.modules['Internal_Representation.task'].Task
 Method = sys.modules['Internal_Representation.method'].Method
@@ -10,13 +9,14 @@ Model = sys.modules['Solver.model'].Model
 
 class Tree:
     class Node:
-        def __init__(self, name):
+        def __init__(self, name, task: bool):
             self.name = name
             self.operator = None
             self.type = None
             self.parents = []
             self.children = []
             self.distance = None
+            self.task = task
 
         def add_parent(self, node):
             # Check is not already in parent list
@@ -24,9 +24,7 @@ class Tree:
                 self.parents.append(node)
 
         def add_child(self, node):
-            # Check is not already in children list
-            if all([x.name != node.name for x in self.children]):
-                self.children.append(node)
+            self.children.append(node)
 
         def set_operator(self, operator: str):
             assert operator == "AND" or operator == "OR"
@@ -44,10 +42,10 @@ class Tree:
         self.root = None
         self.nodes = {}
 
-    def add_node(self, name) -> Node:
+    def add_node(self, name, task=False) -> Node:
         if name in self.nodes:
             return self.nodes[name]
-        node = self.Node(name)
+        node = self.Node(name, task)
         self.nodes[name] = node
         return node
 
@@ -60,26 +58,11 @@ class Tree:
 class TreeDistancePartialOrder(PartialOrderPruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
-        self.seen_states = {}
-
         self.tree = Tree()
 
     def ranking(self, model: Model) -> float:
-        next_mod = model.search_modifiers[0].task
-        if type(next_mod) != Task and model.ranking is not None:
-            return model.ranking
-        elif type(next_mod) != Task:
-            i = -1
-            op = model.operations_taken[i].mod
-            while type(op) != Task:
-                i -= 1
-                op = model.operations_taken[i].mod
-            assert type(op) == Task
-            return self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
-        else:
-            # We have all tasks
-            return self._calculate_distance_tasks(model)
+        res = sum(self.tree[x.task.name].distance for x in model.search_modifiers)
+        return res + sum(self.tree[x.task.name].distance for x in model.waiting_subtasks)
 
     def _calculate_distance_tasks(self, model: Model):
         distance = 0
@@ -103,10 +86,12 @@ class TreeDistancePartialOrder(PartialOrderPruning):
             if m.subtasks is None:
                 method_reach_conditions[m.name] = []
             else:
-                method_reach_conditions[m.name] = list(set([x.task.name for x in m.subtasks.tasks]))
+                method_reach_conditions[m.name] = list([x.task.name for x in m.subtasks.tasks])
 
         # Add methods which are bottom up reachable to the tree
         task_nodes = []
+        method_nodes = []
+        recursive_method_nodes = []
         change = True
         while change:
             change = False
@@ -119,13 +104,22 @@ class TreeDistancePartialOrder(PartialOrderPruning):
                 # if all_m_cons hold, add m to tree
                 if all(x in self.tree.nodes for x in m_cons):
                     method = self.domain.get_method(m)
-                    node = self.tree.add_node(method.task['task'].name)
-                    if node not in task_nodes:
-                        task_nodes.append(node)
+                    method_node = self.tree.add_node(method.name)
+                    task_node = self.tree.add_node(method.task['task'].name, task=True)
+                    method_node.parents.append(task_node)
+
+                    if task_node not in task_nodes:
+                        task_nodes.append(task_node)
+                    task_node.add_child(method_node)
+                    method_nodes.append(method_node)
+
+                    if task_node in method_node.children:
+                        recursive_method_nodes.append(method_node)
+
                     for mc in m_cons:
                         mc = self.tree[mc]
-                        node.add_child(mc)
-                        mc.add_parent(node)
+                        method_node.add_child(mc)
+                        mc.add_parent(method_node)
                     change = True
                     del_list.append(m)
 
@@ -133,22 +127,35 @@ class TreeDistancePartialOrder(PartialOrderPruning):
                 del method_reach_conditions[m]
 
         # Assign each task node a distance to goal
-        for tn in task_nodes:
-            self._calculate_task_node_distance_goal(tn)
+        i = 0
+        l = len(method_nodes)
+        while method_nodes:
+            tn = method_nodes.pop(0)
+            res = self._calculate_task_node_distance_goal(tn)
+            if res is None:
+                method_nodes.append(tn)
+            else:
+                tn.set_distance(res)
+                for p in tn.parents:
+                    if p.distance is None or p.distance > res + 1:
+                        p.distance = res + 1
+            i += 1
+        for m in recursive_method_nodes:
+            res = self._calculate_task_node_distance_goal(m)
+            if res != m.distance:
+                m.distance = res
 
     def _calculate_task_node_distance_goal(self, tn) -> int:
         if tn.distance is not None:
             return tn.distance
-        total_distance = 0
-        for n in tn.children:
-            if n.distance is None and tn not in n.children:
-                total_distance += self._calculate_task_node_distance_goal(n)
-            elif n.distance is None and tn in n.children and tn != n:
-                total_distance += 1
-            elif tn == n:
-                continue
-            else:
-                total_distance += n.distance
-        total_distance += 1
-        tn.set_distance(total_distance)
-        return total_distance
+        else:
+            total_distance = 0
+            for n in tn.children:
+                if n.distance is None:
+                    return None
+                elif tn == n:
+                    continue
+                else:
+                    total_distance += n.distance
+            total_distance += 1
+            return total_distance

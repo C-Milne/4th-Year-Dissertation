@@ -170,7 +170,3 @@ def _open_pickled_dictionary() -> dict:
 def _write_pickled_dictionary(size_dict) -> None:
     with open(pickle_file_name, 'wb') as handle:
         pickle.dump(size_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-
-def get_pickled_dictionary() -> dict:
-    pass

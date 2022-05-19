@@ -35,9 +35,10 @@ class SearchQueue:
         self._completed_models.append(model)
 
     def _add_model(self, model):
-        ranking = len(model.operations_taken) + self.heuristic.ranking(model)
+        res = self.heuristic.ranking(model)
+        ranking = len(model.operations_taken) + res
 
-        if ranking is None:
+        if type(res) != int and (res is None or res == False):
             return  # Do not add to search queue
         model.set_ranking(ranking)
 

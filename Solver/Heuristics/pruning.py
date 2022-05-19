@@ -10,6 +10,12 @@ class Pruning(Heuristic):
         super().__init__(domain, problem, solver, search_models)
         self.seen_states = {}
 
+    def ranking(self, model) -> float:
+        return 0
+
+    def presolving_processing(self) -> None:
+        pass
+
     def task_milestone(self, model) -> bool:
         num_tasks_remaining = str(len(model.waiting_subtasks))
         if num_tasks_remaining not in self.seen_states:

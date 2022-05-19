@@ -11,7 +11,7 @@ from Internal_Representation.subtasks import Subtasks
 from Internal_Representation.state import State
 from Internal_Representation.reg_parameter import RegParameter
 from Solver.action_tracker import ActionTracker
-from Solver.Heuristics.breadth_first_by_actions import BreadthFirstActions
+from Solver.Heuristics.no_pruning import NoPruning
 from Solver.Heuristics.hamming_distance import HammingDistance
 from Solver.Parameter_Selection.Requirement_Selection import RequirementSelection
 import Tests.UnitTests.TestTools.rover_execution as RovEx
@@ -358,7 +358,7 @@ class SolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True)
         parser.parse_domain(self.rover_path + "rover-domain.hddl")
         parser.parse_problem(self.rover_path + "pfile01.hddl")
-        solver.set_heuristic(BreadthFirstActions)
+        solver.set_heuristic(NoPruning)
         res = solver.solve()
         image_data = domain.actions['communicate_image_data']
         soil_data = domain.actions['communicate_soil_data']
@@ -377,7 +377,7 @@ class SolvingTests(unittest.TestCase):
         domain, problem, parser, solver = env_setup(True, False)
         parser.parse_domain(self.rover_path + "rover-domain.hddl")
         parser.parse_problem(self.rover_path + "pfile01.hddl")
-        solver.set_heuristic(BreadthFirstActions)
+        solver.set_heuristic(NoPruning)
         res = solver.solve()
         image_data = domain.actions['communicate_image_data']
         soil_data = domain.actions['communicate_soil_data']
@@ -471,7 +471,7 @@ class SolvingTests(unittest.TestCase):
 
         # Initialise solver
         solver = TotalOrderSolver(domain, problem)
-        solver.set_heuristic(BreadthFirstActions)
+        solver.set_heuristic(NoPruning)
 
         res = solver.solve()
         image_data = domain.actions['communicate_image_data']
@@ -498,7 +498,7 @@ class SolvingTests(unittest.TestCase):
 
         # Initialise solver
         solver = TotalOrderSolver(domain, problem)
-        solver.set_heuristic(BreadthFirstActions)
+        solver.set_heuristic(NoPruning)
 
         res = solver.solve()
         self.assertNotEqual(None, res)

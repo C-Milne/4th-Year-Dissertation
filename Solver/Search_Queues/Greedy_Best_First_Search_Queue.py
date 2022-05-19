@@ -8,7 +8,7 @@ class GBFSSearchQueue(SearchQueue):
     def _add_model(self, model):
         ranking = self.heuristic.ranking(model)
 
-        if ranking is None:
+        if type(ranking) != int and (ranking is None or ranking == False):
             return  # Do not add to search queue
         model.set_ranking(ranking)
 

@@ -1,5 +1,5 @@
 import sys
-from Solver.Heuristics.Heuristic import Heuristic
+from Solver.Heuristics.pruning import Pruning
 Task = sys.modules['Internal_Representation.task'].Task
 Method = sys.modules['Internal_Representation.method'].Method
 Action = sys.modules['Internal_Representation.action'].Action
@@ -55,29 +55,14 @@ class Tree:
         return None
 
 
-class TreeDistance(Heuristic):
+class TreeDistance(Pruning):
     def __init__(self, domain, problem, solver, search_models):
         super().__init__(domain, problem, solver, search_models)
-        self.low_target = True
-        self.seen_states = {}
-
         self.tree = Tree()
 
     def ranking(self, model: Model) -> float:
-        next_mod = model.search_modifiers[0].task
-        if type(next_mod) != Task and model.ranking is not None:
-            return model.ranking
-        elif type(next_mod) != Task:
-            i = -1
-            op = model.operations_taken[i].mod
-            while type(op) != Task:
-                i -= 1
-                op = model.operations_taken[i].mod
-            assert type(op) == Task
-            return self.tree.nodes[op.name].distance + self._calculate_distance_tasks(model)
-        else:
-            # We have all tasks
-            return self._calculate_distance_tasks(model)
+        res = sum(self.tree[x.task.name].distance for x in model.search_modifiers)
+        return res + sum(self.tree[x.task.name].distance for x in model.waiting_subtasks)
 
     def _calculate_distance_tasks(self, model: Model):
         distance = 0
@@ -174,16 +159,3 @@ class TreeDistance(Heuristic):
                     total_distance += n.distance
             total_distance += 1
             return total_distance
-
-    def task_milestone(self, model) -> bool:
-        num_tasks_remaining = str(len(model.waiting_subtasks))
-        if num_tasks_remaining not in self.seen_states:
-            self.seen_states[num_tasks_remaining] = [self.solver.reproduce_state(model.current_state)]
-            return True
-        else:
-            reproduced_state = self.solver.reproduce_state(model.current_state)
-            if reproduced_state not in self.seen_states[num_tasks_remaining]:
-                self.seen_states[num_tasks_remaining].append(reproduced_state)
-                return True
-            else:
-                return False
