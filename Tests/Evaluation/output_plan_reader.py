@@ -27,11 +27,7 @@ def read_plan(result_file_path: str) -> Model:
 
 
 def display_plan(res):
-    print("Actions Taken:")
-    for a in res:
-        print(a)
-    if len(res) == 0:
-        print("No Actions")
+    Solver.output(res)
 
 
 if __name__ == "__main__":
