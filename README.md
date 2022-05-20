@@ -126,6 +126,18 @@ python ./All_Tests.py
 ```
 ![All Unit Tests](./images/All_Tests.png)
 
+# System Evaluation
+System evaluation is composed in a similar manner to the unit tests. All evaluation files are contained in the Tests/Evaluation/Heuristic_Evaluation directory.
+From here all evaluation tests can be executed using the following command:
+
+```commandline
+python ./AllEvaluationTests.py
+```
+
+The Tests/Evaluation/Heuristic_Evaluation/Archive directory is where all the results of the evaluation tests are stored.
+Within this directory results are sorted by problem domain.
+The <em>Heuristic_Evaluation_Data_Processing.ipynb</em> notebook visualises the results collected using graphs.
+
 
 # Demo Running Configurations
 1. Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl
