@@ -8,7 +8,7 @@ From the main project directory the planner can be initiated using the command:
 python ./Runner.py <Domain File Path> <Problem File Path>
 ```
 
-Additional help can be found via the follow command:
+Additional help can be found via the following command:
 ```commandline
 python ./Runner --help
 ```
@@ -91,6 +91,9 @@ Using the Runner class the same output can be achieved using the following metho
 Runner.output_result_file(Result, file_path)
 ```
 
+An example of a plan being displayed is shown below:
+![Plan Output](./images/Depots_Problem_Output.png)
+
 ## Output Plan Reader 
 Plans saved to Pickle files can be displayed on screen by using the plan reader tool. The plan reader can be found in the Tests/Evaluation directory.
 ```commandline
@@ -114,6 +117,15 @@ Developed Search Queues need to inherit the SearchQueue class found in Solver/Se
 
 ## Solver
 Developed Solvers need to inherit the Solver class within the Solver/Solving_Algorithms/solver.py file.
+
+# Running Unittests
+All the unittests can be run from the Tests/UnitTests directory using the following command:
+
+```commandline
+python ./All_Tests.py
+```
+![All Unit Tests](./images/All_Tests.png)
+
 
 # Demo Running Configurations
 1. Tests/Examples/Basic/basic.hddl Tests/Examples/Basic/pb1.hddl
