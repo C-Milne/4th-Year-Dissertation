@@ -100,24 +100,6 @@ Plans saved to Pickle files can be displayed on screen by using the plan reader 
 python ./output_plan_reader.py <Output File>
 ```
 
-# Developing New Components
-When developing new interchangeable components specific classes need to be inherited by any developed component.
-
-## Heuristic
-Developed Heuristics need to inherit the Heuristic class found in the Solver/Heuristics/Heuristic.py file.
-There are some alternatives to inheriting the Heuristic class directly, the Pruning and NoPruning classes found in files Solver/Heuristics/pruning.py and Solver/Heuristics/no_pruning.py respectively.
-Both of these classes inherit from the Heuristic class. The Pruning Class contains functionality for basic model pruning that can be inherited by other heuristics. 
-The PartialOrderPruning Class from file Solver/Heuristics/partial_order_pruning.py provides the same functionality but for partial-order problems.
-
-## Parameter Selector
-Developed Parameter Selectors need to inherit the ParameterSelector Class found in file Solver/Parameter_Selection/ParameterSelector.py.
-
-## Search Queue
-Developed Search Queues need to inherit the SearchQueue class found in Solver/Search_Queues/search_queue.py.
-
-## Solver
-Developed Solvers need to inherit the Solver class within the Solver/Solving_Algorithms/solver.py file.
-
 # Running Unittests
 All the unittests can be run from the Tests/UnitTests directory using the following command:
 
