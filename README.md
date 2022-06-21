@@ -94,7 +94,7 @@ Runner.output_result_file(Result, file_path)
 An example of a plan being displayed is shown below:
 ![Plan Output](./images/Depots_Problem_Output.png)
 
-## Output Plan Reader 
+## Output Plan Reader
 Plans saved to Pickle files can be displayed on screen by using the plan reader tool. The plan reader can be found in the Tests/Evaluation directory.
 ```commandline
 python ./output_plan_reader.py <Output File>
